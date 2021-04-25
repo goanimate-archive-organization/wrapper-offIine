@@ -183,3 +183,8 @@ Initial release
 ## Version 0.1.0 - never happened
 i wish it did why did i start on 1.0.0
 fair i didn't realize how much of wrapper was truly buggy at the time but fuckkkkkkkkkkkkkkkkkkkkkkkk
+
+## Version 0.0.1 - ...
+Not Found
+HTTP Error 404. The requested resource is not found.
+
