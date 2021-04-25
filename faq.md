@@ -118,10 +118,10 @@ As long as it allows you to run Flash, yes. You can change some options in setti
 ChromeOS is very heavily locked down, and supporting it would likely be troublesome to make, especially since Linux support would need to be made first. It might end up no longer working by the end of 2020 anyway, since Flash will be discontinued and there may not be a way to install it on ChromeOS past that point. Feel free to try it yourself though.
 
 ### iOS or Android?
-No. Not unless you use some remote desktop trickery with a regular computer. This will never happen, Flash does not run on iOS at all, and the few Android versions out there are extremely old and barely work.
+Get the MotherFucking (Puffin) browser and get <https://goanimate.herokuapp.com/>. if you want node? just get Android.js or JXcore.
 
 ### Windows Phone?
-go back to 2013
+go back to 3 years old.
 ‎
 
 
