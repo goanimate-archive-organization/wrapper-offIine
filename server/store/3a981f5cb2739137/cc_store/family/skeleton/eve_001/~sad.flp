@@ -1,0 +1,7 @@
+﻿<flash_project name="~sad" version="1">
+	<project_file path="./~sad.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./sad_fla/MainTimeline.as" filetype="as"/>
+	<project_file path="./sad_fla/theChar_1.as" filetype="as"/>
+	<project_file path="./sad_fla/theHead_4.as" filetype="as"/>
+	<project_file path="./sad_fla/theUpper_3.as" filetype="as"/>
+</flash_project>
