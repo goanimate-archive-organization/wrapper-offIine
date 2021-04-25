@@ -25,7 +25,7 @@ set APPCHROMIUM=y
 :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n
 set CUSTOMBROWSER=n
 
-:: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n
+:: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", "trident" and "n". Default: n
 set BROWSER_TYPE=chrome
 
 :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n
