@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-local" lang="en-local" id="" class="js"><script type="text/javascript" class="__REQUESTLY__SCRIPT">(function(namespace) {
+  window[namespace] = window[namespace] || {};
+  window[namespace].responseRules = {};
+
+  let open = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method) {
+    this.addEventListener('readystatechange', function() {
+      if (this.readyState === 4 && window[namespace].responseRules.hasOwnProperty(this.responseURL)) {
+        const responseRule = window[namespace].responseRules[this.responseURL];
+        const {response, id} = responseRule;
+        const responseType = this.responseType;
+        let customResponse;
+
+        customResponse = response.type === 'code' ? responseRule.evaluator({
+            method,
+            url: this.responseURL,
+            requestHeaders: this.requestHeaders,
+            requestData: this.requestData,
+            responseType: this.responseType,
+            response: this.response
+          }) : response.value;
+
+        Object.defineProperty(this, 'response', {
+          get: function () {
+            if (response.type === 'static' && responseType === 'json') {
+              return JSON.parse(customResponse);
+            }
+            return customResponse;
+          }
+        });
+
+        if (responseType === '' || responseType === 'text') {
+          Object.defineProperty(this, 'responseText', {
+            get: function () {
+              return customResponse;
+            }
+          });
+        }
+
+        window.postMessage({
+          from: 'requestly',
+          type: 'response_rule_applied',
+          id
+        }, window.location.href);
+      }
+    }, false);
+    open.apply(this, arguments);
+  };
+
+  let send = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(data) {
+    this.requestData = data;
+    send.apply(this, arguments);
+  };
+
+  let setRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+  XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+    this.requestHeaders = this.requestHeaders || {};
+    this.requestHeaders[header] = value;
+    setRequestHeader.apply(this, arguments);
+  }
+})('__REQUESTLY__')</script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>How To Make A Movie | Zimmer Twins</title>
+    <meta name="keywords" content="Animation, Games, Kids, Children, Storytelling, Stories, Movies, Movie-Maker, Learning, Literacy, Educational, Free, Activities, Elementary, Primary, Eva, Edgar, Psychic, Creative, Parents, Family, zinc Roe">
+    <meta name="description" content="The Zimmer Twins website invites kids to create and share their own animated stories.">
+    <meta name="copyright" content="©2020 Lost The Plot Productions">
+    
+<link rel="shortcut icon" href="http://www.zimmertwins.com/sites/zimmertwins.com/themes/zimmertwins/images/favicon.ico" type="image/x-icon">
+    <link type="text/css" rel="stylesheet" media="all" href="./serectpage_files/A.all,,_modules,,_contrib,,_cck,,_theme,,_content-module.css,,qF+all,,_modules,,_contrib,,_date,,_date.css,,qF+all,,_modules,,_contrib,,_og,,_theme,,_og.css,,qF+all,,_modules,,_contrib,,_pollfield,,_pollfield.css,.css">
+
+
+
+
+
+
+
+
+
+
+    <!--[if IE]>
+      <link type="text/css" rel="stylesheet" media="all" href="/sites/zimmertwins.com/themes/zimmertwins/ie.css" />
+    <![endif]-->
+    <script src="./serectpage_files/misc,_jquery.js,qF+misc,_drupal.js,qF+sites,_all,_modules,_contrib,_fivestar,_js,_fivestar.js,qF+sites,_all,_modules,_contrib,_og,_og.js,qF+sites,_all,_modules,_contrib,_ubercart,_uc_roles,_uc_roles.js,qF+sit.download"></script><script>eval(mod_pagespeed_pvLUIrROzy);</script>
+<script>eval(mod_pagespeed_nMe05TFCjV);</script>
+<script>eval(mod_pagespeed_FV7$Z$2NYz);</script>
+<script>eval(mod_pagespeed_rpLsmZMkp$);</script>
+<script>eval(mod_pagespeed_Ku_4HW9_SG);</script>
+<script>eval(mod_pagespeed_p9axFxECUi);</script>
+<script>eval(mod_pagespeed_t4terhz9CH);</script>
+<script>eval(mod_pagespeed_Z0T_uRoeFL);</script>
+<script type="text/javascript">//<![CDATA[
+jQuery.extend(Drupal.settings,{"basePath":"/","fivestar":{"titleUser":"Your rating: ","titleAverage":"Average: ","feedbackSavingVote":"Saving vote...\r\n","feedbackVoteSaved":"Rating saved.","feedbackDeletingVote":"Removing vote...","feedbackVoteDeleted":"Rating removed."}});
+//]]></script>
+  <link rel="stylesheet" href="./serectpage_files/jquery-ui.css"><link href="./serectpage_files/css" rel="stylesheet" type="text/css"></head>
+  <body>
+      
+    <div id="wrapper" class="clear-block">
+      
+      <div id="main">
+        
+        <div id="content-header">
+                  </div>
+        
+        <div id="content" class="clear-block">
+        
+          <h1 class="page-title">
+            <span class="page-icon"></span>
+            How To Make A Movie          </h1>
+        
+                  
+                  
+          <div id="movie-clip-editor-0" class="movie-clip-editor flash flash-replaced"><embed height="565" flashvars="apiurl=http%3A%2F%2Fwww.zimmertwins.com%2Fsites%2Fzimmertwins.com%2Fmovie%2Fassets%2Fapi.xml&amp;asseturl=http%3A%2F%2Fwww.zimmertwins.com%2Fsites%2Fzimmertwins.com%2Fmovie%2Fassets&amp;baseurl=http%3A%2F%2Fwww.zimmertwins.com&amp;lang=en-local&amp;userid=416896&amp;playhelpmovie=1" pluginspage="http://www.adobe.com/go/getflashplayer" src="http://www.zimmertwins.com/sites/zimmertwins.com/movie/editor.swf" type="application/x-shockwave-flash" width="760"><div class="alt">
+  
+  
+  
+  
+  
+  
+
+</div></div>          
+        </div>
+        
+        <div id="content-footer">
+                  </div>
+        
+      </div>
+      
+      <div id="sidebar">
+        
+        <a id="site-logo" href="http://www.wrapper.online/">
+                  </a>
+        
+                <ul id="nav"><li class="menu-343 first"><a href="http://www.zimmertwins.com/" id="nav-home">Home</a></li>
+<li class="menu-345"><a href="http://www.zimmertwins.com/movie/watch" id="nav-watch">Watch A Movie</a></li>
+<li class="menu-344"><a href="http://www.zimmertwins.com/movie/starters" id="nav-make">Make A Movie</a></li>
+<li class="menu-920"><a href="http://www.zimmertwins.com/spotlight" id="nav-spotlight">Spotlight</a></li>
+<li class="menu-347"><a href="http://www.zimmertwins.com/extras" id="nav-extras">Extras</a></li>
+<li class="menu-79 last"><a href="http://www.zimmertwins.com/help" id="nav-help">Help</a></li>
+</ul>                
+        <div class="block block-user block-user-1">
+		  <h2>
+	    JOSHGUNNER	    	  </h2>
+		<ul class="menu"><li class="leaf first"><a href="http://www.zimmertwins.com/profile/view" title="The current user&#39;s profile page.">My profile</a></li>
+<li class="leaf"><a href="http://www.zimmertwins.com/movie/user">My movies</a></li>
+<li class="leaf"><a href="http://www.zimmertwins.com/favourites" title="">My favourites</a></li>
+<li class="leaf"><a href="http://www.zimmertwins.com/account/416896/edit" title="">Edit account</a></li>
+<li class="leaf last"><a href="http://www.zimmertwins.com/logout">Log out</a></li>
+</ul></div>
+<div class="block block-movie-search block-movie-search-0">
+		  <h2>search</h2>
+		<form action="http://www.zimmertwins.com/" accept-charset="UTF-8" method="post" id="movie-clip-block-search-movie-form">
+<div><div class="form-item" id="edit-keywords-wrapper">
+ <input type="text" maxlength="50" name="keywords" id="edit-keywords" size="10" value="" class="form-text required">
+</div>
+<input type="submit" name="op" id="edit-search" value="Go" class="form-submit">
+<input type="hidden" name="form_build_id" id="form-drdnZ4HH5_Q4JleSPTxi0Lp90aP4rTKnOP9qVoZWQGc" value="form-drdnZ4HH5_Q4JleSPTxi0Lp90aP4rTKnOP9qVoZWQGc">
+<input type="hidden" name="form_id" id="edit-movie-clip-block-search-movie-form" value="movie_clip_block_search_movie_form">
+
+</div></form>
+</div>
+                
+      </div>
+      
+      <div id="sidebar-bg"></div>
+      
+      <div id="footer">
+        <span class="copyright">©2020 Lost The Plot Productions</span>
+                  <ul class="links"><li class="menu-924 first"><a href="http://www.zimmertwins.com/membership" title="Get A Membership">Membership</a></li>
+<li class="menu-82"><a href="http://www.zimmertwins.com/about/terms" title="">Terms Of Use</a></li>
+<li class="menu-81"><a href="http://www.zimmertwins.com/about/privacy" title="">Privacy Policy</a></li>
+<li class="menu-83"><a href="http://www.zimmertwins.com/about/conduct" title="">Code Of Conduct</a></li>
+<li class="menu-87"><a href="http://www.zimmertwins.com/about/credits" title="">Credits</a></li>
+<li class="menu-84"><a href="http://www.zimmertwins.com/about/parents" title="">Parents</a></li>
+<li class="menu-348"><a href="http://www.zimmertwins.com/contact" title="">Contact</a></li>
+<li class="menu-1343 last"><a href="http://www.zimmertwins.com/about" title="About The Zimmer Twins">About</a></li>
+</ul>              </div>
+      
+    </div>
+    
+        
+  
+
+<iframe src="./serectpage_files/popup.html" id="_hola_popup_iframe__" style="position: fixed !important; max-width: 100% !important; max-height: 100% !important; background-color: transparent !important; z-index: 2147483647 !important; overflow: hidden !important; visibility: visible !important; border: none !important; display: block !important; top: auto !important; right: 15px !important; width: 130px !important; height: 62px !important; left: auto !important; bottom: 0px !important;"></iframe></body></html>
