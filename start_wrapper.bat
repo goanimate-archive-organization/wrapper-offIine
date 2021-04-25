@@ -1,7 +1,7 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
 :: License: MIT
-set WRAPPER_VER=1.3.0
+set WRAPPER_VER=1.4.0
 set WRAPPER_BLD=12
 title Wrapper: Offline v%WRAPPER_VER% ^(build %WRAPPER_BLD%^) [Initializing...]
 
