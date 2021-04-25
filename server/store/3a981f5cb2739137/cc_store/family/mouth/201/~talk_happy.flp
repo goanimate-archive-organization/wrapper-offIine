@@ -1,0 +1,4 @@
+﻿<flash_project name="~talk_happy" version="1">
+	<project_file path="./~talk_happy.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./talk_happy_fla/mouth_1.as" filetype="as"/>
+</flash_project>
