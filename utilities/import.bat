@@ -75,7 +75,7 @@ if !folderfilled!==n (
 	set CFDIR=%cfdir:"=%
 	if /i "!CFDIR!"=="gotodir" start "" "!themefolder!" & goto end
 	if /i "!CFDIR!"=="0" goto end
-	if not exist "!CFDIR!" echo That doesn't seem to exist. & goto reaskforfile
+	if not exist "!CFDIR!" echo ... & goto reaskforfile
 	echo:
 	for %%i in ("!cfdir!") do ( set CFID=%%~nxi )
 	pushd import_these
