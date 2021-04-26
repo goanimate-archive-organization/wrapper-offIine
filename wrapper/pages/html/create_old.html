@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<link rel="icon" href="../../favicon.ico" type="image/png">
+	<title>Theme List</title>
+	<meta name="description" content="Wrapper: Offline's Theme List">
+	<link rel="stylesheet" type="text/css" href="../css/modern-normalize.css">
+	<link rel="stylesheet" type="text/css" href="../css/global.css">
+	<link rel="stylesheet" type="text/css" href="../css/themelist.css">
+</head>
+<body>
+
+<header>
+	<div id="logo_container">
+		<img id="logo" src="../assets/logo.svg" alt="Wrapper: Offline" />
+		<span class="version">VERSIÖN</span>
+	</div>
+	<nav id="headbuttons">
+		<a class="button_small" onclick="document.getElementById('pick_creation').style.display='unset'; document.getElementById('character').style.display='none'; document.getElementById('movie').style.display='none'">BACK</a>
+		<a class="button_small" href="/pages/html/list.html">BACK TO THE VIDEO LIST</a>
+	</nav>
+</header>
+<!--<div class="warning">This is the warning you see under the header.</div>-->
+
+<main id="themelist">
+	<div id="pick_creation" style="display: unset">
+		<h1>What do you want to create?</h1>
+
+		<div id="column1">
+			<div class="theme">
+				<div onclick="document.getElementById('character').style.display='unset'; document.getElementById('pick_creation').style.display='none'">
+					<img src="../assets/themelist/Comedy_World.jpg" alt="Comedy World">
+					<p>Character</p>
+				</div>
+			</div>
+			<div class="theme">
+				<div onclick="document.getElementById('movie').style.display='unset'; document.getElementById('pick_creation').style.display='none'">
+					<img src="../assets/themelist/lil_Peepz.jpg" alt="Lil' Peepz">
+					<p>Movie</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="character" style="display: none">
+		<h1>Select a theme for your character</h1>
+
+		<h2>Standard themes</h2>
+		<div id="column1">
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=family">
+					<img src="../assets/themelist/Comedy_World.jpg" alt="Comedy World">
+					<p>Comedy World</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=cc2">
+					<img src="../assets/themelist/lil_Peepz.jpg" alt="Lil' Peepz">
+					<p>Lil' Peepz</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=anime">
+					<img src="../assets/themelist/Anime.jpg" alt="Anime">
+					<p>Anime</p>
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column3">
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=ninjaanime">
+					<img src="../assets/themelist/Ninja_Anime.jpg" alt="Ninja Anime">
+					<p>Ninja Anime</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=spacecitizen">
+					<img src="../assets/themelist/Space_Citizens.jpg" alt="Space Citizens">
+					<p>Space Citizens</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=family">
+					<img src="../assets/themelist/Chibi_Peepz.jpg" alt="Chibi Peepz">
+					<p>Chibi Peepz</p>
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column4">
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=ninja">
+					<img src="../assets/themelist/Chibi_Ninjas.jpg" alt="Chibi Ninjas">
+					<p>Chibi Ninjas</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=animal">
+					<img src="../assets/themelist/Lil_Petz_World.jpg" alt="Lil' Petz World">
+					<p>Lil' Petz World</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=space">
+					<img src="../assets/themelist/Space_Peepz.jpg" alt="Space Peepz">
+					<p>Space Peepz</p>
+				</a>
+			</div>
+		</div><br>
+
+		<h2>Licensed themes</h2>
+		<div id="column8">
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=botdf">
+					<img src="../assets/themelist/botdf.jpg" alt="Blood on the Dance Floor&#8482;">
+					<div>Blood on the Dance Floor&#8482;</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/cc_browser?themeId=cctoonadv">
+					<img src="../assets/themelist/Toon_Adventure.png" alt="Toon Adventure&#8482;">
+					<p>Toon Adventure&#8482;</p>
+				</a>
+			</div>
+		</div><br />
+
+		<h2>Want some tunes while you make your character?</h2>
+		<p>Listen to
+		<a href="https://drive.google.com/folderview?id=1-o5FmG5Aye9U7qV78vaG3ViMqJSWqk5o">
+			the Remastered GoAnimate Soundtrack!
+		</a>
+		</p>
+		<a id="show-credits" onclick="document.getElementById('credits').style.display='block'; document.getElementById('show-credits').style.display='none'" class="button_small">Show credits</a><br>
+		<p id="credits" style="display:none">
+		Blood On The Dance Floor &copy; Dark Fantasy Records<br>
+		Toon Adventure &copy; The Cartoon Network, Inc., A WarnerMedia Company</p><br />
+	</div>
+
+	<div id="movie" style="display: none">
+		<h1>Select a theme for your movie</h1>
+		
+		<h2>Standard themes</h2>
+		<div id="column1">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=custom">
+					<img src="../assets/themelist/Comedy_World.jpg" alt="Comedy World">
+					<p>Comedy World</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=family">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=cc2">
+					<img src="../assets/themelist/lil_Peepz.jpg" alt="Lil' Peepz">
+					<p>Lil' Peepz</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=cc2">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=retro">
+					<img src="../assets/themelist/Cartoon_Classics.jpg" alt="Cartoon Classics">
+					<p>Cartoon Classics</p>
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column2">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=politic2">
+					<img src="../assets/themelist/Election_2012.jpg" alt="Election 2012">
+					<p>Election 2012</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=stick">
+					<img src="../assets/themelist/Stick_Figure.jpg" alt="Stick Figure">
+					<p>Stick Figure</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=anime">
+					<img src="../assets/themelist/Anime.jpg" alt="Anime">
+					<p>Anime</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=anime">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column3">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=ninjaanime">
+					<img src="../assets/themelist/Ninja_Anime.jpg" alt="Ninja Anime">
+					<p>Ninja Anime</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=ninjaanime">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=spacecitizen">
+					<img src="../assets/themelist/Space_Citizens.jpg" alt="Space Citizens">
+					<p>Space Citizens</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=spacecitizen">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=chibi">
+					<img src="../assets/themelist/Chibi_Peepz.jpg" alt="Chibi Peepz">
+					<p>Chibi Peepz</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=family">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column4">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=ninja">
+					<img src="../assets/themelist/Chibi_Ninjas.jpg" alt="Chibi Ninjas">
+					<p>Chibi Ninjas</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=ninja">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=animal">
+					<img src="../assets/themelist/Lil_Petz_World.jpg" alt="Lil' Petz World">
+					<p>Lil' Petz World</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=animal">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=space">
+					<img src="../assets/themelist/Space_Peepz.jpg" alt="Space Peepz">
+					<p>Space Peepz</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=space">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column5">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=fullenergy">
+					<img src="../assets/themelist/Full_Energy.png" alt="Full Energy">
+					<div>Full Energy</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=politic">
+					<img src="../assets/themelist/Politics_and_Celebrity.png" alt="Politics & Celebrity">
+					<div>Politics & Celebrity</div>
+				</a>
+			</div>
+		</div><br>
+
+		<h2>Made-for-business themes*</h2>
+		<div id="column6">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=bizmodels">
+					<img src="../assets/themelist/Business_Models.jpg" alt="Business Models">
+					<p>Business Models</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=sticklybiz">
+					<img src="../assets/themelist/Stickly_Business.jpg" alt="Stickly Business">
+					<p>Stickly Business</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=infographics">
+					<img src="../assets/themelist/businessAsVisual.jpg" alt="Video Infographics">
+					<p>Video Infographics</p>
+				</a>
+			</div>
+		</div><br>
+		<p>*For legal reasons, these are the only "business themes" included.</p><br>
+
+		<h2>Seasonal themes</h2>
+		<div id="column7">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=christmas">
+					<img src="../assets/themelist/Holiday_and_Seasonal.png" alt="Holiday & Seasonal">
+					<div>Holiday & Seasonal</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=monstermsh">
+					<img src="../assets/themelist/Monsters_Mayhem.png" alt="Monsters Mayhem">
+					<div>Monsters Mayhem</div>
+				</a>
+			</div>
+		</div><br>
+
+		<h2>Licensed themes</h2>
+		<div id="column8">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=akon">
+					<img src="../assets/themelist/Akon.jpg" alt="AKON&#8482;">
+					<p>AKON&#8482;</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=ben10">
+					<img src="../assets/themelist/Ben_10.png" alt="Ben 10&#8482;">
+					<p>Ben 10&#8482;</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=botdf">
+					<img src="../assets/themelist/botdf.jpg" alt="Blood on the Dance Floor&#8482;">
+					<div>Blood on the Dance Floor&#8482;</div>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=botdf">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column9">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=bunny">
+					<img src="../assets/themelist/Happy_Bunny.png" alt="It's Happy Bunny&#8482;">
+					<div>It's Happy Bunny&#8482;</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=chowder">
+					<img src="../assets/themelist/Chowder.png" alt="Chowder&#8482;">
+					<div>Chowder&#8482;</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=domo">
+					<img src="../assets/themelist/Domo.png" alt="Domo&#8482;">
+					<div>Domo&#8482;</div>
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column10">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=monkeytalk">
+					<img src="../assets/themelist/SuperRica_&_Rashy.png" alt="SuperRica & Rashy&#8482;">
+					<div>SuperRica & Rashy&#8482;</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=sf">
+					<img src="../assets/themelist/Street_Fighter.png" alt="Street Fighter&#8482;">
+					<div>Street Fighter&#8482;</div>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=startrek">
+					<img src="../assets/themelist/Star_Trek_Quags.JPG" alt="Star Trek&#8482; Quogs">
+					<div>Star Trek&#8482; Quogs</div>
+				</a>
+			</div>
+		</div><br>
+
+		<div id="column11">
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=toonadv">
+					<img src="../assets/themelist/Toon_Adventure.png" alt="Toon Adventure&#8482;">
+					<p>Toon Adventure&#8482;</p>
+				</a>
+				<a href="http://localhost:4343/cc_browser?themeId=cctoonadv">
+					<img src="../assets/themelist/cc.png" alt="Create a character" width="10%" height="10%">
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=underdog">
+					<img src="../assets/themelist/UnderDog.png" alt="Underdog&#8482;">
+					<p>Underdog&#8482;</p>
+				</a>
+			</div>
+			<div class="theme">
+				<a href="http://localhost:4343/go_full?tray=willie">
+					<img src="../assets/themelist/Willie_Nelson.jpg" alt="Willie Nelson&#8482;">
+					<p>Willie Nelson&#8482;</p>
+				</a>
+			</div>
+		</div><br>
+		<div class="theme">
+			<a href="http://localhost:4343/go_full?tray=zimmertwins">
+				<img src="../assets/themelist/Zimmer_Twins.jpg" alt="Zimmer Twins&#8482;">
+				<p>Zimmer Twins&#8482;</p>
+			</a>
+		</div><br>
+
+		<h2>Developer themes*</h2>
+		<div class="theme">
+			<a href="http://localhost:4343/go_full?tray=street">
+				<img src="../assets/themelist/Street.png" alt="Street">
+				<p>Street</p>
+			</a>
+		</div>
+		<div class="theme">
+			<a href="http://localhost:4343/go_full?tray=yme">
+				<img src="../assets/themelist/yme.png" alt="yme babe theme">
+				<p>yme</p>
+			</a>
+		</div><br>
+		<p>*The developer themes were made during the early days of the original LVM, and there's hardly anything in them.</p><br><br>
+
+		<h2>Want some tunes while you make your video?</h2>
+		<p>Listen to
+		<a href="https://drive.google.com/folderview?id=1-o5FmG5Aye9U7qV78vaG3ViMqJSWqk5o">
+			the Remastered GoAnimate Soundtrack!
+		</a>
+		</p>
+		<a id="show-credits" onclick="document.getElementById('credits').style.display='block'; document.getElementById('show-credits').style.display='none'" class="button_small">Show credits</a><br>
+		<p id="credits" style="display:none">AKON &copy; Akonik Label Group/BMG/Republic Records<br>
+		Ben 10 &copy; The Cartoon Network, Inc., A WarnerMedia Company<br>
+		Blood On The Dance Floor &copy; Dark Fantasy Records<br>
+		It's Happy Bunny &copy; Jim Benton<br>
+		Chowder &copy; The Cartoon Network Inc., A WarnerMedia Company<br>
+		Domo &copy; NHK<br>
+		SuperRica & Rashy &copy; Dark Horse Comics<br>
+		Street Fighter &copy; CAPCOM<br>
+		Star Trek &copy; ViacomCBS<br>
+		Toon Adventure &copy; The Cartoon Network, Inc., A WarnerMedia Company<br>
+		Underdog &copy; DreamWorks Classics<br>
+		Willie Nelson &copy; RCA Records/Atlantic Records/Columbia Records<br>
+		Zimmer Twins &copy; Lost The Plot Productions, LLC/Zinc Roe</p><br>
+	</div>
+</main>
+
+<footer>
+	<nav id="foot-left">
+		<a href="https://localhost:4664/faq.html">FAQ</a>
+		<a href="https://discord.gg/DvbQAdTmVS">GoAnimate City</a>
+		<a href="https://discord.gg/yhGAetN">Wrapper Hub Discord</a>
+	</nav>
+
+	<nav id="foot-right">
+		<a href="https://localhost:4664">Server Page</a>
+		<a href="https://localhost:4664/caillou.html">Caillou</a>
+    <a href="https://localhost:4664/2epik4u.html">2epik4u</a>
+	</nav>
+</footer>
+
+</body>
+
+</html>
