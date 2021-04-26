@@ -416,6 +416,7 @@
 <sound id="Pull_Me_Down.mp3" name="Pull_Me_Down" subtype="bgmusic" duration="175098" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Egzod_Maestro_Chives_Royalty_ft_Neoni.mp3" name="Egzod_Maestro_Chives_Royalty_ft_Neoni" subtype="bgmusic" duration="223635" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="BroadcastNews.swf" name="BroadcastNews" subtype="bgmusic" duration="1000" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
-	<prop id="BroadcastNews.swf" name="BroadcastNews" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+<prop id="BroadcastNews.swf" name="BroadcastNews" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="Find_You.mp3" name="Find_You" subtype="bgmusic" duration="174106" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
