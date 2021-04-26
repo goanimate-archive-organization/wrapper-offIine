@@ -13,6 +13,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Fixed
   - Goserver_js-en_US.json.gz.json Deletion.
   - Create.html DON'T messed up.
+  - Truncated themelist TURNED OFF!
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
