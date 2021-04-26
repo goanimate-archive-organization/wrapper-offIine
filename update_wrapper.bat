@@ -3,6 +3,7 @@
 :: Author: xomdjl_#1337 (ytpmaker1000@gmail.com)
 
 echo Welcome to the Wrapper: Offline updater.
+popd
 echo:
 echo This will update your copy of Wrapper: Offline to
 echo the latest build using Git.
