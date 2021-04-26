@@ -19588,6 +19588,9 @@
     <component type="hair" id="pony6" path="pony6" name="pony6" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
+    <component type="hair" id="frankenstein" path="frankenstein" name="frankenstein" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
     <component type="mustache" id="010" path="010" name="010" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
