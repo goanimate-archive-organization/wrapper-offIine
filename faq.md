@@ -59,7 +59,7 @@ Every time you want to start:
 3. Open your preferred browser and enter localhost:4343 in the address bar.
 
 ### Can I make Wrapper: Offline smaller?
-The current size is ~1.5 GB. The base download can't be much smaller without being incomplete, but there a few steps you can take if you absolutely need more space.
+The current size is ~6 GB. The base download can't be much smaller without being incomplete, but there a few steps you can take if you absolutely need more space.
 #### System cleanout tips (Recommended)
 1. If you're using Windows, you can run <https://old.reddit.com/r/TronScript/> overnight to clean out and potentially speed up your computer. This is a reputable script that automates many things that cleanup guides and technicians would do.
 2. If you're using Linux, you can run <https://www.bleachbit.org> to clean out your computer.
