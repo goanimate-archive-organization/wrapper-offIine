@@ -149,4 +149,3 @@ dist
 # VEGAS audio waveform peak files
 *.sfk
 *.sfap0
-utilities/config.bat
