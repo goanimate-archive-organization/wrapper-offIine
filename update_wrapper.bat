@@ -15,7 +15,7 @@ if "%GITPULL%"=="1" (
 	if not exist ".git" (
 		echo No .git folder, eh?
 		PING -n 4 127.0.0.1>nul
-		echo You were supposed to download it using THE BULLSHIT INSTALLER^!
+		echo You were supposed to download it using THE INSTALLER^!
 		PING -n 4 127.0.0.1>nul
 		set GITPULL=
 	) else (
@@ -30,12 +30,10 @@ if "%GITPULL%"=="1" (
 	)
 )
 if "%GITPULL%"=="" (
-	echo NO FUCKING UPDATE FOR FUCKING YOU^!!!
+	echo NO UPDATE FOR YOU^^!
 	PING -n 5 127.0.0.1>nul
-	echo COME BACK 99 HETAMIGAROSAWATILLAMAKATILLION FUCKING SHITTY NIGGA ETERNITIES^!!!
+	echo COME BACK, ONE YEAR^^!
 	PING -n 4 127.0.0.1>nul
-	echo: ALL WE HAD TO DO WAS FOLLOW THE INSTALLER CJ!
-	PING -n 4 127.0.0.1>nul
-	echo:	
-	pause & exit
+	echo:
+	pause
 )

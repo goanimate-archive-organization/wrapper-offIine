@@ -1035,8 +1035,8 @@ goto wrapperidle
 
 :updategit
 echo Updating W:O...
-popd
-call upgrade_wrapper_git.bat
+cls
+call update_wrapper.bat
 cls
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^)
 goto wrapperstartedcls
