@@ -21109,6 +21109,9 @@
     <component type="beard" id="008" path="008" name="008" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
+    <component type="beard" id="chinstrap" path="chinstrap" name="chinstrap" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
     <component type="mustache" id="012" path="012" name="012" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
