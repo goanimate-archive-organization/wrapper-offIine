@@ -11,7 +11,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Changed
   - The First Noel is now Egzod & Maestro Chives - Royalty (ft. Neoni) because l hate that song
 ### Fixed
-  - Goserver_js-en_US.json.gz.json Deletion.
+  - reset_install.bat Deletion.
   - Create.html DON'T messed up.
   - Truncated themelist TURNED OFF! because I WANT THAT THEMES!!!
 
