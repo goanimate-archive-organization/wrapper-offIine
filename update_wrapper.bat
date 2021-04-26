@@ -30,9 +30,9 @@ if "%GITPULL%"=="1" (
 	)
 )
 if "%GITPULL%"=="" (
-	echo NO UPDATE FOR YOU^^!
+	echo NO UPDATE FOR YOU^!
 	PING -n 5 127.0.0.1>nul
-	echo COME BACK, ONE YEAR^^!
+	echo COME BACK, ONE YEAR^!
 	PING -n 4 127.0.0.1>nul
 	echo:
 	pause
