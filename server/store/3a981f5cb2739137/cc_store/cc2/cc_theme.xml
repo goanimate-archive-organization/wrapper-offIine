@@ -2726,6 +2726,7 @@
         <library type="GoBehindBody" id="008" path="008" name="008" thumb="008_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="015" path="015" name="015" thumb="015_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="029" path="029" name="029" thumb="029_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
+        <library type="GoBehindBody" id="031" path="031" name="031" thumb="031_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="pikachu_tail" path="pikachu_tail" name="pikachu_tail" thumb="pikachu_tail_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="skunk_tail" path="skunk_tail" name="skunk_tail" thumb="skunk_tail_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="unusually_long_cat_tail" path="unusually_long_cat_tail" name="unusually_long_cat_tail" thumb="unusually_long_cat_tail_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
