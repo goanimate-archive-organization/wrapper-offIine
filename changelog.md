@@ -15,6 +15,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Create.html DON'T messed up.
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
+## Build 12
 ### Added
   - Basilisk
   - Exporting workaround using FFMPEG, Avidemux and some virtual drivers
@@ -38,6 +39,11 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Importing script not being able to add indenting to the XML
   - Included FFDec timebombed
   - A significant amount of XML corruption glitches thanks to the upgrade
+## Build 18
+### Changed
+  - Imported Assets and Community Library no longer shows the "common" assets
+### Fixed
+  - CC Browser loading Comedy World no matter what
 
 ## Version 1.2.3 - 2021-03-06 - i am HUNGRY FOR UPDATES!!!
 ### Added
