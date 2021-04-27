@@ -100,7 +100,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo:
 	echo Please enter your movie ID when found.
 	echo It should be in this format: m-%RANDOM%
-	echo
+	echo:
 	echo IMPORTANT: DO NOT INCLUDE ".xml" OR THE ZEROS
 	echo IN THE INPUT. MAKE SURE TO SHORTEN "movie" TO "m" TOO.
 	echo:
@@ -177,7 +177,7 @@ if not exist "%PROGRAMFILES%\Screen Capturer Recorder" (
 			echo:
 			echo Once you're finished installing...
 			pause
-			taskkill /f /im "Setup.Screen.Capturer.Recorder.v0.12.11.exe"
+			taskkill /f /im "Setup.Screen.Capturer.Recorder.v0.12.11.exe" >nul 2>&1
 			echo Drivers are already installed>%tmp%\srdriversinst.txt
 			goto render_step1
 		)
@@ -217,7 +217,7 @@ echo:
 set /p WHICHSTEP= Option: 
 echo:
 if %WHICHSTEP%==1 (
-	taskkill /im avidemux.exe
+	taskkill /im avidemux.exe >nul 2>&1
 	goto render_step2
 ) else if %WHICHSTEP%==2 (
 	goto render_step3
@@ -268,7 +268,7 @@ if %BROWSERCHOICE%==1 (
 )
 
 echo:
-taskkill /im avidemux.exe
+taskkill /im avidemux.exe >nul 2>&1
 cls
 echo As you can see, the movie won't play right away. That's normal.
 echo:
@@ -285,7 +285,7 @@ start ffmpeg\ffmpeg.exe -rtbufsize 150M -f dshow -framerate 25 -i video="screen-
 echo:
 echo When you're finished recording,
 pause
-taskkill /im ffmpeg.exe
+taskkill /im ffmpeg.exe >nul 2>&1
 goto render_step2
 
 :render_step2
