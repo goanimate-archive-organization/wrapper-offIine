@@ -4459,7 +4459,7 @@
 	<char id="325084300" name="GA4S Strong Man" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GA4S Stock Characters</tags>
 	</char>
-
+	
 	<char id="327412169" enc_asset_id="0nmQZ8bWBt5g" name="GoTube" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_gotube,_GoTube,_free,_cat:GoAnimators</tags>
 	</char>
@@ -4481,7 +4481,7 @@
 	<char id="400001042" name="NathanSB (SaturnBoi)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
-	<char id="327764259" name="Tbone Animate" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001037" name="Tbone Animate" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
 	<char id="327764372" name="African Vulture" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
@@ -4533,17 +4533,32 @@
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
 
+	<char id="327068826" name="Benson (Creator of Wrapper Offline & Helper with Mega CW 2.0)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,wocredits,mcwcredits,watchbensononyoutube,_free,_cat:The Credits</tags>
+	</char>
 	<char id="400001006" name="GoTube (Creator of Mega CW & Mega CW 2.0)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:The Credits</tags>
+		<tags>family,wocredits,mcwcredits,_free,_cat:The Credits</tags>
 	</char>
-	<char id="327068826" name="benson (Creator of Wrapper Offline & Helper with Mega CW 2.0)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:The Credits</tags>
+	<char id="400001007" name="2Epik4u (Mega CW Beta Tester & Supporter)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001007" name="2Epik4u (Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:The Credits</tags>
+	<char id="400001013" name="GoTest334 (Mega CW Beta Tester)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001013" name="GoTest334 (Beta Tester)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:The Credits</tags>
+	<char id="400001035" name="Baby Epik" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
+	</char>
+	<char id="400001036" name="Daddy GoTest334" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
+	</char>
+	<char id="400001038" name="Mommy Alison" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
+	</char>
+	<char id="400001041" name="Uncie benson" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
+	</char>
+	<char id="400001040" name="Lemonations GoTest Cusion" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
 	</char>
 
 	<char id="327412169" name="Made by GoTube" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
