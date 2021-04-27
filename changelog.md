@@ -31,6 +31,8 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Toggle for debug mode
   - Balabolka (see faq.html on how to use the files generated with it)
   - Better support for Trident-based browsers (like IE and Maxthon)
+  - Backup/restore tool
+  - Action pack selector
 ### Changed
   - Minor changes to the launcher (version string and crap)
   - Improved CSS
