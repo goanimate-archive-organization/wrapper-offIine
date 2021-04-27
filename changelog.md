@@ -8,6 +8,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Custom Assets like Comedy World, cc2 , chibi
   - Wrapper Online Reborn Stuff
   - Themelist is at Premade folder
+  - GoTest334 family
 ### Changed
   - The First Noel is now Egzod & Maestro Chives - Royalty (ft. Neoni) because l hate that song
 ### Fixed
