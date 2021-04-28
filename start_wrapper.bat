@@ -1220,7 +1220,7 @@ if !VERBOSEWRAPPER!==y (
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe /F >nul 2>&1
+			TASKKILL /IM chromium.exe >nul 2>&1
 		)
 		if !INCLUDEDBASILISK!==y ( 
 			TASKKILL /IM "utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe" /F >nul 2>&1
@@ -1236,7 +1236,7 @@ if !VERBOSEWRAPPER!==y (
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe /F 2>nul
+			TASKKILL /IM chromium.exe 2>nul
 		)
 		if !INCLUDEDBASILISK!==y ( 
 			TASKKILL /IM utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F 2>nul
@@ -1268,7 +1268,7 @@ if !CEPSTRAL!==n (
 	PING -n 3 127.0.0.1>nul
 )
 if !INCLUDEDCHROMIUM!==y (
-	TASKKILL /IM chromium.exe /F >nul 2>&1
+	TASKKILL /IM chromium.exe >nul 2>&1
 	echo UNGOOGLED CHROMIUM COMPLETELY OBLITERATED
 	PING -n 3 127.0.0.1>nul
 )
