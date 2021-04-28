@@ -422,6 +422,7 @@
 <prop id="cupcake.swf" name="cupcake" holdable="1" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="zap_apple.swf" name="zap_apple" holdable="1" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="parasprite.swf" name="parasprite" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
-	<prop id="twinkling_balloon.swf" name="twinkling_balloon" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+<prop id="twinkling_balloon.swf" name="twinkling_balloon" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="Stay_Or_Be_Alone.mp3" name="Stay_Or_Be_Alone" subtype="bgmusic" duration="185103" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
