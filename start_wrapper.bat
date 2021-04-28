@@ -820,7 +820,7 @@ echo Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) running
 echo A project from VisualPlugin adapted by the Wrapper: Offline Team
 echo:
 if !VERBOSEWRAPPER!==n ( echo DON'T CLOSE THIS WINDOW^^! Use the quit option ^(0^) when you're done. )
-if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the two extra CMD windows for extra output. )
+if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the extra CMD windows for extra output. )
 if !DRYRUN!==y ( echo Don't forget, nothing actually happened, this was a dry run. )
 if !JUSTIMPORTED!==y ( echo Note: You'll need to reload the editor for your file to appear. )
 :: Hello, code wanderer. Enjoy seeing all the secret options easily instead of finding them yourself.
