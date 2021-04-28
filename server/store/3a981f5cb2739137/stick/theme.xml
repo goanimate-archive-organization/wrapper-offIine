@@ -2425,6 +2425,16 @@
 	<c_area oc="">sfOutline</c_area>
 </c_parts>
 	</prop>
+	<prop id="glasses.swf" name="Glasses" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="8141" money="0" sharing="0">
+		<colorset enable="Y" aid="8142">
+	<color r="sfOutline">0x000000</color>
+	<color r="sfHeadProp">0xFFFFFF</color>
+</colorset>
+		<c_parts enable="Y">
+	<c_area oc="">sfHeadProp</c_area>
+	<c_area oc="">sfOutline</c_area>
+</c_parts>
+	</prop>	
 	<prop id="029.swf" name="crown" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="7631" money="0" sharing="0">
 		<colorset enable="Y" aid="7632">
 	<color r="sfOutline">0x000000</color>
@@ -2475,6 +2485,16 @@
 	<c_area oc="">sfOutline</c_area>
 </c_parts>
 	</prop>
+	<prop id="daddyglasses.swf" name="Daddy Pig Glasses" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="7635" money="0" sharing="0">
+		<colorset enable="Y" aid="7636">
+	<color r="sfOutline">0x000000</color>
+	<color r="sfHeadProp">0xFFFFFF</color>
+</colorset>
+		<c_parts enable="Y">
+	<c_area oc="">sfHeadProp</c_area>
+	<c_area oc="">sfOutline</c_area>
+</c_parts>
+	</prop>	
 	<prop id="super_saiyajin03_scouter.swf" name="Scouter" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="8147" money="0" sharing="0">
 		<colorset enable="Y" aid="8148">
 	<color r="sfOutline">0x000000</color>
