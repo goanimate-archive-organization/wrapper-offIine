@@ -10772,6 +10772,50 @@
             <state id="sit" filename="sit.swf"/>
             <state id="walk" filename="walk.swf"/>
         </component>
+        <component type="lower_body" id="adam_pony7" path="adam_pony7" name="adam_pony7" thumb="thumbnail.swf" display_order="11" money="0" sharing="0" enable="Y">
+            <state id="dance" filename="dance.swf"/>
+            <state id="default" filename="default.swf"/>
+            <state id="excited" filename="excited.swf"/>
+            <state id="fearful" filename="fearful.swf"/>
+            <state id="kneel_down" filename="kneel_down.swf"/>
+            <state id="laugh" filename="laugh.swf"/>
+            <state id="run" filename="run.swf"/>
+            <state id="sit" filename="sit.swf"/>
+            <state id="walk" filename="walk.swf"/>
+        </component>
+        <component type="lower_body" id="adam_pony8" path="adam_pony8" name="adam_pony8" thumb="thumbnail.swf" display_order="72" money="0" sharing="0" enable="Y">
+            <state id="dance" filename="dance.swf"/>
+            <state id="default" filename="default.swf"/>
+            <state id="excited" filename="excited.swf"/>
+            <state id="fearful" filename="fearful.swf"/>
+            <state id="kneel_down" filename="kneel_down.swf"/>
+            <state id="laugh" filename="laugh.swf"/>
+            <state id="run" filename="run.swf"/>
+            <state id="sit" filename="sit.swf"/>
+            <state id="walk" filename="walk.swf"/>
+        </component>
+        <component type="lower_body" id="adam_pony9" path="adam_pony9" name="adam_pony9" thumb="thumbnail.swf" display_order="11" money="0" sharing="0" enable="Y">
+            <state id="dance" filename="dance.swf"/>
+            <state id="default" filename="default.swf"/>
+            <state id="excited" filename="excited.swf"/>
+            <state id="fearful" filename="fearful.swf"/>
+            <state id="kneel_down" filename="kneel_down.swf"/>
+            <state id="laugh" filename="laugh.swf"/>
+            <state id="run" filename="run.swf"/>
+            <state id="sit" filename="sit.swf"/>
+            <state id="walk" filename="walk.swf"/>
+        </component>
+        <component type="lower_body" id="adam_pony10" path="adam_pony10" name="adam_pony10" thumb="thumbnail.swf" display_order="72" money="0" sharing="0" enable="Y">
+            <state id="dance" filename="dance.swf"/>
+            <state id="default" filename="default.swf"/>
+            <state id="excited" filename="excited.swf"/>
+            <state id="fearful" filename="fearful.swf"/>
+            <state id="kneel_down" filename="kneel_down.swf"/>
+            <state id="laugh" filename="laugh.swf"/>
+            <state id="run" filename="run.swf"/>
+            <state id="sit" filename="sit.swf"/>
+            <state id="walk" filename="walk.swf"/>
+        </component>
         <component type="lower_body" id="adam_werewolf" path="adam_werewolf" name="adam_werewolf" thumb="thumbnail.swf" display_order="72" money="0" sharing="0" enable="Y">
             <state id="dance" filename="dance.swf"/>
             <state id="default" filename="default.swf"/>
@@ -20195,6 +20239,18 @@
     <component type="hair" id="pony6" path="pony6" name="pony6" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
+    <component type="hair" id="pony7" path="pony7" name="pony7" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="hair" id="pony8" path="pony8" name="pony8" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="hair" id="pony9" path="pony9" name="pony9" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="hair" id="pony10" path="pony10" name="pony10" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
     <component type="hair" id="frankenstein" path="frankenstein" name="frankenstein" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
@@ -21126,6 +21182,9 @@
         <state id="default" filename="default.swf"/>
     </component>
     <component type="facedecoration" id="2004" path="2004" name="2004" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="facedecoration" id="celestia_necklace" path="celestia_necklace" name="celestia_necklace" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
     <component type="beard" id="007" path="007" name="007" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
