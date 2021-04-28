@@ -1,8 +1,8 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
 :: License: MIT
-set WRAPPER_VER=1.4.0
-set WRAPPER_BLD=6
+set WRAPPER_VER=1.3.0
+set WRAPPER_BLD=18
 title Wrapper: Offline v%WRAPPER_VER% ^(build %WRAPPER_BLD%^) [Initializing...]
 
 ::::::::::::::::::::
@@ -660,7 +660,7 @@ if !HTTPSCERT_DETECTED!==n (
 				)
 			) else (
 				pushd utilities\ungoogled-chromium
-				start chrome.exe --user-data-dir=the_profile https://localhost:4664/certbypass.html --allow-outdated-plugins >nul
+				start chromium.exe --user-data-dir=the_profile https://localhost:4664/certbypass.html --allow-outdated-plugins >nul
 				popd
 			)
 			pause
@@ -785,9 +785,9 @@ if !INCLUDEDCHROMIUM!==y (
 		echo Opening Wrapper: Offline using included Chromium...
 		pushd utilities\ungoogled-chromium
 		if !APPCHROMIUM!==y (
-			if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
+			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 		) else (
-			if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
+			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
 		)
 	)
 )
@@ -953,9 +953,9 @@ if !INCLUDEDCHROMIUM!==y (
 		echo Opening Wrapper: Offline using included Chromium...
 		pushd utilities\ungoogled-chromium
 		if !APPCHROMIUM!==y (
-			if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
+			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 		) else (
-			if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
+			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
 		)
 	)
 	)
@@ -992,9 +992,9 @@ if !INCLUDEDBASILISK!==n (
 	echo Opening the server page using included Chromium...
 	pushd utilities\ungoogled-chromium
 	if !APPCHROMIUM!==y (
-		if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile --app=https://localhost:4664 --allow-outdated-plugins )
+		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=https://localhost:4664 --allow-outdated-plugins )
 	) else (
-		if !DRYRUN!==n ( start chrome.exe --user-data-dir=the_profile https://localhost:4664 --allow-outdated-plugins )
+		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile https://localhost:4664 --allow-outdated-plugins )
 	)
 	)
 	)
@@ -1073,8 +1073,8 @@ goto wrapperidle
 :: flows straight to restart below
 
 :restart
-TASKKILL /IM node.exe /F
-if !CEPSTRAL!==n ( TASKKILL /IM php.exe /F )
+TASKKILL /IM node.exe /F >nul 2>&1
+if !CEPSTRAL!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
 start "" /wait /B "%~F0" point_insertion
 exit
 
@@ -1212,18 +1212,18 @@ title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) [Shutting down...]
 
 :: Shut down Node.js, PHP and http-server
 if !VERBOSEWRAPPER!==y (
-	if !DRYRUN!==n ( TASKKILL /IM node.exe /F )
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 	if !DRYRUN!==n ( 
 		if !CEPSTRAL!==n ( 
-			TASKKILL /IM php.exe /F
+			TASKKILL /IM php.exe /F >nul 2>&1
 		)
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM %CD%\utilities\ungoogled-chromium\chrome.exe /F
+			TASKKILL /IM chromium.exe /F >nul 2>&1
 		)
 		if !INCLUDEDBASILISK!==y ( 
-			TASKKILL /IM %CD%\utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F
+			TASKKILL /IM "utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe" /F >nul 2>&1
 		)
 	)
 	echo:
@@ -1236,10 +1236,10 @@ if !VERBOSEWRAPPER!==y (
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM %CD%\utilities\ungoogled-chromium\chrome.exe /F 2>nul
+			TASKKILL /IM chromium.exe /F 2>nul
 		)
 		if !INCLUDEDBASILISK!==y ( 
-			TASKKILL /IM %CD%\utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F 2>nul
+			TASKKILL /IM utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F 2>nul
 		)
 	)
 )
@@ -1259,21 +1259,21 @@ PING -n 3 127.0.0.1>nul
 color 9b
 echo BEWEWEWEWWW PSSHHHH KSHHHHHHHHHHHHHH
 PING -n 3 127.0.0.1>nul
-TASKKILL /IM node.exe /F
+TASKKILL /IM node.exe /F >nul 2>&1
 echo NODE DOT JS ANNIHILATED
 PING -n 3 127.0.0.1>nul
 if !CEPSTRAL!==n (
-	TASKKILL /IM php.exe /F
+	TASKKILL /IM php.exe /F >nul 2>&1
 	echo PHP DESTROYED
 	PING -n 3 127.0.0.1>nul
 )
 if !INCLUDEDCHROMIUM!==y (
-	TASKKILL /IM %CD%\utilities\ungoogled-chromium\chrome.exe /F
+	TASKKILL /IM chromium.exe /F >nul 2>&1
 	echo UNGOOGLED CHROMIUM COMPLETELY OBLITERATED
 	PING -n 3 127.0.0.1>nul
 )
 if !INCLUDEDBASILISK!==y (
-	TASKKILL /IM %CD%\utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F
+	TASKKILL /IM %CD%\utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F >nul 2>&1
 	echo BASILISK COMPLETELY OBLITERATED
 	PING -n 3 127.0.0.1>nul
 )
