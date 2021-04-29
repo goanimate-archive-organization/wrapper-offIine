@@ -117,7 +117,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 ) else if %FINDMOVIEIDCHOICE%==3 (
 	echo:
 	echo Opening the video list in the included Chromium...
-	start ungoogled-chromium\chrome.exe --allow-outdated-plugins --app="http://localhost:%PORT%"
+	start ungoogled-chromium\chromium.exe --allow-outdated-plugins --app="http://localhost:%PORT%"
 	echo:
 	echo Please enter your movie ID when found.
 	echo It should be in this format: m-%RANDOM%
@@ -252,7 +252,7 @@ if %BROWSERCHOICE%==1 (
 ) else if %BROWSERCHOICE%==2 (
 	echo Opening your movie in Chromium...
 	PING -n 3 127.0.0.1>nul
-	start ungoogled-chromium\chrome.exe --allow-outdated-plugins --app="http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
+	start ungoogled-chromium\chromium.exe --allow-outdated-plugins --app="http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
 ) else if %BROWSERCHOICE%==3 (
 	echo Opening your movie in your custom set browser...
 	PING -n 3 127.0.0.1>nul
