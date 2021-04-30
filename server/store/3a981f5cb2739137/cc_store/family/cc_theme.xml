@@ -21187,6 +21187,9 @@
     <component type="facedecoration" id="celestia_necklace" path="celestia_necklace" name="celestia_necklace" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
+    <component type="facedecoration" id="heartfacedecoration" path="heartfacedecoration" name="heartfacedecoration" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
     <component type="beard" id="007" path="007" name="007" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
