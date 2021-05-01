@@ -118,7 +118,7 @@ As long as it allows you to run Flash, yes. You can change some options in setti
 ChromeOS is very heavily locked down, and supporting it would likely be troublesome to make, especially since Linux support would need to be made first. It might end up no longer working by the end of 2020 anyway, since Flash will be discontinued and there may not be a way to install it on ChromeOS past that point. Feel free to try it yourself though.
 
 ### iOS or Android?
-Get the MotherFucking (Puffin) browser and get <https://goanimate.herokuapp.com/>. if you want node? just get Android.js or JXcore.
+Use heroku, and Puffin Browser.
 
 ### Windows Phone?
 go back to 3 years old.
