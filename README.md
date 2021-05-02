@@ -1,4 +1,4 @@
-# Wrapper: Offline 1.4.0
+# Wrapper: Offline 1.3.3
 After learning that GoAnimate Wrapper (a project by VisualPlugin) would be shut down, Wrapper: Offline was created. (simply called "Offline" for the rest of this page) Unlike the original project, Offline can not be shut down or "patched". You have the files all on your computer. This project is important for historical and archival purposes, as the ability to use this legacy editor and themes would be completely gone without it. Besides simply emulating the original Flash editor, some additional features and improvements have been made. And Offline will continue to get additional updates in the future.
 
 ## Running / Installation
