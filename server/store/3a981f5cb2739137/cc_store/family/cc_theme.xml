@@ -20542,6 +20542,9 @@
     <component type="ear" id="werewolf" path="werewolf" name="werewolf" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
+    <component type="ear" id="gauged" path="gauged" name="gauged" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
     <component type="facedecoration" id="013" path="013" name="013" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
@@ -21197,6 +21200,9 @@
         <state id="default" filename="default.swf"/>
     </component>
     <component type="facedecoration" id="heartfacedecoration" path="heartfacedecoration" name="heartfacedecoration" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="facedecoration" id="sombrero" path="sombrero" name="sombrero" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
     <component type="beard" id="007" path="007" name="007" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
