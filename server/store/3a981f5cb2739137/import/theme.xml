@@ -426,6 +426,7 @@
 <sound id="Stay_Or_Be_Alone.mp3" name="Stay_Or_Be_Alone" subtype="bgmusic" duration="185103" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="cider_cup_empty.swf" name="cider_cup_empty" holdable="1" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="cider_cup_full.swf" name="cider_cup_full" holdable="1" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
-	<sound id="Hit_Save.mp3" name="Hit_Save" subtype="bgmusic" duration="963709" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="Hit_Save.mp3" name="Hit_Save" subtype="bgmusic" duration="963709" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="Let_it_Die.mp3" name="Let_it_Die" subtype="bgmusic" duration="217103" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
