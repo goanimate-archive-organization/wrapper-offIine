@@ -4243,20 +4243,7 @@
         <selection type="mustache" state_id="default"/>
         <selection type="nose" state_id="default"/>
     </facial>
-    <facial id="head_angry4" name="Headache" enable="Y">
-        <selection type="beard" state_id="default"/>
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="angry"/>
-        <selection type="eyebrow" state_id="angry"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="happy"/>
-        <selection type="mustache" state_id="default"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
-    <facial id="head_angry5" name="Female Headache" enable="Y">
+    <facial id="head_angry4" name="Female Headache" enable="Y">
         <selection type="beard" state_id="default"/>
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="angry"/>
@@ -4630,6 +4617,19 @@
         <selection type="glasses" state_id="default"/>
         <selection type="hair" state_id="default"/>
         <selection type="mouth" state_id="shock"/>
+        <selection type="mustache" state_id="default"/>
+        <selection type="nose" state_id="default"/>
+    </facial>
+    <facial id="head_ache" name="Headache" enable="Y">
+        <selection type="beard" state_id="default"/>
+        <selection type="ear" state_id="default"/>
+        <selection type="eye" state_id="asleep"/>
+        <selection type="eyebrow" state_id="asleep"/>
+        <selection type="facedecoration" state_id="default"/>
+        <selection type="faceshape" state_id="default"/>
+        <selection type="glasses" state_id="default"/>
+        <selection type="hair" state_id="default"/>
+        <selection type="mouth" state_id="angry"/>
         <selection type="mustache" state_id="default"/>
         <selection type="nose" state_id="default"/>
     </facial>
