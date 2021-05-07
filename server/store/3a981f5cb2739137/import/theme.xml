@@ -434,6 +434,9 @@
 <sound id="Elektronomia_RUD_Memory.mp3" name="Elektronomia_RUD_Memory" subtype="bgmusic" duration="255059" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Cant_Control_Myself.mp3" name="Cant_Control_Myself" subtype="bgmusic" duration="253937" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Time_Travel.mp3" name="Time_Travel" subtype="bgmusic" duration="219090" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
-	<sound id="More_Plastic_hayve_Feel_Alive.mp3" name="More_Plastic_hayve_Feel_Alive" subtype="bgmusic" duration="182100" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="More_Plastic_hayve_Feel_Alive.mp3" name="More_Plastic_hayve_Feel_Alive" subtype="bgmusic" duration="182100" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<prop id="Basically-Gojuchang-Chicken-Potato.jpg" name="Basically-Gojuchang-Chicken-Potato" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="Elektronomia_Dreams.mp3" name="Elektronomia_Dreams" subtype="bgmusic" duration="254433" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="Elektronomia_Dreamshipitch.mp3" name="Elektronomia_Dreamshipitch" subtype="bgmusic" duration="254448" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
