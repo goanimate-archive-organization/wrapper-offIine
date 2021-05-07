@@ -24,6 +24,10 @@ set OUTPUT_FILE=%OUTPUT_FILENAME%.mp4
 SETLOCAL ENABLEDELAYEDEXPANSION
 set SUBSCRIPT=y
 call config.bat
+set FINDMOVIEIDCHOICE=""
+set CONTFAILRENDER=""
+set BROWSERCHOICE=""
+set ISVIDEOWIDE=0
 if not exist "ffmpeg\ffmpeg.exe" ( goto error )
 if not exist "avidemux\avidemux.exe" ( goto error )
 if "%RESTARTVALUE%"=="1" (
@@ -88,6 +92,7 @@ echo Press 3 to find it in the video list on the included Chromium
 echo Press 4 to find it in the video list on the included Basilisk
 echo Press 5 if you already have your movie ID ready
 echo:
+:MovieChoice
 set /p FINDMOVIEIDCHOICE= Choice:
 goto findMovieId
 
@@ -138,7 +143,12 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo It should be in this format: m-%RANDOM%
 	echo:
 	set /p MOVIEID= Movie ID: 
+) else (
+	echo You must choose a valid option.
+	echo:
+	goto MovieChoice
 )
+
 echo:
 echo Are you continuing a failed render?
 echo:
@@ -196,6 +206,7 @@ echo Press 1 if it's meant to be widescreen.
 echo Press 2 if it's meant to be standard.
 echo:
 :iswidereask
+set ISWIDEPROMPT=0
 set /p ISWIDEPROMPT= Is Wide?:
 if %ISWIDEPROMPT%==1 (
 	set WIDTH=1920
@@ -214,6 +225,7 @@ echo Press 1 if you left off at Step 2 (Avidemux)
 echo Press 2 if you left off at Step 3 (Encoding)
 echo:
 :whichstepreask
+set WHICHSTEP=""
 set /p WHICHSTEP= Option: 
 echo:
 if %WHICHSTEP%==1 (
@@ -242,7 +254,7 @@ echo Press 1 for Basilisk
 echo Press 2 for Chromium
 echo Press 3 for your custom set browser
 echo Press 4 for your default browser
-echo:
+:BrowserSelect
 set /p BROWSERCHOICE= Browser:
 echo:
 if %BROWSERCHOICE%==1 (
@@ -264,7 +276,7 @@ if %BROWSERCHOICE%==1 (
 ) else (
 	echo You're supposed to pick which browser to use. Try again.
 	echo:
-	set /p BROWSERCHOICE= Browser:
+	goto BrowserSelect
 )
 
 echo:
@@ -309,7 +321,10 @@ echo For convenience, we'd recommend saving it to
 echo the utilities\misc\temp folder with the name
 echo "rewriteable.avi".
 echo:
-set /p GOTO_STEP3= Press Enter to go to the next step.
+echo When finished with this step, press any key to continue
+echo to the next step.
+echo:
+pause
 goto render_step3
 
 :render_step3
@@ -323,18 +338,26 @@ echo and then press Enter.
 echo:
 set /p FFMPEGINPUT= AVI:
 echo:
+cls
 echo Is the video widescreen ^(16:9^) or standard ^(14:9^)?
 echo:
 echo Press 1 if it's widescreen. ^(1920x1080^)
 echo Press 2 if it's standard. ^(1680x1080^)
 echo:
+:VideoWideSelect
 set /p ISVIDEOWIDE= Which One?:
 if %ISVIDEOWIDE%==1 (
 	set WIDTH=1920
 ) else if %ISVIDEOWIDE%==2 (
 	set WIDTH=1680
+) else (
+	echo You must choose either widescreen or standard.
+	echo:
+	goto VideoWideSelect
 )
+
 echo:
+cls
 echo How much would you like to increase
 echo or decrease the volume?
 echo:
@@ -345,6 +368,7 @@ echo by 1.5.
 echo:
 set /p VOLUME= Volume:
 echo:
+cls
 echo Would you like the outro?
 echo:
 echo By default, the outro is on.
@@ -354,6 +378,71 @@ echo Otherwise, press 0.
 echo:
 set /p OUTRO= Response:
 echo:
+cls
+if %DEVMODE%==y (
+	echo ^(Developer mode-exclusive option^)
+	if exist "misc\OriginalOutro16by9.ts" (
+		echo It looks like you still have a custom outro
+		echo being used.
+		echo:
+		echo Would you like to reset the outro back to the
+		echo default one?
+		echo:
+		echo Press 1 if you'd like to reset it.
+		echo Otherwise, press Enter.
+		echo:
+		set /p RESETOUTRO= Response: 
+		echo:
+		if %RESETOUTRO%==1 (
+			pushd misc
+			if not exist "retired_outros" ( mkdir retired_outros )
+			ren Outro16by9.ts RetiredOutro.ts
+			set "last=0"
+			set "filename=retired_outros\RetiredOutro.ts"
+			if exist "retired_outros\RetiredOutro.ts" (
+				for /R %%i in ("retired_outros\RetiredOutro(*).ts") do (
+					for /F "tokens=2 delims=(^)" %%a in ("%%i") do if %%a GTR !last! set "last=%%a"
+				)
+				set/a last+=1
+				set "filename=retired_outros\RetiredOutro(!last!).ts"    
+			)
+			move "RetiredOutro.ts" "%filename%"
+			ren OriginalOutro16by9.ts Outro16by9.ts
+			echo The outro has been resetted back to default.
+			echo:
+			pause
+		)
+		cls
+	)
+	echo Would you like to use a custom outro
+	echo or the default outro?
+	echo:
+	echo Press 1 if you'd like to use a custom outro.
+	echo Otherwise, press Enter.
+	echo:
+	echo ^(Please note this will only affect the TS copy of the
+	echo 16:9 outro. For the 14:9 outro and the MP4 copies, you 
+	echo will have to take care of that manually.^)
+	echo:
+	set /p CUSTOMOUTROCHOICE= Response: 
+	echo:
+	cls
+	if %CUSTOMOUTROCHOICE%==1 (
+		echo Drag the path to your custom outro in here.
+		echo:
+		set /p CUSTOMOUTRO= Path: 
+		echo:
+		cls
+		pushd misc
+		ren Outro16by9.ts OriginalOutro16by9.ts
+		echo Encoding outro to compatible H.264/AAC .TS file with FFMPEG...
+		PING -n 3 127.0.0.1>nul
+		start ffmpeg\ffmpeg.exe -i "%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%"
+		echo Custom outro successfully encoded and added!
+		echo:
+		pause
+	)
+)
 echo Where would you like to output to?
 echo Press Enter to output to the utilities\renders folder.
 echo:
