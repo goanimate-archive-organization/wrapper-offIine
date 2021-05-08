@@ -27,6 +27,8 @@ call config.bat
 set FINDMOVIEIDCHOICE=""
 set CONTFAILRENDER=""
 set BROWSERCHOICE=""
+set VF=""
+set WATERMARKARGS=""
 set ISVIDEOWIDE=0
 if not exist "ffmpeg\ffmpeg.exe" ( goto error )
 if not exist "avidemux\avidemux.exe" ( goto error )
@@ -414,7 +416,11 @@ if %DEVMODE%==y (
 		)
 		cls
 	)
-	echo Would you like to use a custom outro
+	if exist "misc\retired_outros" (
+		echo Would you like to use a new custom outro
+	) else (
+		echo Would you like to use a custom outro
+	)
 	echo or the default outro?
 	echo:
 	echo Press 1 if you'd like to use a custom outro.
@@ -441,6 +447,138 @@ if %DEVMODE%==y (
 		echo Custom outro successfully encoded and added!
 		echo:
 		pause
+	)
+	echo ^(Developer mode-exclusive option^)
+	echo Would you like to use any additional
+	echo FFMPEG video filters?
+	echo:
+	echo Press 1 if you would like to.
+	echo Otherwise, press Enter.
+	echo:
+	set /p VFRESPONSE: Response: 
+	echo:
+	cls
+	if %VFREPONSE%==1 (
+		echo Press 1 to retrieve a list of available A/V filters.
+		echo Otherwise, press Enter if you already have one pulled up.
+		echo:
+		set /p AVFILTERLIST= Response:
+		echo:
+		cls
+		if %AVFILTERLIST%==1 (
+			echo Opening FFMPEG filter list in your default browser...
+			PING -n 3 127.0.0.1>nul
+			start "" "https://ffmpeg.org/ffmpeg-filters.html"
+			echo Opened.
+			PING -n 2 127.0.0.1>nul
+			echo:
+			cls
+		)
+		echo Please place your filter args in here.
+		echo:
+		set /p FILTERARGS= Filter args: 
+		set VF=, %FILTERARGS%
+		echo:
+		cls
+	)
+	if not exist "..\wrapper\static\watermarkON.txt" (
+		echo ^(Developer mode-exclusive option^)
+		echo It appears that you have the watermark disabled.
+		echo:
+		echo Because of this, we'll give you the option to add
+		echo a custom watermark.
+		echo:
+		echo Would you like to add a custom watermark?
+		echo:
+		echo Press 1 if you'd like to.
+		echo Otherwise, press Enter.
+		echo:
+		set /p WATERMARKRESPONSE= Response: 
+		echo:
+		cls
+		if %WATERMARKRESPONSE%==1 (
+			echo Press 1 if your watermark is similar to a screen bug template.
+			echo Press 2 if it's a simple image that you'd usually manually
+			echo place in the corner of the screen.
+			echo:
+			set /p WATERMARKTYPE= Response: 
+			if "%WATERMARKTYPE%"=="1" (
+				set WATERMARKARGS=-filter_complex "overlay=x=(main_w-overlay_w)/2:y=(main_h-overlay_h)/2" 
+				set WMTYPE=BUG
+			)
+			if "%WATERMARKTYPE%=="2" (
+				set WATERMARKARGS=-filter_complex '[1]scale=iw/3:-1[wm];[0][wm]overlay=x=main_w-overlay_w-10:y=main_h-overlay_h-10' 
+				set WMTYPE=CORNER
+			)
+		echo:
+		cls
+		if not exist "misc\watermarks" ( md misc\watermarks & goto askforwatermark )
+		for /f %%A in ('dir /B /A:-D watermarks 2^>nul') do (
+			if "%%A" NEQ "File Not Found" ( goto watermarksdetected )
+		)
+		goto askforwatermark
+	
+		:watermarksdetected
+		cls
+		echo We found some watermarks already used before.
+		echo:
+		dir /B /A:-D misc\watermarks
+		echo:
+		echo If you would like to use any of these
+		echo watermarks, highlight the filename of the
+		echo one you want to use, press Ctrl+C to copy
+		echo the filename to the clipboard, and press
+		echo Ctrl+V to paste the filename in.
+		echo:
+		echo ^(No need to worry about the location, all
+		echo watermarks get copied to a specific location
+		echo and this batch script reads off the folder.^)
+		echo:
+		:importaskretry
+		set /p WMID= Response:
+		echo:
+		if exist "%CD%\misc\watermarks\%WMID%" ( 
+			cls
+		) else ( 
+			goto erroroptionwatermark
+		)
+	
+		:erroroptionwatermark
+		echo That watermark doesn't exist in the directory.
+		echo:
+		echo If you wanna try again, press 1.
+		echo:
+		echo Otherwise, press 2 to manually drag
+		echo your watermark in.
+		echo:
+		:wmoptionreask
+		set /p WMOPTION= Response: 
+		if "%WMOPTION%"=="1" ( goto importaskretry )
+		if "%WMOPTION%"=="2" ( cls & goto askforwatermark )
+		if "%WMOPTION%"=="" ( echo Invalid option. Please try again. & goto wmoptionreask )
+	
+		:askforwatermark
+		cls
+		echo If you're at this step, chances are the "watermarks"
+		echo folder in "misc" doesn't exist or has nothing inside of it.
+		echo:
+		echo Please drag your watermark file in here.
+		echo ^(Transparent PNG is suggested.^)
+		echo:
+		set /p WATERMARK= Path:
+		for %%i in ("%WATERMARK%") do ( 
+			set WMNAME=%%~ni 
+			set WMEXT=%%~nxi
+		)
+		copy "%WATERMARK%" "misc\watermarks\%WMNAME%_%WMTYPE%%WMEXT%"
+		for %%i in ("misc\watermarks\%WMNAME%_%WMTYPE%%WMEXT%") do ( set WMID=misc\watermarks\%WMNAME%_%WMTYPE%%WMEXT% )
+		echo:
+		echo This will be the watermark we're using for this session.
+		echo It will appear in the list of your available custom watermarks too.
+		echo:
+		pause
+		echo:
+		cls
 	)
 )
 echo Where would you like to output to?
@@ -471,7 +609,7 @@ pause
 echo:
 echo Starting ffmpeg...
 echo:
-call ffmpeg\ffmpeg.exe -i "%FFMPEGINPUT%" -vf scale=%WIDTH%:1080 -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
+call ffmpeg\ffmpeg.exe -i "%FFMPEGINPUT%" %WATERMARKARGS%-vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
 echo:
 echo Now, it's time for the next FFMPEG process,
 echo which will encode it to TS, which is
