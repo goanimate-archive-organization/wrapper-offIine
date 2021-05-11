@@ -18,6 +18,12 @@ goto noerror_location
 :error_location
 echo Doesn't seem like this script is in the Wrapper: Offline folder.
 goto end
+:devmodeerror
+echo Ooh, sorry. You have to have developer mode on
+echo in order to access these features.
+echo:
+echo Please turn developer mode on, then try again.
+goto reaskoptionscreen
 :noerror_location
 
 :: Prevents CTRL+C cancelling and keeps window open when crashing
@@ -356,7 +362,25 @@ if "!choice!"=="?9" (
 	goto reaskoptionscreen
 )
 :: Watermark
-if "!choice!"=="10" goto watermarktoggle
+if "!choice!"=="10" (
+	if !DEVMODE!==y (
+		echo ^(This message is only for those with Developer Mode on.^)
+		echo:
+		echo NOTE: If you'd like to use a custom watermark, you
+		echo will need to replace the watermark file hidden somewhere
+		echo in go_full.swf with a different one using JPEXS FFDEC.
+		echo The watermark HAS to be a .swf or it won't work.
+		echo:
+		echo Unless you modify go_full.swf to change the watermark,
+		echo by default it will use the Wrapper: Offline watermark.
+		echo:
+		echo If you prefer to not have a watermark at all and just
+		echo add your watermark in post, that's fine too.
+		echo:
+		pause
+	)
+	goto watermarktoggle
+)
 if "!choice!"=="?10" (
     echo By default, Wrapper: Offline puts a watermark in the corner of the screen to show that it was
     echo made using the software. If you do not want the watermark in the way and you need to use this
@@ -437,6 +461,17 @@ if exist "server\characters\characters.zip" (
         echo you can extract them here. They will still be compressed, just in separate files to be usable.
         goto reaskoptionscreen
     )
+)
+
+if !DEVMODE!==n (
+	if /i "!choice!"=="D1" ( goto devmodeerror )
+	if /i "!choice!"=="?D1" ( goto devmodeerror )
+	if /i "!choice!"=="D2" ( goto devmodeerror )
+	if /i "!choice!"=="?D2" ( goto devmodeerror )
+	if /i "!choice!"=="D3" ( goto devmodeerror )
+	if /i "!choice!"=="?D3" ( goto devmodeerror )
+	if /i "!choice!"=="D4" ( goto devmodeerror )
+	if /i "!choice!"=="?D4" ( goto devmodeerror )
 )
 
 if !DEVMODE!==y (

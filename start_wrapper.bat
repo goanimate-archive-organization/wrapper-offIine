@@ -1,8 +1,8 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
 :: License: MIT
-set WRAPPER_VER=1.3.3
-set WRAPPER_BLD=6
+set WRAPPER_VER=1.3.0
+set WRAPPER_BLD=18
 title Wrapper: Offline v%WRAPPER_VER% ^(build %WRAPPER_BLD%^) [Initializing...]
 
 ::::::::::::::::::::
@@ -25,6 +25,12 @@ goto noerror_location
 :error_location
 echo Doesn't seem like this script is in a Wrapper: Offline folder.
 pause && exit
+:devmodeerror
+echo Ooh, sorry. You have to have developer mode on
+echo in order to access these features.
+echo:
+echo Please turn developer mode on in the settings, then try again.
+goto wrapperidle
 :noerror_location
 
 :: patch detection
@@ -723,16 +729,28 @@ if !VERBOSEWRAPPER!==y (
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 		if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
 		echo:
+		echo Closing any essential batch-scripts being run...
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq HTTP-SERVER HASN'T STARTED" /T>nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq NODE.JS HASN'T STARTED YET" /T >nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq VFProxy PHP Launcher for Wrapper: Offline" /T >nul 2>&1 )
 	) else (
 		echo Closing any existing node apps...
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
+		echo Closing any essential batch-scripts being run...
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq HTTP-SERVER HASN'T STARTED" /T>nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq NODE.JS HASN'T STARTED YET" /T >nul 2>&1 )
 	)
 ) else (
 	if !CEPSTRAL!==n (
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 		if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq HTTP-SERVER HASN'T STARTED" /T>nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq NODE.JS HASN'T STARTED YET" /T >nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq VFProxy PHP Launcher for Wrapper: Offline" /T >nul 2>&1 )
 	) else (
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq HTTP-SERVER HASN'T STARTED" /T>nul 2>&1 )
+		if !DRYRUN!==n ( TASKKILL /F /FI "WindowTitle eq NODE.JS HASN'T STARTED YET" /T >nul 2>&1 )
 	)
 )
 
@@ -928,9 +946,16 @@ if /i "!choice!"=="christmas jones" echo ragein gagein thinks he's so smart, i'l
 if /i "!choice!"=="icy" echo you're being hacked by me and the esa gang right now & goto wrapperidle
 if /i "!choice!"=="horny" echo horny wrapper devs & goto wrapperidle
 :: dev options
-if /i "!choice!"=="amnesia" goto wipe_save
-if /i "!choice!"=="restart" goto restart
-if /i "!choice!"=="folder" goto open_files
+if !DEVMODE!==y (
+	if /i "!choice!"=="amnesia" goto wipe_save
+	if /i "!choice!"=="restart" goto restart
+	if /i "!choice!"=="folder" goto open_files
+)
+if !DEVMODE!==n (
+	if /i "!choice!"=="amnesia" goto devmodeerror
+	if /i "!choice!"=="restart" goto devmodeerror
+	if /i "!choice!"=="folder" goto devmodeerror
+)
 echo Time to choose. && goto wrapperidle
 
 :reopen_webpage
@@ -1074,7 +1099,10 @@ goto wrapperidle
 
 :restart
 TASKKILL /IM node.exe /F >nul 2>&1
+TASKKILL /F /FI "WindowTitle eq HTTP-SERVER HASN'T STARTED" /T>nul 2>&1 )
+TASKKILL /F /FI "WindowTitle eq NODE.JS HASN'T STARTED YET" /T >nul 2>&1 )
 if !CEPSTRAL!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+if !CEPSTRAL!==n ( TASKKILL /F /FI "WindowTitle eq VFProxy PHP Launcher for Wrapper: Offline" /T >nul 2>&1 )
 start "" /wait /B "%~F0" point_insertion
 exit
 
