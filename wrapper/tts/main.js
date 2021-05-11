@@ -246,11 +246,12 @@ module.exports = (voiceName, text) => {
                         path: "/AcaBox/dovaas.php",
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-							Cookie: "AcaBoxLogged=logged; AcaBoxUsername=goaniwrap; acabox=92s39r5vu676g5ekqehbu2o0f2; AcaBoxFirstname=Keegan",
+							"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+							Cookie: "AcaBoxLogged=logged; AcaBoxUsername=goaniwrap; acabox=p21jj8f3gv30hhv0mruvt1fsm3; AcaBoxFirstname=Keegan",
 							Origin: "https://acapela-box.com",
-                            Referer: "https://acapela-box.com/AcaBox/index.php",
+							Referer: "https://acapela-box.com/AcaBox/index.php",
 							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
+							"X-Requested-With": "XMLHttpRequest",
                         },
                     },
                     (r) => {
