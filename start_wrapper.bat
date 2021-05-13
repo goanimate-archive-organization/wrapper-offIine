@@ -1,8 +1,8 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
 :: License: MIT
-set WRAPPER_VER=1.3.3
-set WRAPPER_BLD=6
+set WRAPPER_VER=1.3.0
+set WRAPPER_BLD=18
 title Wrapper: Offline v%WRAPPER_VER% ^(build %WRAPPER_BLD%^) [Initializing...]
 
 ::::::::::::::::::::
@@ -377,7 +377,7 @@ if !FLASH_DETECTED!==n (
 		echo will run FlashPatch and get rid of the timebomb
 		echo on the ActiveX ^(OCX^) Flash plugin that IE
 		echo depends on.
-		echoL
+		echo:
 		echo Enter 1 for Chrome
 		echo Enter 2 for Firefox
 		echo Enter 3 for Edge
@@ -710,6 +710,12 @@ if !ADMINREQUIRED!==y (
 	exit
 )
 color 0f
+echo Restarting explorer.exe...
+echo:
+TASKKILL /F /IM explorer.exe
+PING -n 2 127.0.0.1>nul
+start explorer.exe
+cls
 echo All dependencies now installed^^! Continuing with Wrapper: Offline boot.
 echo:
 
@@ -1300,16 +1306,19 @@ PING -n 3 127.0.0.1>nul
 color 9b
 echo BEWEWEWEWWW PSSHHHH KSHHHHHHHHHHHHHH
 PING -n 3 127.0.0.1>nul
+TASKKILL /FI "WINDOWTITLE eq http-server" >nul 2>&1
+TASKKILL /FI "WINDOWTITLE eq npm start" >nul 2>&1
 TASKKILL /IM node.exe /F >nul 2>&1
 echo NODE DOT JS ANNIHILATED
 PING -n 3 127.0.0.1>nul
 if !CEPSTRAL!==n (
+	TASKKILL /FI "VFProxy PHP Launcher for Wrapper: Offline" >nul 2>&1
 	TASKKILL /IM php.exe /F >nul 2>&1
 	echo PHP DESTROYED
 	PING -n 3 127.0.0.1>nul
 )
 if !INCLUDEDCHROMIUM!==y (
-	TASKKILL /IM chromium.exe >nul 2>&1
+	TASKKILL /IM chromium.exe /F >nul 2>&1
 	echo UNGOOGLED CHROMIUM COMPLETELY OBLITERATED
 	PING -n 3 127.0.0.1>nul
 )
