@@ -17,70 +17,73 @@ echo:
 set /p GITPULL= Option:
 if "%GITPULL%"=="1" (
 	cls
-	echo Checking for Git installation...
-	echo:
-	if not exist "%PROGRAMFILES%\Git" (
-		if not exist "%PROGRAMFILES(X86)%\Git" (
-			echo Could not detect Git in Program Files folders.
-			echo Checking via command-line testing...
-			for /f "delims=" %%i in ('git help') do set output=%%i
-			echo:
-			PING -n 4 127.0.0.1>nul
-			IF "%output%" EQU "" (
-				if "%DEVMODE%"=="y" (
-					echo Git couldn't be found anywhere, but you do have developer mode on.
-					echo:
-					echo If this is an actual dev using this from another machine who
-					echo hasn't installed the actual Git yet, would you like to go ahead
-					echo and install it?
-					echo:
-					echo Press 1 if you'd like to install actual Git
-					echo Otherwise, press 2.
-					echo:
-					:gitresretry
-					set /p GITRES= Response:
-					if "%GITRES%"=="1" (
-						cls
-						echo Launching the Git installer...
-						start utilities\git.exe
-						PING -n 4 127.0.0.1>nul
-						echo Git installer launched^^!
-						echo:
-						echo Once installation is finished, press any key to go to the
-						echo next step of updating.
-						echo:
-						:gitrecheck
-						pause
-						for /f "delims=" %%i in ('git help') do set output1=%%i
-						IF "%output1%" EQU "" (
-							echo Git not found. Please keep the installation going.
-							echo When finished, press any key to continue.
-							echo:
-							goto gitrecheck
-						) else (
-							TASKKILL /F /IM git.exe>nul
-							echo Git has been installed^! Proceeding to update...
-							PING -n 4 127.0.0.1>nul
-							cls
-							set GIT=y
-							goto update
-						)
-					)
-					if "%GITRES%"=="2" ( goto nosignofgit )
-					if "%GITRES%"=="" ( echo You must choose a valid response. && goto gitresretry )
-				)
-			) else (
-				set GIT=y
-				echo The command-line worked, therefore Git is installed.
-				echo:
-				goto update
-			)
-		)
-	) else (
-		set GIT=y
-		echo Git was detected in one of the Program Files folders, therefore it is installed.
+	if "%SKIPCHECKDEPENDS%"=="n" (
+		echo Checking for Git installation...
 		echo:
-		goto update
+		if not exist "%PROGRAMFILES%\Git" (
+			if not exist "%PROGRAMFILES(X86)%\Git" (
+				echo Could not detect Git in Program Files folders.
+				echo Checking via command-line testing...
+				for /f "delims=" %%i in ('git help') do set output=%%i
+				echo:
+				PING -n 4 127.0.0.1>nul
+				IF "%output%" EQU "" (
+					if "%DEVMODE%"=="y" (
+						echo Git couldn't be found anywhere, but you do have developer mode on.
+						echo:
+						echo If either this is an actual dev using this from another machine who
+						echo hasn't installed the actual Git yet, or this is someone who cloned
+						echo the repository using something like GitHub Desktop, would you like
+						echo to go ahead and install it?
+						echo:
+						echo Press 1 if you'd like to install actual Git
+						echo Otherwise, press 2.
+						echo:
+						:gitresretry
+						set /p GITRES= Response:
+						if "%GITRES%"=="1" (
+							cls
+							echo Launching the Git installer...
+							start utilities\git.exe
+							PING -n 4 127.0.0.1>nul
+							echo Git installer launched^^!
+							echo:
+							echo Once installation is finished, press any key to go to the
+							echo next step of updating.
+							echo:
+							:gitrecheck
+							pause
+							for /f "delims=" %%i in ('git help') do set output1=%%i
+							IF "%output1%" EQU "" (
+								echo Git not found. Please keep the installation going.
+								echo When finished, press any key to continue.
+								echo:
+								goto gitrecheck
+							) else (
+								TASKKILL /F /IM git.exe>nul
+								echo Git has been installed^! Proceeding to update...
+								PING -n 4 127.0.0.1>nul
+								cls
+								set GIT=y
+								goto update
+							)
+						)
+						if "%GITRES%"=="2" ( goto nosignofgit )
+						if "%GITRES%"=="" ( echo You must choose a valid response. && goto gitresretry )
+					)
+				) else (
+					set GIT=y
+					echo The command-line worked, therefore Git is installed.
+					echo:
+					goto update
+				)
+			)
+		) else (
+			set GIT=y
+			echo Git was detected in one of the Program Files folders, therefore it is installed.
+			echo:
+			goto update
+		)
 	)
 	:update
 	if "%GIT%"=="y" (
@@ -88,7 +91,6 @@ if "%GITPULL%"=="1" (
 		pushd utilities
 		copy config.bat tmpcfg.bat>nul
 		popd
-		echo:
 		echo Pulling latest version of repository from GitHub through Git...
 		PING -n 4 127.0.0.1>nul
 		echo:
@@ -99,8 +101,7 @@ if "%GITPULL%"=="1" (
 		del config.bat
 		ren tmpcfg.bat config.bat
 		popd
-		echo:
-		echo Latest version of repository pulled^!
+		echo Latest version of repository pulled^^!
 		echo:
 		pause & exit
 	)
