@@ -85,7 +85,7 @@ module.exports = function (req, res, url) {
 					clientThemePath: process.env.CLIENT_URL + "/<client_theme>",
 					original_asset_id: query["id"] || null,
 					themeId: "family",
-					ut: 30,
+					ut: 60,
 					appCode: "go",
 					page: "",
 					siteId: "go",
@@ -122,7 +122,7 @@ module.exports = function (req, res, url) {
 					storePath: process.env.STORE_URL + "/<store>",
 					isEmbed: 1,
 					ctc: "go",
-					ut: 30,
+					ut: 60,
 					bs: "default",
 					appCode: "go",
 					page: "",
@@ -157,7 +157,7 @@ module.exports = function (req, res, url) {
 				flashvars: {
 					apiserver: "/",
 					storePath: process.env.STORE_URL + "/<store>",
-					ut: 30,
+					ut: 60,
 					autostart: 1,
 					isWide: 1,
 					clientThemePath: process.env.CLIENT_URL + "/<client_theme>",
@@ -181,7 +181,7 @@ module.exports = function (req, res, url) {
 				flashvars: {
 					apiserver: "/",
 					storePath: process.env.STORE_URL + "/<store>",
-					ut: 30,
+					ut: 60,
 					autostart: 0,
 					isWide: 1,
 					clientThemePath: process.env.CLIENT_URL + "/<client_theme>",
@@ -221,7 +221,7 @@ module.exports = function (req, res, url) {
 		<link rel="stylesheet" type="text/css" href="/pages/css/global.css">
 		<style>
 			body {
-				background: #0c0c0c;
+				background: #eee;
 			}
 		</style>
 	</head>

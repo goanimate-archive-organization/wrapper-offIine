@@ -34,13 +34,13 @@ module.exports = function (req, res, url) {
 	var attrs, params, title;
 	switch (url.pathname) {
 		case "/cc": {
-			title = "Character Creator";
+			title = 'Character Creator';
 			attrs = {
-				data: process.env.SWF_URL + "/cc.swf", // data: 'cc.swf',
-				type: "application/x-shockwave-flash",
-				id: "char_creator",
-				width: "100%",
-				height: "100%",
+				data: process.env.SWF_URL + '/cc.swf', // data: 'cc.swf',
+				type: 'application/x-shockwave-flash', 
+				id: 'char_creator', 
+				width: '966', 
+				height: '600', 
 				style:'display:block;margin-left:auto;margin-right:auto;',
 			};
 			params = {
