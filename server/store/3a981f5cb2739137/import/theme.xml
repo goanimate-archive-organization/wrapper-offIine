@@ -440,6 +440,10 @@
 <sound id="Elektronomia_Dreamshipitch.mp3" name="Elektronomia_Dreamshipitch" subtype="bgmusic" duration="254448" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Met_You.mp3" name="Met_You" subtype="bgmusic" duration="190902" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="Japan_Airlines_JA8119.jpg" name="Japan_Airlines_JA8119" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
-	<sound id="Fly_Again.mp3" name="Fly_Again" subtype="bgmusic" duration="190145" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="Fly_Again.mp3" name="Fly_Again" subtype="bgmusic" duration="190145" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<prop id="580b57fcd9996e24bc43c22f.png" name="580b57fcd9996e24bc43c22f" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
+<background id="148384-blue_and_black_galaxy_illustration-550x310.jpg" name="148384-blue_and_black_galaxy_illustration-550x310" default="N" aid="9603" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="Ruined_my_life.mp3" name="Ruined_my_life" subtype="bgmusic" duration="198347" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="Left_Me_Behind.mp3" name="Left_Me_Behind" subtype="bgmusic" duration="193098" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
