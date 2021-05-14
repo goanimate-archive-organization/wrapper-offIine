@@ -46,8 +46,12 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ## Build 18
 ### Changed
   - Imported Assets and Community Library no longer shows the "common" assets
+  - Saving a character redirects to the video list instead of refreshing
+  - Dark mode tweaked to work (mostly) in the character creator (and browser)
 ### Fixed
   - CC Browser loading Comedy World no matter what
+  - The theme list page being scrambled when dark mode is off
+  - A missing page error that can't be refreshed out of
 
 ## Version 1.2.3 - 2021-03-06 - i am HUNGRY FOR UPDATES!!!
 ### Added
