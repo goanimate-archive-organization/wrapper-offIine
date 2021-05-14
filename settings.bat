@@ -899,6 +899,10 @@ if exist "global-light.css" (
 	ren themelist-light.css themelist.css
 	ren list.css list-dark.css
 	ren list-light.css list.css
+	popd
+	pushd wrapper\static
+	ren page.js page-dark.js
+	ren page-light.js page.js
 ) else ( 
 	:: enable
 	ren global.css global-light.css
@@ -907,6 +911,10 @@ if exist "global-light.css" (
 	ren themelist-dark.css themelist.css
 	ren list.css list-light.css
 	ren list-dark.css list.css
+	popd
+	pushd wrapper\static
+	ren page.js page-light.js
+	ren page-dark.js page.js
 )
 popd
 pushd server\animation\414827163ad4eb60
