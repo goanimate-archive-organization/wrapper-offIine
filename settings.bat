@@ -221,6 +221,7 @@ if !DEVMODE!==y (
 	) else ( 
 		echo ^(D4^) Localhost port for Wrapper: Offline frontend is[91m !PORT! [0m
 	)
+	echo ^(D5^) Reset all the settings in config.bat back to default
 )
 :reaskoptionscreen
 echo:
@@ -472,6 +473,8 @@ if !DEVMODE!==n (
 	if /i "!choice!"=="?D3" ( goto devmodeerror )
 	if /i "!choice!"=="D4" ( goto devmodeerror )
 	if /i "!choice!"=="?D4" ( goto devmodeerror )
+	if /i "!choice!"=="D5" ( goto devmodeerror )
+	if /i "!choice!"=="?D5" ( goto devmodeerror )
 )
 
 if !DEVMODE!==y (
@@ -520,6 +523,20 @@ if !DEVMODE!==y (
 		echo:
 		echo Toggling this feature will allow you to change the port number that
 		echo the frontend is on.
+		goto reaskoptionscreen
+	)
+	if /i "!choice!"=="D5" goto resetconfig
+	if /i "!choice!"=="?D5" (
+		echo Something could happen to config.bat which could totally screw
+		echo the settings up.
+		echo:
+		echo Choosing this feature will COMPLETELY reset the settings that are
+		echo in config.bat back to the default values.
+		echo:
+		echo This is not recommended unless either a dev is using this to
+		echo reset it before publishing an update, config.bat went missing
+		echo on your copy or something weird happened that messed up the
+		echo code for config.bat.
 		goto reaskoptionscreen
 	)
 )
@@ -1099,6 +1116,88 @@ if exist "info-nowatermark.json" (
 )
 popd
 goto optionscreen
+
+::::::::::::::::::
+:: Reset Config ::
+::::::::::::::::::
+:resetconfig
+echo This will COMPLETELY reset all the important settings back to the default.
+echo:
+echo Your settings will be located in the WrapperOffline
+echo folder in Documents if you choose to backup the
+echo settings.
+echo:
+echo This will not affect things like debug mode,
+echo dark mode, waveforms, watermarks or things like that.
+echo:
+echo Would you like to backup your settings?
+echo:
+echo Press 1 if you'd like to.
+echo Otherwise, press Enter.
+echo:
+set /p BACKUPCONFIGRES= Response:
+if "!backupconfigres!"=="1" (
+	if exist "!onedrive!" ( 
+		set DOCUMENTSPATH=!onedrive!\Documents
+	) else (
+		set DOCUMENTSPATH=!userprofile!\Documents
+	)
+	pushd !documentspath!
+	if not exist "WrapperOffline" ( mkdir WrapperOffline )
+	popd
+	copy "utilities\config.bat" "!documentspath!\WrapperOffline\config_backup.bat" /y
+)
+echo:
+echo Resetting settings...
+PING -n 4 127.0.0.1>nul
+if exist utilities\config.bat ( del utilities\config.bat )
+echo :: Wrapper: Offline Config>> utilities\config.bat
+echo :: This file is modified by settings.bat. It is not organized, but comments for each setting have been added.>> utilities\config.bat
+echo :: You should be using settings.bat, and not touching this. Offline relies on this file remaining consistent, and it's easy to mess that up.>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens this file in Notepad when run>> utilities\config.bat
+echo setlocal>> utilities\config.bat
+echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\config.bat
+echo endlocal>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Shows exactly Offline is doing, and never clears the screen. Useful for development and troubleshooting. Default: n>> utilities\config.bat
+echo set VERBOSEWRAPPER=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Won't check for dependencies (flash, node, etc) and goes straight to launching. Useful for speedy launching post-install. Default: n>> utilities\config.bat
+echo set SKIPCHECKDEPENDS=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n>> utilities\config.bat
+echo set SKIPDEPENDINSTALL=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens Offline in an included copy of ungoogled-chromium. Allows continued use of Flash as modern browsers disable it. Default: y>> utilities\config.bat
+echo set INCLUDEDCHROMIUM=y>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens INCLUDEDCHROMIUM in headless mode. Looks pretty nice. Overrides CUSTOMBROWSER and BROWSER_TYPE. Default: y>> utilities\config.bat
+echo set APPCHROMIUM=y>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n>> utilities\config.bat
+echo set CUSTOMBROWSER=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n>> utilities\config.bat
+echo set BROWSER_TYPE=chrome>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n>> utilities\config.bat
+echo set DRYRUN=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Makes it so it uses the Cepstral website instead of VFProxy. Default: n>> utilities\config.bat
+echo set CEPSTRAL=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.>> utilities\config.bat
+echo :: Allows continued use of Flash as modern browsers disable it. Default: n>> utilities\config.bat
+echo set INCLUDEDBASILISK=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> utilities\config.bat
+echo set DEVMODE=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
+echo set PORT=4343>> utilities\config.bat
+cls
+%0
 
 :end
 endlocal

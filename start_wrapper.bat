@@ -4,6 +4,7 @@
 set SUBSCRIPT=y
 call utilities\metadata.bat
 cls
+set SUBSCRIPT=n
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) [Initializing...]
 
 ::::::::::::::::::::
@@ -749,15 +750,9 @@ if !VERBOSEWRAPPER!==y (
 	)
 ) else (
 	if !CEPSTRAL!==n (
-		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
-			if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-		)
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 		if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
 	) else (
-		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET) do (
-			if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-		)
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 	)
 )
@@ -1106,11 +1101,13 @@ goto wrapperidle
 :: flows straight to restart below
 
 :restart
-TASKKILL /FI "WINDOWTITLE eq http-server" >nul 2>&1 )
-TASKKILL /FI "WINDOWTITLE eq npm start" >nul 2>&1 )
-if !CEPSTRAL!==n ( TASKKILL /FI "WINDOWTITLE eq VFProxy PHP Launcher for Wrapper: Offline" >nul 2>&1 )
 TASKKILL /IM node.exe /F >nul 2>&1
 if !CEPSTRAL!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+if !VERBOSEWRAPPER!==y (
+	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
+		TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1
+	)
+)
 start "" /wait /B "%~F0" point_insertion
 exit
 
@@ -1247,6 +1244,12 @@ echo You must answer Yes or No. && goto exitwrapperretry
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) [Shutting down...]
 
 :: Shut down Node.js, PHP and http-server
+
+:: Copies config.bat first in case for whatever reason this messes it up (it's happened before trust me)
+pushd utilities
+copy config.bat tmpcfg.bat>nul
+popd
+
 if !VERBOSEWRAPPER!==y (
 	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
 		if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
@@ -1267,11 +1270,6 @@ if !VERBOSEWRAPPER!==y (
 	)
 	echo:
 ) else (
-	if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq http-server" >nul )
-	if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq npm start" >nul )
-	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
-		if !DRYRUN!==n ( TASKKILL /FI WINDOWTITLE eq %%i" >nul )
-	)
 	if !DRYRUN!==n ( TASKKILL /IM node.exe /F 2>nul )
 	if !DRYRUN!==n ( 
 		if !CEPSTRAL!==n ( 
@@ -1287,6 +1285,12 @@ if !VERBOSEWRAPPER!==y (
 		)
 	)
 )
+
+:: Puts config.bat back to normal
+pushd utilities
+del config.bat
+ren tmpcfg.bat config.bat
+popd
 
 :: This is where I get off.
 echo Wrapper: Offline has been shut down.
@@ -1388,7 +1392,6 @@ echo set CEPSTRAL=n>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.>> utilities\config.bat
 echo :: Allows continued use of Flash as modern browsers disable it. Default: n>> utilities\config.bat
-echo:>> utilities\config.bat
 echo set INCLUDEDBASILISK=n>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> utilities\config.bat
