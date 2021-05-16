@@ -70,7 +70,7 @@ if "%GITPULL%"=="1" (
 						)
 						if "%GITRES%"=="2" ( goto nosignofgit )
 						if "%GITRES%"=="" ( echo You must choose a valid response. && goto gitresretry )
-					)
+					) else goto nosignofgit
 				) else (
 					set GIT=y
 					echo The command-line worked, therefore Git is installed.
