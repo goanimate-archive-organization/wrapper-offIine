@@ -718,7 +718,29 @@ TASKKILL /F /IM explorer.exe
 PING -n 2 127.0.0.1>nul
 start explorer.exe
 cls
-echo All dependencies now installed^^! Continuing with Wrapper: Offline boot.
+echo All dependencies now installed^^!
+echo:
+echo It is recommended that you restart the computer
+echo to make sure that everything is fully working.
+echo:
+echo Would you like to restart your system before
+echo using Wrapper: Offline? [Y/n]
+echo:
+set /p RESTARTPC= Response: 
+if not '!restartpc!'=='' set restartpc=%restartpc:~0,1%
+if /i "!restartpc!"=="y" (
+	echo Press any key to start the rebooting process.
+	echo:
+	pause
+	echo Your PC will reboot in 10 seconds.
+	PING -n 11 127.0.0.1>nul
+	echo Rebooting your PC...
+	call shutdown /r /t 00
+)
+if /i "!restartpc!"=="n" goto continuing
+
+:continuing
+echo Continuing with Wrapper: Offline boot.
 echo:
 
 :skip_dependency_install
@@ -1042,7 +1064,7 @@ goto wrapperidle
 :open_files
 pushd ..
 echo Opening the wrapper-offline folder...
-start explorer.exe wrapper-offline
+start explorer.exe "%CD%"
 popd
 goto wrapperidle
 
