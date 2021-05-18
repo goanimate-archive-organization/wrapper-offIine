@@ -794,6 +794,11 @@ if !VERBOSEWRAPPER!==y (
 			start /MIN open_vfproxy_php.bat
 		)
 	)
+	if !DRYRUN!==n (
+		if !CONFIGURE!==n (
+			start /MIN configure_wrapper.bat
+		)
+	)
 ) else (
 	if !DRYRUN!==n ( start SilentCMD open_http-server.bat )
 	if !DRYRUN!==n ( start SilentCMD open_nodejs.bat )
@@ -889,6 +894,12 @@ if !DEVMODE!==y (
 	echo Type "amnesia" to wipe your save.
 	echo Type "restart" to restart Wrapper: Offline.
 	echo Type "folder" to open the files.
+	if !VERBOSEWRAPPER!==y (
+		if !CONFIGURE!==y (
+			echo Type "open cmd" to open an additional CMD window for debugging and experiments if
+			echo you already closed the one that opened. ^(Must have verbose mode on^)
+		)
+	)
 )
 echo:
 set /a _rand=(!RANDOM!*67/32768)+1
@@ -975,11 +986,13 @@ if !DEVMODE!==y (
 	if /i "!choice!"=="amnesia" goto wipe_save
 	if /i "!choice!"=="restart" goto restart
 	if /i "!choice!"=="folder" goto open_files
+	if /i "!choice!"=="open cmd" goto launchcmd
 )
 if !DEVMODE!==n (
 	if /i "!choice!"=="amnesia" goto devmodeerror
 	if /i "!choice!"=="restart" goto devmodeerror
 	if /i "!choice!"=="folder" goto devmodeerror
+	if /i "!choice!"=="open cmd" goto devmodeerror
 )
 echo Time to choose. && goto wrapperidle
 
@@ -1105,6 +1118,18 @@ cls
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^)
 goto wrapperstartedcls
 
+:launchcmd
+if !VERBOSEWRAPPER!==y (
+	echo Launching the additional CMD window...
+	pushd utilities
+	start configure_wrapper.bat
+	popd
+) else (
+	echo Sorry man, I can't open this window unless
+	echo you have developer mode, verbose mode and
+	echo configure all enabled.
+)
+goto wrapperidle
 
 :youfuckoff
 echo You fuck off.
@@ -1421,4 +1446,8 @@ echo set DEVMODE=n>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
 echo set PORT=4343>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n>> utilities\config.bat
+echo set CONFIGURE=n>> utilities\config.bat
+echo:>> utilities\config.bat
 goto returnfromconfigcopy

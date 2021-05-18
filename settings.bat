@@ -222,6 +222,11 @@ if !DEVMODE!==y (
 		echo ^(D4^) Localhost port for Wrapper: Offline frontend is[91m !PORT! [0m
 	)
 	echo ^(D5^) Reset all the settings in config.bat back to default
+	if !CONFIGURE!==y (
+		echo ^(D6^) Using configure_wrapper.bat is[92m ON [0m
+	) else (
+		echo ^(D6^) Using configure_wrapper.bat is[91m OFF [0m
+	)
 )
 :reaskoptionscreen
 echo:
@@ -475,6 +480,8 @@ if !DEVMODE!==n (
 	if /i "!choice!"=="?D4" ( goto devmodeerror )
 	if /i "!choice!"=="D5" ( goto devmodeerror )
 	if /i "!choice!"=="?D5" ( goto devmodeerror )
+	if /i "!choice!"=="D6" ( goto devmodeerror )
+	if /i "!choice!"=="?D6" ( goto devmodeerror )
 )
 
 if !DEVMODE!==y (
@@ -537,6 +544,24 @@ if !DEVMODE!==y (
 		echo reset it before publishing an update, config.bat went missing
 		echo on your copy or something weird happened that messed up the
 		echo code for config.bat.
+		goto reaskoptionscreen
+	)
+	if /i "!choice!"=="D6" (
+		set TOTOGGLE=CONFIGURE
+		if !CONFIGURE!==n (
+			set TOGGLETO=y
+		) else (
+			set TOGGLETO=n
+		)
+		set CFGLINE=48
+		goto toggleoption
+	)
+	if /i "!choice!"=="?D6" (
+		echo Enabling this will make it so that Wrapper: Offline opens
+		echo an additional Command Prompt window with open space.
+		echo:
+		echo This can be useful for debugging and figuring out problems
+		echo mostly having to do with things like Node.js or http-server.
 		goto reaskoptionscreen
 	)
 )
@@ -1196,6 +1221,10 @@ echo set DEVMODE=n>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
 echo set PORT=4343>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n>> utilities\config.bat
+echo set CONFIGURE=n>> utilities\config.bat
+echo:>> utilities\config.bat
 cls
 %0
 
