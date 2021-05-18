@@ -11,7 +11,7 @@ endlocal
 set VERBOSEWRAPPER=n
 
 :: Won't check for dependencies (flash, node, etc) and goes straight to launching. Useful for speedy launching post-install. Default: n
-set SKIPCHECKDEPENDS=y
+set SKIPCHECKDEPENDS=n
 
 :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n
 set SKIPDEPENDINSTALL=n
@@ -43,3 +43,6 @@ set DEVMODE=n
 
 :: Tells settings.bat which port the frontend is hosted on. (If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json) Default: 4343
 set PORT=4343
+
+:: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n
+set CONFIGURE=n

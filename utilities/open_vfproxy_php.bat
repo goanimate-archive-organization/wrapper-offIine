@@ -7,6 +7,6 @@ title VFProxy PHP Launcher for Wrapper: Offline
 pushd ..\wrapper\vfproxy
 echo Starting PHP server for VFProxy...
 echo:
-..\..\utilities\php\php.exe -S 127.0.0.1:8181
+call ..\..\utilities\php\php.exe -S 127.0.0.1:8181
 echo:
 pause & exit
