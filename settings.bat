@@ -1045,12 +1045,21 @@ if exist "server\characters\characters.zip" (
     :startextractchars
     echo Opening 7za.exe...
     echo:
-    start "utilities\7za.exe" e server\characters\characters.zip -o server\characters
+    start utilities\7za.exe e "server\characters\characters.zip" -o"server\characters"
     echo The extraction process should be starting now.
-    echo When done, press any key to delete the .zip file.
+	echo:
+	echo Please leave both this window and the other window open, otherwise
+	echo it could fail hard.
+    tasklist /FI "IMAGENAME eq 7za.exe" 2>NUL | find /I /N 7za.exe">NUL
+	if "!errorlevel!"=="0" (
+		echo:>nul
+	) else (
+		echo Extraction completed.
+		del server\characters\characters.zip
+	)
     echo:
-    pause
-    del server\characters\characters.zip
+	pause
+	goto optionscreen
 )
 goto optionscreen
 
