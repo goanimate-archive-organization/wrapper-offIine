@@ -446,6 +446,7 @@
 <sound id="Ruined_my_life.mp3" name="Ruined_my_life" subtype="bgmusic" duration="198347" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Left_Me_Behind.mp3" name="Left_Me_Behind" subtype="bgmusic" duration="193098" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="bomb.png" name="bomb" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
-	<sound id="dont_be_a_stranger.mp3" name="dont_be_a_stranger" subtype="bgmusic" duration="179150" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="dont_be_a_stranger.mp3" name="dont_be_a_stranger" subtype="bgmusic" duration="179150" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+	<prop id="3D05EB79-613B-4CFB-8DAA-AEDB9EAC8EBA.png" name="3D05EB79-613B-4CFB-8DAA-AEDB9EAC8EBA" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
 
 </theme>
