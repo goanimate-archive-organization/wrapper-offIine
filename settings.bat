@@ -8,6 +8,13 @@ title Wrapper: Offline Settings Script
 :: Initialize (stop command spam, clean screen, make variables work, set to UTF-8)
 @echo off && cls
 SETLOCAL ENABLEDELAYEDEXPANSION
+if exist "!onedrive!\Documents" (
+	set PATHTOEXPORTEDCONFIG=!onedrive!\Documents
+) else (
+	set PATHTOEXPORTEDCONFIG=!userprofile!\Documents
+)
+set CONFIGNAME1=%username%_config
+set CONFIGNAME=%CONFIGNAME1%.bat
 
 :: Move to base folder, and make sure it worked (otherwise things would go horribly wrong)
 pushd "%~dp0"
@@ -227,6 +234,7 @@ if !DEVMODE!==y (
 	) else (
 		echo ^(D6^) Using configure_wrapper.bat is[91m OFF [0m
 	)
+	echo ^(D7^) Import/export config.bat settings
 )
 :reaskoptionscreen
 echo:
@@ -564,6 +572,114 @@ if !DEVMODE!==y (
 		echo mostly having to do with things like Node.js or http-server.
 		goto reaskoptionscreen
 	)
+	if /i "!choice!"=="D7" (
+		echo Would you like to import a settings file
+		echo or export your settings?
+		echo:
+		echo Press 1 if you would like to import settings.
+		echo Press 2 if you would like to export settings.
+		echo:
+		:settinginexretry
+		set /p SETTINGSRES= Response:
+		if "!settingsres!"=="1" (
+			echo How would you like to import the settings file?
+			echo:
+			echo Press 1 if you'd like to drag it into the window and overwrite.
+			echo Press 2 if you'd like to drag it into the utilities folder and overwrite.
+			echo Press 3 if you already imported it but haven't restarted this window.
+			echo:
+			:importmethodretry
+			set /p IMPORTMETHODRES= Response: 
+			if "!importmethodres!"=="1" (
+				echo Drag your batch file in here.
+				echo:
+				echo ^(No need to worry about renaming it, it does that
+				echo in the copying to the directory.^)
+				echo:
+				:configpathreask
+				set /p CONFIGPATH= Path: 
+				for %%b in !configpath! do ( set EXT=%%~nxb )
+				if "!ext!"==.bat (
+					del !cfg!>nul
+					copy "!configpath!" "!cfg!">nul
+					echo Settings imported.
+					echo:
+					echo Press any key to refresh the settings.
+					pause
+					%0
+				) else (
+					echo Invalid file. Only *.bat is supported.
+					echo:
+					goto configpathreask
+				)
+			)
+			if "!importmethodres!"=="2" (
+				echo Opening the utilities folder...
+				start explorer.exe "%CD%\utilities"
+				echo Drag your settings in the folder.
+				echo:
+				echo If it's also named "config.bat", say yes to overwriting.
+				echo:
+				echo Otherwise, if it's named something else, delete "config.bat",
+				echo move the file in here and rename it to "config.bat".
+				echo:
+				echo The name MUST be "config.bat" OR ELSE none of the important
+				echo stuff in the launcher and stuff will work at all.
+				echo:
+				echo When finished importing the settings, you may press any key to
+				echo refresh the settings screen.
+				echo:
+				pause
+				%0
+			)
+			if "!importmethodres!"=="3" ( %0 )
+		)
+		if "!settingsres!"=="2" (
+			echo You have chosen to export your settings.
+			echo:
+			echo Would you like to name your settings file
+			echo something else?
+			echo:
+			echo If not, press Enter to name it %CONFIGNAME1%.
+			echo:
+			echo ^(You do not need to add ".bat", it does that automatically.^)
+			set /p CONFIGNAME1= Name: 
+			echo:
+			echo Would you like to export your settings somewhere
+			echo else?
+			echo:
+			echo If not, press Enter to save it to the WrapperOffline
+			echo folder in the Documents folder.
+			echo:
+			set /p PATHTOEXPORTEDCONFIG= Path:
+			echo:
+			if "!pathtoexportedconfig!"=="!onedrive!\Documents" (
+				if not exist "!pathtoexportedconfig!\WrapperOffline" ( mkdir "!pathtoexportedconfig!\WrapperOffline" )
+			)
+			if "!pathtoexportedconfig!"=="!userprofile!\Documents" (
+				if not exist "!pathtoexportedconfig!\WrapperOffline" ( mkdir "!pathtoexportedconfig!\WrapperOffline" )
+			)
+			copy "!cfg!" "!pathtoexportedconfig!\!configname!">nul
+			echo:
+			if !VERBOSEWRAPPER!==n (
+				echo Settings exported to specified path.
+			) else (
+				echo Settings exported to directory "!pathtoexportedconfig!" with filename "!configname!".
+			)
+			echo:
+			pause
+			goto optionscreen
+		)
+		if "!settingsres!"=="" ( echo You must select a valid option. && goto settinginexretry )
+	)
+	if /i "!choice!"=="?D7" (
+		echo Importing settings allows you to use another person's settings.
+		echo Exporting settings allows you to share your settings with another person.
+		echo:
+		echo Simple as that. 'Nuff said.
+		goto reaskoptionscreen
+	)
+			
 )
 if "!choice!"=="clr" goto optionscreen
 if "!choice!"=="cls" goto optionscreen
@@ -1179,61 +1295,61 @@ if "!backupconfigres!"=="1" (
 	pushd !documentspath!
 	if not exist "WrapperOffline" ( mkdir WrapperOffline )
 	popd
-	copy "utilities\config.bat" "!documentspath!\WrapperOffline\config_backup.bat" /y
+	copy "!cfg!" "!documentspath!\WrapperOffline\config_backup.bat" /y
 )
 echo:
 echo Resetting settings...
 PING -n 4 127.0.0.1>nul
-if exist utilities\config.bat ( del utilities\config.bat )
-echo :: Wrapper: Offline Config>> utilities\config.bat
-echo :: This file is modified by settings.bat. It is not organized, but comments for each setting have been added.>> utilities\config.bat
-echo :: You should be using settings.bat, and not touching this. Offline relies on this file remaining consistent, and it's easy to mess that up.>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens this file in Notepad when run>> utilities\config.bat
-echo setlocal>> utilities\config.bat
-echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\config.bat
-echo endlocal>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Shows exactly Offline is doing, and never clears the screen. Useful for development and troubleshooting. Default: n>> utilities\config.bat
-echo set VERBOSEWRAPPER=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Won't check for dependencies (flash, node, etc) and goes straight to launching. Useful for speedy launching post-install. Default: n>> utilities\config.bat
-echo set SKIPCHECKDEPENDS=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n>> utilities\config.bat
-echo set SKIPDEPENDINSTALL=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens Offline in an included copy of ungoogled-chromium. Allows continued use of Flash as modern browsers disable it. Default: y>> utilities\config.bat
-echo set INCLUDEDCHROMIUM=y>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens INCLUDEDCHROMIUM in headless mode. Looks pretty nice. Overrides CUSTOMBROWSER and BROWSER_TYPE. Default: y>> utilities\config.bat
-echo set APPCHROMIUM=y>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n>> utilities\config.bat
-echo set CUSTOMBROWSER=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n>> utilities\config.bat
-echo set BROWSER_TYPE=chrome>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n>> utilities\config.bat
-echo set DRYRUN=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Makes it so it uses the Cepstral website instead of VFProxy. Default: n>> utilities\config.bat
-echo set CEPSTRAL=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.>> utilities\config.bat
-echo :: Allows continued use of Flash as modern browsers disable it. Default: n>> utilities\config.bat
-echo set INCLUDEDBASILISK=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> utilities\config.bat
-echo set DEVMODE=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
-echo set PORT=4343>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n>> utilities\config.bat
-echo set CONFIGURE=n>> utilities\config.bat
-echo:>> utilities\config.bat
+del !cfg!
+echo :: Wrapper: Offline Config>> !cfg!
+echo :: This file is modified by settings.bat. It is not organized, but comments for each setting have been added.>> !cfg!
+echo :: You should be using settings.bat, and not touching this. Offline relies on this file remaining consistent, and it's easy to mess that up.>> !cfg!
+echo:>> !cfg!
+echo :: Opens this file in Notepad when run>> !cfg!
+echo setlocal>> !cfg!
+echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> !cfg!
+echo endlocal>> !cfg!
+echo:>> !cfg!
+echo :: Shows exactly Offline is doing, and never clears the screen. Useful for development and troubleshooting. Default: n>> !cfg!
+echo set VERBOSEWRAPPER=n>> !cfg!
+echo:>> !cfg!
+echo :: Won't check for dependencies (flash, node, etc) and goes straight to launching. Useful for speedy launching post-install. Default: n>> !cfg!
+echo set SKIPCHECKDEPENDS=n>> !cfg!
+echo:>> !cfg!
+echo :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n>> !cfg!
+echo set SKIPDEPENDINSTALL=n>> !cfg!
+echo:>> !cfg!
+echo :: Opens Offline in an included copy of ungoogled-chromium. Allows continued use of Flash as modern browsers disable it. Default: y>> !cfg!
+echo set INCLUDEDCHROMIUM=y>> !cfg!
+echo:>> !cfg!
+echo :: Opens INCLUDEDCHROMIUM in headless mode. Looks pretty nice. Overrides CUSTOMBROWSER and BROWSER_TYPE. Default: y>> !cfg!
+echo set APPCHROMIUM=y>> !cfg!
+echo:>> !cfg!
+echo :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n>> !cfg!
+echo set CUSTOMBROWSER=n>> !cfg!
+echo:>> !cfg!
+echo :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n>> !cfg!
+echo set BROWSER_TYPE=chrome>> !cfg!
+echo:>> !cfg!
+echo :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n>> !cfg!
+echo set DRYRUN=n>> !cfg!
+echo:>> !cfg!
+echo :: Makes it so it uses the Cepstral website instead of VFProxy. Default: n>> !cfg!
+echo set CEPSTRAL=n>> !cfg!
+echo:>> !cfg!
+echo :: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.>> !cfg!
+echo :: Allows continued use of Flash as modern browsers disable it. Default: n>> !cfg!
+echo set INCLUDEDBASILISK=n>> !cfg!
+echo:>> !cfg!
+echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> !cfg!
+echo set DEVMODE=n>> !cfg!
+echo:>> !cfg!
+echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> !cfg!
+echo set PORT=4343>> !cfg!
+echo:>> !cfg!
+echo :: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n>> !cfg!
+echo set CONFIGURE=n>> !cfg!
+echo:>> !cfg!
 cls
 %0
 
