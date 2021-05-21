@@ -124,7 +124,7 @@ if "%GIT%"=="n" (
 	PING -n 5 127.0.0.1>nul
 	echo COME SHITY BACK, ∞^^!!!!!
 	PING -n 4 127.0.0.1>nul
-	echo GET LOST! SHITHEADS^^!!!!!
+	echo GET LOST! SHIHEADS YOU IDIOT FUCKING SHITTY HERE NOW 🖕^^!!!!!
 	PING -n 4 127.0.0.1>nul
 	echo:
 	pause & exit
