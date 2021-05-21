@@ -120,9 +120,11 @@ goto noupdate
 
 :noupdate
 if "%GIT%"=="n" (
-	echo NO UPDATE FOR YOU^^!
+	echo NO FUCKING UPDATE FOR FUCKING YOU^^!!!!!
 	PING -n 5 127.0.0.1>nul
-	echo COME BACK, ONE YEAR^^!
+	echo COME SHITY BACK, ∞^^!!!!!
+	PING -n 4 127.0.0.1>nul
+	echo GET LOST! SHITHEADS^^!!!!!
 	PING -n 4 127.0.0.1>nul
 	echo:
 	pause & exit
