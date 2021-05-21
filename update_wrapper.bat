@@ -111,9 +111,9 @@ if "%GITPULL%"=="1" (
 )
 
 :nosignofgit
-echo Okay, there's no sign of Git ANYWHERE on this computer.
+echo Okay, there's no sign of FUNKING GIT ANYWHERE on this computer^^!
 PING -n 4 127.0.0.1>nul
-echo That means YOU MUST HAVE INSTALLED THIS INCORRECTLY^^!
+echo That means YOU MUST HAVE FUCKING INSTALLED THIS FUCKING INVALIDILY^^!
 PING -n 4 127.0.0.1>nul
 set GIT=n
 goto noupdate
