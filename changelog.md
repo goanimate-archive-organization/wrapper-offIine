@@ -3,6 +3,7 @@
 This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~~somewhat but not really~~ adheres to [Semantic Versioning](https://semver.org/). If you have no idea what that means, basically this changelog is formatted in a specific consistent way, and version numbers are formatted as X.Y.Z, X being a major not-backwards-compatible update, Y being a feature update, and X being bug fixes.
 
 ## Version 1.3.3 - 2021-11-25 - TRIBUTE TO AVICII!!!
+## Build 6
 ### Added
   - FFDEC version 14.4.0
   - Custom Assets like Comedy World, cc2 , chibi
@@ -15,6 +16,11 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - reset_install.bat Deletion.
   - Create.html DON'T messed up.
   - Truncated themelist TURNED OFF! because I WANT THAT THEMES!!!
+## Build 14
+### Added
+  - Checks Folder because is not here in utilities folder
+### Fixed
+  - Import files are deleted after opening import.bat so im gonna add import_these folder
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
