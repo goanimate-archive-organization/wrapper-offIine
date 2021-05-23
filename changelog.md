@@ -21,6 +21,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Checks Folder because is not here in utilities folder
 ### Fixed
   - Import files are deleted after opening import.bat so im gonna add import_these folder
+  - ffdec NEVER MESSES!
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
