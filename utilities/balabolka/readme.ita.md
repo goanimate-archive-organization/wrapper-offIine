@@ -14,8 +14,8 @@ Piattaforma Microsoft Speech: v11.0
 
 *** Versione portatile ***
 
-    La versione portatile non richiede l'installazione ed è compatibile con la
-    versione del Balabolka installata precedentemente, non importa i dati nel
+Â Â Â Â La versione portatile non richiede l'installazione ed Ã¨ compatibile con la
+    versione delÂ BalabolkaÂ installata precedentemente, non importa i dati nel
     registro del sistema Windows e non lascia nessun file di configurazione dopo
     la rimozione della stessa.
 
@@ -27,15 +27,15 @@ Piattaforma Microsoft Speech: v11.0
     Se hai installato un TTS, vedrai un elenco di voci disponibili nella finestra principale di Balabolka.
 
     Il programma supporta motori di sintesi vocale SAPI 4 e SAPI 5.
-    SAPI 4 è una tecnologia meno recente, quindi ti consiglio l'utilizzo di di SAPI 5.
+    SAPI 4 Ã¨ una tecnologia meno recente, quindi ti consiglio l'utilizzo di di SAPI 5.
 
-    Se sei interessato a delle voci di maggior qualità, ti preghiamo di consultare il file della Guida di Balabolka.
+    Se sei interessato a delle voci di maggior qualitÃ , ti preghiamo di consultare il file della Guida di Balabolka.
 
 
 
 *** Microsoft Speech Platform ***
 
-    La piattaforma di riconoscimento vocale Microsoft è costituita da Runtime e Runtime Languages
+    La piattaforma di riconoscimento vocale Microsoft Ã¨ costituita da Runtime e Runtime Languages
     (motori per il riconoscimento vocale e la sintesi vocale). Ci sono Runtime Languages
     separati per il riconoscimento vocale e la sintesi vocale.
 
@@ -56,7 +56,7 @@ Piattaforma Microsoft Speech: v11.0
 
     http://www.cross-plus-a.com/it/
 
-    Fintanto che Cross+A verrà acquistato, Balabolka rimarrà freeware.
+    Fintanto che Cross+A verrÃ  acquistato, Balabolka rimarrÃ  freeware.
 
     Grazie!
 
