@@ -4,7 +4,6 @@
 set SUBSCRIPT=y
 call utilities\metadata.bat
 cls
-set SUBSCRIPT=n
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) [Initializing...]
 
 ::::::::::::::::::::
@@ -26,7 +25,7 @@ if not exist server ( goto error_location )
 goto noerror_location
 :error_location
 echo Doesn't seem like this script is in a Wrapper: Offline folder.
-pause && exit
+pause & exit
 :devmodeerror
 echo Ooh, sorry. You have to have developer mode on
 echo in order to access these features.
@@ -229,7 +228,7 @@ if !errorlevel! == 0 (
 
 :: HTTPS cert
 if !VERBOSEWRAPPER!==y ( echo Checking for HTTPS certificate... )
-certutil -store -enterprise root | findstr "WOCRTV3" >nul
+call certutil -store -enterprise root | findstr "WOCRTV3" >nul
 if !errorlevel! == 0 (
 	echo HTTPS cert installed.
 	echo:
@@ -526,10 +525,15 @@ if !NODEJS_DETECTED!==n (
 	if !CPU_ARCHITECTURE!==what (
 		echo:
 		echo Well, this is a little embarassing.
+		echo:
 		echo Wrapper: Offline can't tell if you're on a 32-bit or 64-bit system.
 		echo Which means it doesn't know which version of Node.js to install...
 		echo:
 		echo If you have no idea what that means, press 1 to just try anyway.
+		echoL
+		echo If you know what kind of architecture you're running, but Offline
+		echo didn't detect it, press 2.
+		echo:
 		echo If you're in the future with newer architectures or something
 		echo and you know what you're doing, then press 3 to keep going.
 		echo:
@@ -537,6 +541,20 @@ if !NODEJS_DETECTED!==n (
 		set /p CPUCHOICE= Response:
 		echo:
 		if "!cpuchoice!"=="1" if !DRYRUN!==n ( msiexec /i "utilities\installers\node_windows_x32.msi" !INSTALL_FLAGS! ) && if !VERBOSEWRAPPER!==y ( echo Attempting 32-bit Node.js installation. ) && goto nodejs_installed
+		if "!cpuchoice!"=="2" (
+			echo:
+			echo Press 1 if you're running Wrapper: Offline on a 32-bit system.
+			echo Press 2 if you're running Wrapper: Offline on a 64-bit system.
+			echo:
+			:whatsystemreask
+			set /p WHATSYSTEM= Response:
+			echo:
+			if "!whatsystem!"=="1" set CPU_ARCHITECTURE=32
+			if "!whatsystem!"=="2" set CPU_ARCHITECTURE=64
+			if "!whatsystem!"=="32" echo Wasn't exactly the kind of response I was asking for but I'll take it anyways. & echo: & pause & set CPU_ARCHITECTURE=32
+			if "!whatsystem!"=="64" echo Wasn't exactly the kind of response I was asking for but I'll take it anyways. & echo: & pause & set CPU_ARCHITECTURE=64			
+			if "!whatsystem!"=="" echo That's an invalid option. Please try again. && goto whatsystemreask
+		)
 		if "!cpuchoice!"=="3" echo Node.js will not be installed. && goto after_nodejs_install
 		echo You must pick one or the other.&& goto architecture_ask
 	)
