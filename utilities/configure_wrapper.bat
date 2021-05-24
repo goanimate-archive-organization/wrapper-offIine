@@ -11,7 +11,7 @@ echo:
 echo Additionally, you could use this window to experiment with integrating new CLI tools in your copy
 echo of Wrapper: Offline.
 echo:
-echo Regardless if your software crashes or not, this CMD window will NOT close unless you either force
-echo this window to close or start_wrapper.bat closes this window.
+echo Regardless if either your software crashes or you use 0 to close Wrapper, this CMD window will NOT
+echo close unless you force this this window to close.
 echo:
 call cmd /k
