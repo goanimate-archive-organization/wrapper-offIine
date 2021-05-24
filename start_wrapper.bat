@@ -374,19 +374,19 @@ if !FLASH_DETECTED!==n (
 	if !BROWSER_TYPE!==n (
 		:: Ask what type of browser is being used.
 		echo What web browser do you use? If it isn't here,
-		echo look up whether it's based on Chromium or Firefox.
-		echo If it's not based on either, then
-		echo Wrapper: Offline will not be able to install Flash.
+		echo look up whether it's based on Chromium, Firefox
+		echo or Trident.
+		echo:
+		echo If it's not based on either, then either
+		echo Wrapper: Offline will not be able to install Flash
+		echo or the Clean Flash Player won't work at all.
+		echo:
 		echo Unless you know what you're doing and have a
 		echo version of Flash made for your browser, please
-		echo install a Chrome or Firefox based browser.
+		echo install a Chrome, Firefox or Trident based browser.
 		echo:
-		echo If you are choosing to use a Trident-based
-		echo browser however, like IE or Maxthon, instead
-		echo of it installing an older version of Flash, it
-		echo will run FlashPatch and get rid of the timebomb
-		echo on the ActiveX ^(OCX^) Flash plugin that IE
-		echo depends on.
+		echo ^(NOTE: If it's Chromium-based, make sure the browser
+		echo is based on Chromium 87.0.4280.168 or lower.^)
 		echo:
 		echo Enter 1 for Chrome
 		echo Enter 2 for Firefox
@@ -436,7 +436,7 @@ if !FLASH_DETECTED!==n (
 		goto lurebrowserslayer
 	)
 	echo Rip and tear, until it is done.
-	for %%i in (firefox,palemoon,tor,iexplore,maxthon,microsoftedge,chrome,chrome64,opera,brave,torch) do (
+	for %%i in (firefox,palemoon,tor,iexplore,maxthon,microsoftedge,chrome,chrome64,chromium,opera,brave,torch,waterfox,basilisk,Basilisk-Portable) do (
 		if !VERBOSEWRAPPER!==y (
 			 taskkill /f /im %%i.exe /t
 			 wmic process where name="%%i.exe" call terminate
@@ -449,44 +449,50 @@ if !FLASH_DETECTED!==n (
 	echo:
 
 	if !BROWSER_TYPE!==chrome (
-		echo Starting Flash for Chrome installer...
-		if not exist "utilities\installers\flash_windows_chromium.msi" (
+		echo Starting the Clean Flash Player installer...
+		echo ^(Make sure to enable installing the PPAPI version^)
+		echo ^(If it fails due to a registry error, that's okay. It'll still work and be installed.^)
+		echo:
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
-			echo You may be able to find a copy on this website:
-			echo https://archive.org/download/flashplayerarchive/pub/flashplayer/installers/archive/
+			echo You may be able to get the installer here:
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
 			echo Although Flash is needed, Offline will continue launching.
 			pause
+			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_chromium.msi" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n ( msiexec /i "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" !INSTALL_FLAGS! /quiet )
 	)
 	if !BROWSER_TYPE!==firefox (
-		echo Starting Flash for Firefox installer...
-		if not exist "utilities\installers\flash_windows_firefox.msi" (
+		echo Starting the Clean Flash Player installer...
+		echo ^(Make sure to enable installing the NPAPI version^)
+		echo ^(If it fails due to a registry error, that's okay. It'll still work and be installed.^)
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
-			echo You may be able to find a copy on this website:
-			echo https://archive.org/download/flashplayerarchive/pub/flashplayer/installers/archive/
-			echo Although Flash is needed, Offline will try to install anything else it can.
+			echo You may be able to get the installer here:
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
+			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_firefox.msi" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n ( msiexec /i "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" !INSTALL_FLAGS! /quiet )
 	)
 	if !BROWSER_TYPE!==trident (
-		echo Running FlashPatch...
-		if not exist "utilities\FlashPatch.exe" (
-			echo ...erm. Bit of an issue there actually. FlashPatch.exe doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with a copy of FlashPatch.
-			echo You may be able to get FlashPatch here:
-			echo https://github.com/darktohka/FlashPatch/releases/tag/v1.5
-			echo Although FlashPatch is needed to patch the timebomb on ActiveX versions
-			echo of Flash for Trident-based browsers, Offline will try to install anything
-			echo else it can.
+		echo Starting the Clean Flash Player installer...
+		echo ^(Make sure to enable installing the OCX version^)
+		echo ^(If it fails due to a registry error, that's okay. It'll still work and be installed.^)
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
+			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
+			echo A normal copy of Wrapper: Offline should come with one.
+			echo You may be able to get the installer here:
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
+			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\FlashPatch.exe" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n ( msiexec /i "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" !INSTALL_FLAGS! /quiet )
 	)
 
 	echo Flash has been installed.
@@ -822,7 +828,7 @@ if !VERBOSEWRAPPER!==y (
 		)
 	)
 	if !DRYRUN!==n (
-		if !CONFIGURE!==n (
+		if !CONFIGURE!==y (
 			start /MIN configure_wrapper.bat
 		)
 	)
