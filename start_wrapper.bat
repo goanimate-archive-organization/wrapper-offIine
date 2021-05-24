@@ -2,6 +2,7 @@
 :: Author: benson#0411
 :: License: MIT
 set SUBSCRIPT=y
+if not exist utilities\metadata.bat ( goto metamissing )
 call utilities\metadata.bat
 cls
 title Wrapper: Offline v!WRAPPER_VER! ^(build !WRAPPER_BLD!^) [Initializing...]
@@ -26,6 +27,14 @@ goto noerror_location
 :error_location
 echo Doesn't seem like this script is in a Wrapper: Offline folder.
 pause & exit
+:metamissing
+title Wrapper: Offline [Metadata Missing]
+echo The metadata's missing for some reason?
+echo Restoring...
+goto metacopy
+:returnfrommetacopy
+if not exist utilities\metadata.bat ( echo Something is horribly wrong. You may be in a read-only system/admin folder. & pause & exit )
+call utilities\metadata.bat
 :devmodeerror
 echo Ooh, sorry. You have to have developer mode on
 echo in order to access these features.
@@ -1469,3 +1478,19 @@ echo :: Enables configure_wrapper.bat. Useful for investigating things like prob
 echo set CONFIGURE=n>> utilities\config.bat
 echo:>> utilities\config.bat
 goto returnfromconfigcopy
+
+:metacopy
+if not exist utilities ( md utilities )
+echo :: Wrapper: Offline Metadata>> utilities\config.bat
+echo :: Important useful variables that are displayed by start_wrapper.bat>> utilities\config.bat
+echo :: You probably shouldn't touch this. This only exists to make things easier for the devs everytime we go up a build number or something like that.>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens this file in Notepad when run>> utilities\config.bat
+echo setlocal>> utilities\config.bat
+echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\config.bat
+echo endlocal>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Version number and build number>> utilities\config.bat
+echo set WRAPPER_VER=1.3.0>> utilities\config.bat
+echo set WRAPPER_BLD=21>> utilities\config.bat
+goto returnfrommetacopy
