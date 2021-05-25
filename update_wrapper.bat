@@ -1,12 +1,11 @@
+
 :: Wrapper Offline Updater
 :: Author: xomdjl_#1337 (ytpmaker1000@gmail.com)
 @echo off
 SETLOCAL ENABLEDELAYEDEXPANSION
 set SUBSCRIPT=y
 call utilities\config.bat
-
 echo Welcome to the Wrapper: Offline updater.
-popd
 echo:
 echo This will update your copy of Wrapper: Offline to
 echo the latest build using Git.
@@ -16,15 +15,14 @@ echo Otherwise, press any key.
 echo:
 set /p GITPULL= Option:
 if "%GITPULL%"=="1" (
-	cls
-	if "%SKIPCHECKDEPENDS%"=="n" (
+		cls
 		echo Checking for Git installation...
 		echo:
 		if not exist "%PROGRAMFILES%\Git" (
 			if not exist "%PROGRAMFILES(X86)%\Git" (
 				echo Could not detect Git in Program Files folders.
 				echo Checking via command-line testing...
-				for /f "delims=" %%i in ('git help') do set output=%%i
+				for /f "delims=" %%i in ('git --version 2^>nul') do set output=%%i
 				echo:
 				PING -n 4 127.0.0.1>nul
 				IF "%output%" EQU "" (
@@ -53,7 +51,7 @@ if "%GITPULL%"=="1" (
 							echo:
 							:gitrecheck
 							pause
-							for /f "delims=" %%i in ('git help') do set output1=%%i
+							for /f "delims=" %%i in ('git --version 2^>nul') do set output1=%%i
 							IF "%output1%" EQU "" (
 								echo Git not found. Please keep the installation going.
 								echo When finished, press any key to continue.
@@ -91,19 +89,29 @@ if "%GITPULL%"=="1" (
 		pushd utilities
 		copy config.bat tmpcfg.bat>nul
 		popd
+		echo Saving imported assets to temporary files...
+		call utilities\7za.exe a "utilities\misc\temp\importarchive.zip" .\server\store\3a981f5cb2739137\import\*>nul
 		echo Pulling latest version of repository from GitHub through Git...
 		PING -n 4 127.0.0.1>nul
-		echo:
 		call git pull
-		echo:
 		echo Deleting config.bat from repository and replacing it with user's copy...
 		pushd utilities
 		del config.bat
 		ren tmpcfg.bat config.bat
 		popd
+		echo Deleting all the imported assets from the repository and replacing it with user's assets...
+		pushd server\store\3a981f5cb2739137
+		rd /q /s import
+		md import
+		popd
+		call utilities\7za.exe e "utilities\misc\temp\importarchive.zip" -o"server\store\3a981f5cb2739137\import" -y>nul
+		del utilities\misc\temp\importarchive.zip>nul
+		del "wrapper\_THEMES\import.xml">nul
+		copy "server\store\3a981f5cb2739137\import\theme.xml" "wrapper\_THEMES\import.xml">nul
 		echo Latest version of repository pulled^^!
 		echo:
-		pause & exit
+		pause
+		goto end
 	)
 ) else (
 	set GIT=n
