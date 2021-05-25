@@ -1,4 +1,3 @@
-
 :: Wrapper Offline Updater
 :: Author: xomdjl_#1337 (ytpmaker1000@gmail.com)
 @echo off
@@ -135,5 +134,8 @@ if "%GIT%"=="n" (
 	echo GET LOST^^! SHIHEADS^^! YOU IDIOT FUCKING SHITTY HERE NOW 🖕^^!^^!^^!^^!^^!
 	PING -n 4 127.0.0.1>nul
 	echo:
-	pause & exit
+	pause
 )
+
+:end
+echo:
