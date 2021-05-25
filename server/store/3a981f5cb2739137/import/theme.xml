@@ -449,7 +449,8 @@
 <sound id="dont_be_a_stranger.mp3" name="dont_be_a_stranger" subtype="bgmusic" duration="179150" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 <prop id="3D05EB79-613B-4CFB-8DAA-AEDB9EAC8EBA.png" name="3D05EB79-613B-4CFB-8DAA-AEDB9EAC8EBA" holdable="0" wearable="0" placeable="1" facing="left" thumb="" aid="9004" enable="Y" is_premium="N" money="0" sharing="0" />
 <sound id="Game_Over.mp3" name="Game_Over" subtype="bgmusic" duration="249103" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
-	<sound id="WMM.mp3" name="WMM" subtype="bgmusic" duration="216112" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+<sound id="WMM.mp3" name="WMM" subtype="bgmusic" duration="216112" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
+	<sound id="WWB.mp3" name="WWB" subtype="bgmusic" duration="286799" downloadtype="progressive" aid="24304" enable="Y" is_premium="N" money="0" sharing="0" />
 	
 
 </theme>
