@@ -1,3 +1,4 @@
+
 title Wrapper: Offline Import Script
 :: Helps to make importing files using the theme editing workaround easier
 :: Author: benson#0411
@@ -75,7 +76,7 @@ if !folderfilled!==n (
 	set CFDIR=%cfdir:"=%
 	if /i "!CFDIR!"=="gotodir" start "" "!themefolder!" & goto end
 	if /i "!CFDIR!"=="0" goto end
-	if not exist "!CFDIR!" echo ... & goto reaskforfile
+	if not exist "!CFDIR!" echo That doesn't seem to exist. & goto reaskforfile
 	echo:
 	for %%i in ("!cfdir!") do ( set CFID=%%~nxi )
 	pushd import_these
@@ -101,7 +102,26 @@ for %%a in (import_these\*) do (
 	if !cfext!==.gif set CFTYPE="img" & echo Note: GIFs won't be animated, it'll just show the first frame.
 	if !cfext!==.webp echo Sorry, WebPs don't work. & echo: & goto moveconflicts
 	:: Sounds
-	if !cfext!==.mp3 set CFTYPE="sound"
+	if !cfext!==.mp3 set CFTYPE="mp3"
+	if !cftype!=="mp3" (
+		echo Press 1 if !cfname! is music or a sound effect.
+		echo Press 2 if !cfname! is a voice clip.
+		echo To use the voice clip, select the "Import" text-to-speech voice and type anything.
+		echo To change the voice clip, run this importer again.
+		echo:
+		:mp3askretry
+		set /p MP3CHOICE= Response:
+		echo:
+		if "!mp3choice!"=="0" goto end
+		if "!mp3choice!"=="1" set CFTYPE="sound"
+		if "!mp3choice!"=="2" (
+			set CFTYPE="voice"
+			goto voice
+		)
+		if "!CFTYPE!"=="" echo You must answer what type of file it is. && goto mp3askretry
+		echo:
+	)
+	)
 	if !cfext!==.wav echo Sorry, WAVs don't work. & echo: & goto moveconflicts
 	if !cfext!==.ogg echo Sorry, OGGs don't work. & echo: & goto moveconflicts
 	:: Error catch
@@ -183,8 +203,8 @@ for %%a in (import_these\*) do (
 
 	echo Moving file to theme...
 	echo:
-	copy /y %%a !themefolder!!cfid! >nul
-	pushd !themefolder!
+	copy /y %%a "!themefolder!!cfid!" >nul
+	pushd "!themefolder!"
 	if !cftype!=="img" (
 		if not exist !cfsubtype! ( md !cfsubtype! )
 		pushd !cfsubtype!
@@ -278,7 +298,16 @@ for %%a in (import_these\*) do (
 
 :: Zip the XML because it demands that we do so
 echo Zipping XML...
-7za.exe a "!themefolder!\import.zip" "!themefolder!\theme.xml" >nul
+call 7za.exe a "!themefolder!\import.zip" "!themefolder!\theme.xml" >nul
+
+:voice
+pushd import_these
+if !cftype!=="voice" (
+	if not exist voice ( md voice )
+	copy /y "!cfid!" voice\"rewriteable.mp3" >nul
+	echo Done.
+	goto end
+)
 
 :end
 endlocal

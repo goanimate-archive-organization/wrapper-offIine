@@ -4,5 +4,6 @@
 @echo off
 pushd "%~dp0"
 pushd ..\wrapper
-npm install
+call npm install
 pause
+© 2021 GitHub, Inc.
