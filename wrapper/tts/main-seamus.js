@@ -10,7 +10,7 @@ const http = require("http");
 let get;
 try {
 	get = require("../misc/get");
-} catch {
+} catch (e) {
 	get = require("./get");
 }
 
@@ -436,6 +436,22 @@ module.exports = (voiceName, text) => {
 				);
 				req.end(
 					`<speakExtended key='666'><voice>${voice.arg}</voice><text>${text}</text><audioFormat>mp3</audioFormat></speakExtended>`
+				);
+				break;
+			}
+			case "import": {
+				http.get(
+					{
+						host: "localhost",
+						port: "4334",
+						path: `/rewritable.mp3`,
+					},
+					(r) => {
+						var buffers = [];
+						r.on("data", (d) => buffers.push(d));
+						r.on("end", () => res(Buffer.concat(buffers)));
+						r.on("error", rej);
+					}
 				);
 				break;
 			}

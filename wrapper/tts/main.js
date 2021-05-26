@@ -441,6 +441,22 @@ module.exports = (voiceName, text) => {
 				);
 				break;
 			}
+			case "import": {
+				http.get(
+					{
+						host: "localhost",
+						port: "4334",
+						path: `/rewritable.mp3`,
+					},
+					(r) => {
+						var buffers = [];
+						r.on("data", (d) => buffers.push(d));
+						r.on("end", () => res(Buffer.concat(buffers)));
+						r.on("error", rej);
+					}
+				);
+				break;
+			}
 			/*
 			case "sestek": {
 				https.get(
