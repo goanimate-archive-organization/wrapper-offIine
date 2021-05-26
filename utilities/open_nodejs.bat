@@ -5,12 +5,15 @@
 pushd "%~dp0"
 title NODE.JS HASN'T STARTED YET
 pushd ..\wrapper
+:start
 call npm start
 echo:
-echo If you saw an error saying "npm is not recognized",
-echo please install Node.js from nodejs.org.
+echo Uh oh!
+echo Either Node.js has crashed or you dont have it installed.
+echo If Node.js crashed, please send the error in the github issues page.
+echo If you dont have Node.js, Install it in utilities folder.
 echo:
 echo If you saw an error that says "MODULE_NOT_FOUND",
-echo please type "npm install" in this window, press enter,
-echo and then type "npm start" and press enter.
-pause & exit /B
+echo go in utilities folder and run module_installer.bat
+pause
+goto start
