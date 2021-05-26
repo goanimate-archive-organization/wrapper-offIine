@@ -10,7 +10,7 @@ const http = require("http");
 let get;
 try {
 	get = require("../misc/get");
-} catch {
+} catch (e) {
 	get = require("./get");
 }
 
