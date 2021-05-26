@@ -46,6 +46,7 @@ if exist "patch.jpg" echo MESSAGE GOES HERE && goto end
 :: Preload variable
 set CFG=utilities\config.bat
 set TMPCFG=utilities\tempconfig.bat
+set META=utilities\metadata.bat
 set ENV=wrapper\env.json
 set BACKTODEFAULTTOGGLE=n
 set BASILISKENABLE=n
@@ -59,9 +60,11 @@ set BACKTOCUSTOMTOGGLE2=n
 if "%SUBSCRIPT%"=="" ( 
 	set SUBSCRIPT=y
 	call !cfg!
+	call !meta!
 	set "SUBSCRIPT="
 ) else (
 	call !cfg!
+	call !meta!
 )
 
 ::::::::::
@@ -869,8 +872,8 @@ echo 	"CACHÉ_FOLDER": "./_CACHÉ",>> !env!
 echo 	"THEME_FOLDER": "./_THEMES",>> !env!
 echo 	"PREMADE_FOLDER": "./_PREMADE",>> !env!
 echo 	"EXAMPLE_FOLDER": "./_EXAMPLES",>> !env!
-echo 	"WRAPPER_VER": "1.3.0",>> !env!
-echo 	"WRAPPER_BLD": "12",>> !env!
+echo 	"WRAPPER_VER": "!WRAPPER_VER!",>> !env!
+echo 	"WRAPPER_BLD": "!WRAPPER_BLD!",>> !env!
 echo 	"NODE_TLS_REJECT_UNAUTHORIZED": "0">> !env!
 echo }>> !env!
 set TOTOGGLE=PORT
