@@ -23,6 +23,7 @@ server/store/3a981f5cb2739137/business/*
 server/store/3a981f5cb2739137/whiteboard/*
 server/store/3a981f5cb2739137/infographics/*
 server/store/3a981f5cb2739137/commoncraft/*
+server/vo/*
 .DS_Store
 .DS_Store
 vfproxy/*
