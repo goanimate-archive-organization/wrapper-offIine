@@ -2,7 +2,7 @@
 	"voices": {
 		"import": {
 			"country": "",
-			"language": "null",
+			"language": "any",
 			"gender": "M",
 			"source": "import",
 			"desc": "Custom Voice Clip"
@@ -4476,6 +4476,6 @@
 		"pl": "Polish",
 		"nl": "Dutch",
 		"cy": "Welsh",
-		"null": "Any Language"
+		"any": "Any Language"
 	}
 }

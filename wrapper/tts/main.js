@@ -442,11 +442,11 @@ module.exports = (voiceName, text) => {
 				break;
 			}
 			case "import": {
-				http.get(
+				https.get(
 					{
 						host: "localhost",
-						port: "4334",
-						path: `/rewritable.mp3`,
+						port: "4664",
+						path: `/vo/rewritable.mp3`,
 					},
 					(r) => {
 						var buffers = [];
