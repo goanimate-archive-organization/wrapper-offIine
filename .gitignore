@@ -1,4 +1,5 @@
 # General Wrapper Offline Stuff
+Wrapper Offline.lnk
 wrapper/_CACHÉ/*
 wrapper/_SAVED/*
 wrapper/_THEMES/import.xml
@@ -11,6 +12,7 @@ utilities/import_these/*
 utilities/renders/*
 utilities/misc/temp/*
 utilities/grounded_messages/*
+utilities/decrypted_assets/*
 utilities/config.bat
 utilities/checks/disclaimer.txt
 server/characters/*
