@@ -1,4 +1,9 @@
-const pjson = require("../package.json");
+// Loads env.json for Wrapper version
+const env = require("../env");
+// env.json variables
+let version = env.WRAPPER_VER;
+let build = env.WRAPPER_BLD;
+
 const stuff = require("./info");
 const http = require("http");
 const fs = require("fs");
@@ -30,7 +35,8 @@ module.exports = function (req, res, url) {
 				} else if (fs.existsSync(path)) {
 					if (t.contentReplace) {
 						content = fs.readFileSync(path, "utf8");
-						content = content.replace(/VERSIÖN/g, pjson.versionStr);
+						content = content.replace(/WRAPPER_VER/g, version);
+						content = content.replace(/WRAPPER_BLD/g, build);
 						res.end(content);
 					} else {
 						fs.createReadStream(path).pipe(res);
