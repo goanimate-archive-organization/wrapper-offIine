@@ -8,16 +8,26 @@ cls
 echo Backup and restore tool for Wrapper: Offline
 echo Created by MJ, the Spirit
 echo:
+if exist "backups" (
+echo First, choose to back up either of the listed folders,
+echo or to create a restore point of your backup folder.
+echo -------------------------------------------------------
+) else (
 echo First, select a folder.
 echo --------------------------------------
-echo Enter 1 for the _SAVED folder
-echo Enter 2 for the imported assets folder
+)
+echo Enter 1 to back up the _SAVED folder
+echo Enter 2 to back up the imported assets folder
+if exist "backups" (
+echo Enter 3 to create a restore point of your backup folder
+)
 echo:
 :selection
 echo:
 set /p FOLDERID= Choice:
 if "%FOLDERID%"=="1" goto saved
 if "%FOLDERID%"=="2" goto import
+if "%FOLDERID%"=="3" goto zip_backup
 echo Please select a folder. && goto selection
 
 :saved
@@ -32,7 +42,7 @@ echo Enter 2 to restore the contents using the backup
 echo Enter 0 to go back
 :savedselection
 echo:
-set /p SAVEDID= Choice:
+set /p SAVEDID= Choice: 
 if "%SAVEDID%"=="1" goto saved_backup
 if "%SAVEDID%"=="2" goto saved_restore
 if "%SAVEDID%"=="0" goto backupstart
@@ -255,5 +265,65 @@ echo and then try starting it up again.
 echo:
 pause
 exit
+
+:zip_backup
+if exist "backups" goto zipdisclaimer
+if not exist "backups" goto nozip
+		:zipdisclaimer
+		cls
+		set ZIPCONFIRM=1
+		echo This tool is about to make a restore point of your backup folder.
+		echo It'll be put into a .zip file showing its date and time as the filename.
+		echo:
+		echo Think of this like Windows' restore point feature,
+		echo but in Wrapper: Offline form.
+		echo:
+		echo Press Enter to create a restore point or 0 to go back.
+		echo:
+		echo:
+		set /p ZIPCONFIRM= Choice:
+			if %ZIPCONFIRM%==0 goto backupstart (
+			) else (
+			goto zipprocess
+			)
+			:zipprocess
+			if not exist "backups\Restore points" ( mkdir "Restore points" )
+			set RESTORENAME=%date:~-4,4%-%date:~-7,2%-%date:~-10,2%T%time:~-11,2%-%time:~-8,2%-%time:~-5,2%Z.zip
+			cls
+			call 7za.exe a "backups\Restore points\%RESTORENAME%" "backups/Wrapper Content Backup" >nul
+			cls
+			call 7za.exe a "backups\Restore points\%RESTORENAME%" "backups/Imported Assets Backup" >nul
+			cls
+			call 7za.exe a "backups\Restore points\%RESTORENAME%" "backups/Old Saved Folder Content" >nul
+			cls
+			call 7za.exe a "backups\Restore points\%RESTORENAME%" "backups/Old Import Folder Content" >nul
+			cls
+			echo Restore point created.
+			echo Name: %RESTORENAME%
+			echo:
+			echo Press 1 to view your restore points
+			echo Press 2 to restart
+			echo Press 0 to exit
+			echo:
+			goto zipselect
+	
+	:nozip
+	echo Please select a folder.
+	goto selection
+	)
+
+:zipselect
+set ZIPCHOICE=0
+set /p ZIPCHOICE= Option: 
+if %ZIPCHOICE%==1 (
+	explorer backups\Restore points
+	goto zipselect
+	)
+if %ZIPCHOICE%==2 (
+	goto backupstart
+) else (
+exit
+)
+
 
 :: Tool created in W:O 1.3.0. This took around an hour to make and test at first, but then I got the idea of upgrading it, which took me around 2 more days to do so. It was long to code and test, but I'm glad that it's finally done. ~ MJ

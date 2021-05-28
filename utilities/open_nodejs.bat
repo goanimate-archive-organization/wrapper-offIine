@@ -8,12 +8,12 @@ pushd ..\wrapper
 :start
 call npm start
 echo:
-echo Uh oh!
-echo Either Node.js has crashed or you dont have it installed.
-echo If Node.js crashed, please send the error in the github issues page.
-echo If you dont have Node.js, Install it in utilities folder.
+echo Uh-oh!
+echo Either Node.js has crashed or you don't have it installed.
+echo If Node.js crashed, please send the error in the GitHub issues page.
+echo If you don't have Node.js, install it in the utilities folder.
 echo:
 echo If you saw an error that says "MODULE_NOT_FOUND",
-echo go in utilities folder and run module_installer.bat
+echo go in the utilities folder and run module_installer.bat.
 pause
 goto start
