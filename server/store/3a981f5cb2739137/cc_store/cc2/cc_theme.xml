@@ -189,7 +189,7 @@
         <choice>0xBE5A30</choice>
         <choice>0xE797B6</choice>
     </color>
-    <!--<color r="ccHandMinor" component_type="GoHands" enable="Y">
+    <color r="ccHandMinor" component_type="GoHands" enable="Y">
         <choice>0xAE0057</choice>
         <choice>0x53A8DF</choice>
         <choice>0xEC9EC5</choice>
@@ -198,7 +198,7 @@
         <choice>0x5F4929</choice>
         <choice>0x4A6028</choice>
         <choice>0x000000</choice>
-    </color>-->
+    </color>
     <facial id="head_talkneutral" name="Talk" enable="Y">
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="default"/>
@@ -275,17 +275,6 @@
         <selection type="hair" state_id="default"/>
         <selection type="mouth" state_id="angry"/>
         <selection type="nose" state_id="default"/>
-    </facial>  
-    <facial id="head_angry2" name="Scheming" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="angry"/>
-        <selection type="eyebrow" state_id="angry"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="happy"/>
-        <selection type="nose" state_id="default"/>
     </facial>
     <facial id="head_sad" name="Sad" enable="Y">
         <selection type="ear" state_id="default"/>
@@ -309,17 +298,6 @@
         <selection type="mouth" state_id="cry"/>
         <selection type="nose" state_id="default"/>
     </facial>
-	<facial id="head_cry2" name="Tears of joy" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="cry"/>
-        <selection type="eyebrow" state_id="sad"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="laugh"/>
-        <selection type="nose" state_id="default"/>
-    </facial>>
     <facial id="head_think" name="Thinking" enable="Y">
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="confused"/>
@@ -364,17 +342,6 @@
         <selection type="mouth" state_id="default"/>
         <selection type="nose" state_id="default"/>
     </facial>
-	<facial id="head_sleep2" name="Dreamy" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="closed_eye"/>
-        <selection type="eyebrow" state_id="happyt"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="happy"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
     <facial id="head_ko" name="Knocked out" enable="Y">
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="desperate"/>
@@ -397,28 +364,6 @@
         <selection type="mouth" state_id="sick"/>
         <selection type="nose" state_id="default"/>
     </facial>
-    <facial id="head_sick2" name="Tired" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="sick"/>
-        <selection type="eyebrow" state_id="sad"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="confused"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
-	<facial id="head_sick3" name="Bored" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="confused"/>
-        <selection type="eyebrow" state_id="sad"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="sick"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
     <facial id="head_laugh" name="Laugh" enable="Y">
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="laugh"/>
@@ -430,31 +375,9 @@
         <selection type="mouth" state_id="laugh"/>
         <selection type="nose" state_id="default"/>
     </facial>
-	<facial id="head_laugh2" name="Evil laugh" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="angry"/>
-        <selection type="eyebrow" state_id="angry"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="laugh"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
     <facial id="head_confused" name="Confused" enable="Y">
         <selection type="ear" state_id="default"/>
         <selection type="eye" state_id="confused"/>
-        <selection type="eyebrow" state_id="confused"/>
-        <selection type="facedecoration" state_id="default"/>
-        <selection type="faceshape" state_id="default"/>
-        <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
-        <selection type="mouth" state_id="confused"/>
-        <selection type="nose" state_id="default"/>
-    </facial>
-    <facial id="head_confused2" name="Suspicious" enable="Y">
-        <selection type="ear" state_id="default"/>
-        <selection type="eye" state_id="broken01"/>
         <selection type="eyebrow" state_id="confused"/>
         <selection type="facedecoration" state_id="default"/>
         <selection type="faceshape" state_id="default"/>
@@ -675,9 +598,8 @@
     </facial>
 
 
-
     <bodyshape id="default" name="Default" default_action="stand" default_motion="walk" action_thumb="stand" facial_thumb="head_neutral" thumb_path="thumbnail.swf" enable="Y">
-<default_char>
+        <default_char>
 		<color r="ccSkinColor">0xE2C294</color>
 		<color r="ccEyeLib">0xBD8764</color>
 		<color r="ccEyeIris">0x003333</color>
@@ -691,13 +613,13 @@
 		<color r="ccHairMajor">0x7E4D1B</color>
 		<component type="bodyshape" component_id="default" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
 		<component type="freeaction" component_id="default" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="eyebrow" component_id="002" theme_id="cc2" x="-1" y="1" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="ear" component_id="003" theme_id="cc2" x="-3" y="-7" xscale="1" yscale="1" offset="0" rotation="6" gobucks="0" gopoints="0"/>
-		<component type="hair" component_id="058" theme_id="cc2" x="1" y="7" xscale="0.97" yscale="1.08" offset="0" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="nose" component_id="007" theme_id="cc2" x="0" y="-4" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="mouth" component_id="008" theme_id="cc2" x="-2" y="-3" xscale="0.83" yscale="0.79" offset="0" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="eye" component_id="003" theme_id="cc2" x="0" y="-1" xscale="0.92" yscale="0.76" offset="-3" rotation="0" gobucks="0" gopoints="0"/>
-		<component type="faceshape" component_id="007" theme_id="cc2" x="-1" y="0" xscale="0.92" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="eyebrow" component_id="002" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="ear" component_id="003" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="hair" component_id="058" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="nose" component_id="007" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="mouth" component_id="008" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="eye" component_id="003" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
+		<component type="faceshape" component_id="007" theme_id="cc2" x="0" y="0" xscale="1" yscale="1" offset="0" rotation="0" gobucks="0" gopoints="0"/>
 		<library type="GoHands" component_id="001" theme_id="cc2" gobucks="0" gopoints="0"/>
 		<library type="GoLower" component_id="001" theme_id="cc2" gobucks="10" gopoints="0"/>
 		<library type="GoUpper" component_id="221" theme_id="cc2" gobucks="40" gopoints="0"/>
@@ -848,342 +770,258 @@
         <actionpack id="mgun" name="Machine Gun Pack" money="0" sharing="0" enable="Y">
             <action id="mgun_down01_fire" name="Lying down - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_down01_loop" name="Lying down - burst mode" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_down01_once" name="Lying down - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_down01_still" name="Lying down" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_crazy01_fire" name="Mad shooting" loop="Y" totalframe="70" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_crazy03_fire" name="Mad shooting" loop="Y" totalframe="9" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_run01_fire" name="Run - keep shooting" loop="Y" totalframe="18" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_walk01_fire" name="Walk - keep shooting" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_walk01_loop" name="Walk - burst mode" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_walk01_once" name="Walk - shoot once" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_walk01_still" name="Walk" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand03_fire" name="Aim upwards - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_stand03_loop" name="Aim upwards - burst mode" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_stand03_once" name="Aim upwards - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_stand03_still" name="Aim upwards" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand04_fire" name="Aim downwards - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_stand04_loop" name="Aim downwards - burst mode" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_stand04_once" name="Aim downwards - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_stand04_still" name="Aim downwards" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand02_fire" name="Aim - shoulder - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_stand02_loop" name="Aim - shoulder - burst mode" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_stand02_once" name="Aim - shoulder - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_stand02_still" name="Aim - shoulder" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand01_fire" name="Aim - waist - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_stand01_loop" name="Aim - waist - burst mode" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_stand01_once" name="Aim - waist - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_stand01_still" name="Aim - waist" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_crazy02_fire" name="Warning shots - shoot" loop="Y" totalframe="9" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_fire.swf" theme="common" aid="11626" />
             </action>
             <action id="mgun_crazy02_still" name="Warning shots" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_hit01" name="Hit with rifle butt" loop="Y" totalframe="35" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_run01_loop" name="Run - burst mode" loop="Y" totalframe="18" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_loop.swf" theme="common" aid="11627" />
             </action>
             <action id="mgun_run01_once" name="Run - shoot once" loop="Y" totalframe="18" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_once.swf" theme="common" aid="11628" />
             </action>
             <action id="mgun_run01_still" name="Run" loop="Y" totalframe="18" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand00_still" name="Standing" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand05_ready" name="Rifle on back" loop="Y" totalframe="25" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_stand05_still" name="Rifle on back" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_sit01_still" name="Sitting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_down02" name="Collapse" loop="Y" totalframe="60" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_petrified"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_down03" name="Collapse" loop="Y" totalframe="50" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_petrified"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_gethit01" name="Get hit" loop="Y" totalframe="50" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_shocked"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_gethit02" name="Get hit" loop="Y" totalframe="5" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_ko"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_put_back" name="Put gun back" loop="Y" totalframe="31" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_walk02" name="Walk" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
             <action id="mgun_run02" name="Run" loop="Y" totalframe="18" enable="Y" is_motion="N" category="Machine Gun">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_ak47b.msp_ncc_gun_ak47b_ncc_gun_still.swf" theme="common" aid="11629" />
             </action>
 		</actionpack>
 
         <actionpack id="sniper" name="Sniper" money="0" sharing="0" enable="Y">
             <action id="sniper_aimup_shootreload" name="Aim upwards - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_loop.swf" theme="common" aid="12232" />
             </action>
             <action id="sniper_aimup_shootreload_once" name="Aim upwards - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_once.swf" theme="common" aid="12233" />
             </action>
             <action id="sniper_aimup_still" name="Aim upwards" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_check" name="Check rifle" loop="Y" totalframe="25" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_checkfail" name="Check rifle" loop="Y" totalframe="30" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_checkstill" name="Check rifle" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_checksuccess" name="Check rifle" loop="Y" totalframe="10" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_cool"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_crawl" name="Crawl" loop="Y" totalframe="24" enable="Y" is_motion="Y" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_getup" name="Get up" loop="Y" totalframe="25" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_getup2" name="Get up" loop="Y" totalframe="30" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_gogogo" name="Losing focus" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_hit" name="Get hit - sniping" loop="Y" totalframe="20" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_ko"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_hit2" name="Get hit - sniping" loop="Y" totalframe="18" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_ko"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_laser" name="Spotted! - sniping" loop="Y" totalframe="9" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_shocked"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_lasersurrounded" name="Spotted! - sniping" loop="Y" totalframe="15" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_shocked"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_shootreload" name="Snipe - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_loop.swf" theme="common" aid="12232" />
             </action>
             <action id="sniper_down01_shootreload_once" name="Snipe - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_once.swf" theme="common" aid="12233" />
             </action>
             <action id="sniper_down01_still" name="Snipe" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down01_tired" name="Losing focus" loop="Y" totalframe="38" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_down_ready" name="Get in position" loop="Y" totalframe="31" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_hide01_down" name="Dodge bullets" loop="Y" totalframe="9" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_hide01_downloop" name="Dodge bullets" loop="Y" totalframe="37" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_reloadjam01_down" name="Jammed" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_reloadjam01_loop" name="Jammed" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_run01_loop" name="Run" loop="Y" totalframe="18" enable="Y" is_motion="Y" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_sit01_still" name="Sitting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand00_laser" name="Spotted! - standing" loop="Y" totalframe="19" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_shocked"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand00_lasersurrrounded" name="Spotted! - standing" loop="Y" totalframe="13" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_shocked"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand00_ready" name="Aim" loop="Y" totalframe="20" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand00_wait" name="Standing" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand01_aim" name="Aim straight" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_gethit01" name="Get hit - standing" loop="Y" totalframe="50" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_ko"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_gethit02" name="Get hit - standing" loop="Y" totalframe="5" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_ko"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_hit01" name="Hit with rifle butt" loop="Y" totalframe="35" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_pullout2" name="Take rifle out" loop="Y" totalframe="71" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_putback" name="Put rifle back" loop="Y" totalframe="65" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_stand_shootreload" name="Aim straight - keep shooting" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_loop.swf" theme="common" aid="12232" />
             </action>
             <action id="sniper_stand_shootreload_once" name="Aim straight - shoot once" loop="Y" totalframe="1" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_angry"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_once.swf" theme="common" aid="12233" />
             </action>
             <action id="sniper_wait01_down" name="Losing focus" loop="Y" totalframe="36" enable="Y" is_motion="N" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
             <action id="sniper_walk01_loop" name="Walk" loop="Y" totalframe="16" enable="Y" is_motion="Y" category="Sniper">
                 <selection type="facial" facial_id="head_neutral"/>
-				<prop id="msp_ncc_gun_sniper02.msp_ncc_gun_sniper02_ncc_gun_still.swf" theme="common" aid="12234" />
             </action>
 		</actionpack>
 
@@ -1288,7 +1126,7 @@
                 <selection type="facial" facial_id="head_angry"/>
             </action>
             <action id="sword_atk17" name="Cut in half" loop="Y" totalframe="40" enable="Y" is_motion="N" category="Sword fight">
-                <selection type="facial" facial_id="head_shocked"/>>
+                <selection type="facial" facial_id="head_shocked"/>
             </action>
             <action id="sword_atk18" name="Cut in half" loop="Y" totalframe="46" enable="Y" is_motion="N" category="Sword fight">
                 <selection type="facial" facial_id="head_shocked"/>
@@ -1769,11 +1607,9 @@
             </action>
             <action id="ro_offer_gift01" name="Give gift" loop="Y" totalframe="20" enable="Y" is_motion="N" category="Daily life">
                 <selection type="facial" facial_id="head_happy"/>
-		<prop id="nccxmas_03present.swf" theme="common" aid="11466" />
             </action>
             <action id="ro_offer_gift01b" name="Give gift" loop="Y" totalframe="50" enable="Y" is_motion="N" category="Daily life">
                 <selection type="facial" facial_id="head_happy"/>
-		<prop id="nccxmas_03present.swf" theme="common" aid="11466" />
             </action>
             <action id="ro_offer_gift02" name="Offer flower" loop="Y" totalframe="20" enable="Y" is_motion="N" category="Daily life">
                 <selection type="facial" facial_id="head_cool"/>
@@ -1866,11 +1702,9 @@
             </action>
             <action id="rof_offer_gift01" name="Give gift" loop="Y" totalframe="20" enable="Y" is_motion="N" category="Daily life">
                 <selection type="facial" facial_id="head_happy"/>
-		<prop id="nccxmas_03present.swf" theme="common" aid="11466" />
             </action>
             <action id="rof_offer_gift01b" name="Give gift" loop="Y" totalframe="50" enable="Y" is_motion="N" category="Daily life">
                 <selection type="facial" facial_id="head_happy"/>
-		<prop id="nccxmas_03present.swf" theme="common" aid="11466" />
             </action>
             <action id="rof_run02b" name="Run slomo" loop="Y" totalframe="50" enable="Y" is_motion="Y" category="Daily life">
                 <selection type="facial" facial_id="head_cool"/>
@@ -1933,11 +1767,11 @@
             <action id="subtle_hot" name="Feeling Hot" loop="Y" totalframe="15" enable="Y" is_motion="N" category="Emotions">
                 <selection type="facial" facial_id="head_sick"/>
             </action>
-            <action id="subtle_ohcrap" name="Facepalm" loop="Y" totalframe="40" enable="Y" is_motion="N" category="Emotions">
-                <selection type="facial" facial_id="head_snub"/>
+            <action id="subtle_ohcrap" name="Oh. crap!" loop="Y" totalframe="40" enable="Y" is_motion="N" category="Emotions">
+                <selection type="facial" facial_id="head_sad"/>
             </action>
             <action id="subtle_opps" name="Oops ..." loop="Y" totalframe="30" enable="Y" is_motion="N" category="Emotions">
-                <selection type="facial" facial_id="head_shocked"/>
+                <selection type="facial" facial_id="head_neutral"/>
             </action>
             <action id="subtle_opps_02" name="Oops ..." loop="Y" totalframe="30" enable="Y" is_motion="N" category="Emotions">
                 <selection type="facial" facial_id="head_shocked"/>
