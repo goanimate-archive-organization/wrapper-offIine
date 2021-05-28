@@ -231,12 +231,7 @@ if !DEVMODE!==y (
 		echo ^(D4^) Localhost port for Wrapper: Offline frontend is[91m !PORT! [0m
 	)
 	echo ^(D5^) Reset all the settings in config.bat back to default
-	if !CONFIGURE!==y (
-		echo ^(D6^) Using configure_wrapper.bat is[92m ON [0m
-	) else (
-		echo ^(D6^) Using configure_wrapper.bat is[91m OFF [0m
-	)
-	echo ^(D7^) Import/export config.bat settings
+	echo ^(D6^) Import/export config.bat settings
 )
 :reaskoptionscreen
 echo:
@@ -492,8 +487,6 @@ if !DEVMODE!==n (
 	if /i "!choice!"=="?D5" ( goto devmodeerror )
 	if /i "!choice!"=="D6" ( goto devmodeerror )
 	if /i "!choice!"=="?D6" ( goto devmodeerror )
-	if /i "!choice!"=="D7" ( goto devmodeerror )
-	if /i "!choice!"=="?D7" ( goto devmodeerror )
 )
 
 if !DEVMODE!==y (
@@ -558,26 +551,8 @@ if !DEVMODE!==y (
 		echo code for config.bat.
 		goto reaskoptionscreen
 	)
-	if /i "!choice!"=="D6" (
-		set TOTOGGLE=CONFIGURE
-		if !CONFIGURE!==n (
-			set TOGGLETO=y
-		) else (
-			set TOGGLETO=n
-		)
-		set CFGLINE=48
-		goto toggleoption
-	)
+	if /i "!choice!"=="D6" goto import_exportconfig
 	if /i "!choice!"=="?D6" (
-		echo Enabling this will make it so that Wrapper: Offline opens
-		echo an additional Command Prompt window with open space.
-		echo:
-		echo This can be useful for debugging and figuring out problems
-		echo mostly having to do with things like Node.js or http-server.
-		goto reaskoptionscreen
-	)
-	if /i "!choice!"=="D7" goto import_exportconfig
-	if /i "!choice!"=="?D7" (
 		echo Importing settings allows you to use another person's settings.
 		echo Exporting settings allows you to share your settings with another person.
 		echo:
@@ -1251,9 +1226,6 @@ echo set DEVMODE=n>> !cfg!
 echo:>> !cfg!
 echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> !cfg!
 echo set PORT=4343>> !cfg!
-echo:>> !cfg!
-echo :: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n>> !cfg!
-echo set CONFIGURE=n>> !cfg!
 echo:>> !cfg!
 cls
 %0
