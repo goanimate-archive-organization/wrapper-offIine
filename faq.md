@@ -54,12 +54,12 @@ On your first run:
    - If you can't figure out how to install HTTPS certs, you can go to localhost:4664 and add a security exception, but this'll need to be done on each browser you use Wrapper: Offline with.
 
 Every time you want to start:
-1. In a terminal, go to the folder named "server"  and enter http-server -p 4343 -S -C the.crt -K the.key
+1. In a terminal, go to the folder named "server"  and enter http-server -p 4664 -S -C the.crt -K the.key
 2. Now in a new terminal window, go to the folder named "wrapper" and enter npm start
 3. Open your preferred browser and enter localhost:4343 in the address bar.
 
 ### Can I make Wrapper: Offline smaller?
-The current size is ~6 GB. The base download can't be much smaller without being incomplete, but there a few steps you can take if you absolutely need more space.
+The current size is ~1.5 GB. The base download can't be much smaller without being incomplete, but there a few steps you can take if you absolutely need more space.
 #### System cleanout tips (Recommended)
 1. If you're using Windows, you can run <https://old.reddit.com/r/TronScript/> overnight to clean out and potentially speed up your computer. This is a reputable script that automates many things that cleanup guides and technicians would do.
 2. If you're using Linux, you can run <https://www.bleachbit.org> to clean out your computer.
@@ -101,10 +101,6 @@ Some of them will never generate if your message is too long, as the current lim
 ### Starters aren't working!
 I currently have no fix for this, you'll just have to either copy them directly from projects or recreate them.
 
-### Resizing set in the Character Creator breaks when playing!
-I currently have no fix for this, you'll just have to size them manually in the editor. Head resizing should be working fine, it's the size of the entire character that's broken.
-
-
 
 ## Can I use Offline on...
 
@@ -118,10 +114,10 @@ As long as it allows you to run Flash, yes. You can change some options in setti
 ChromeOS is very heavily locked down, and supporting it would likely be troublesome to make, especially since Linux support would need to be made first. It might end up no longer working by the end of 2020 anyway, since Flash will be discontinued and there may not be a way to install it on ChromeOS past that point. Feel free to try it yourself though.
 
 ### iOS or Android?
-Use heroku, and Puffin Browser.
+No. Not unless you use some remote desktop trickery with a regular computer. This will never happen, Flash does not run on iOS at all, and the few Android versions out there are extremely old and barely work.
 
 ### Windows Phone?
-go back to 3 years old.
+go back to 2013
 ‎
 
 

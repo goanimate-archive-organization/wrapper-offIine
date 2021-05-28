@@ -80,8 +80,8 @@ echo Enter a ? before the number for more info on the option.
 echo:
 
 if !DEVMODE!==y (
-	echo STANDARD OPTIONS:
-	echo:
+	echo Standard options:
+	echo --------------------------------------
 )
 
 :: Verbose
@@ -134,14 +134,11 @@ if exist "wrapper\static\page-nodebug.js" (
 	echo ^(6^) Debug mode is[91m OFF [0m
 )
 :: Dark mode
-if exist "wrapper\pages\css\global-light.css" if not exist "wrapper\pages\html\_OLDLISTVIEW.txt" (
+if exist "wrapper\pages\css\global-light.css" (
 	echo ^(7^) Dark mode is[92m ON [0m
 )
-if exist "wrapper\pages\css\global-dark.css" if not exist "wrapper\pages\html\_OLDLISTVIEW.txt" ( 
+if exist "wrapper\pages\css\global-dark.css" ( 
 	echo ^(7^) Dark mode is[91m OFF [0m
-)
-if exist "wrapper\pages\html\_OLDLISTVIEW.txt" (
-	echo Dark mode cannot be enabled on the classic Video List.
 )
 :: Rich presence
 if exist "wrapper\main-norpc.js" (
@@ -199,8 +196,8 @@ if exist "server\characters\characters.zip" (
 
 if !DEVMODE!==y (
 	echo:
-	echo DEVELOPER OPTIONS:
-	echo:
+	echo Developer options:
+	echo --------------------------------------
 )
 
 :: Dev options
@@ -923,36 +920,43 @@ if exist "page-nodebug.js" (
 popd
 goto optionscreen
 
-::::::::::::::::
-:: Dark Mode  ::
-::::::::::::::::
+:::::::::::::::
+:: Dark Mode ::
+:::::::::::::::
 :darkmodechange
-echo Toggling setting...
+echo Toggling dark mode...
 pushd wrapper\pages\css
 if exist "global-light.css" (
 	:: disable
 	ren global.css global-dark.css
 	ren global-light.css global.css
-	ren themelist.css themelist-dark.css
-	ren themelist-light.css themelist.css
+	ren create.css create-dark.css
+	ren create-light.css create.css
 	ren list.css list-dark.css
 	ren list-light.css list.css
-	popd
-	pushd wrapper\static
-	ren page.js page-dark.js
-	ren page-light.js page.js
+	ren swf.css swf-dark.css
+	ren swf-light.css swf.css
 ) else ( 
 	:: enable
 	ren global.css global-light.css
 	ren global-dark.css global.css
-	ren themelist.css themelist-light.css
-	ren themelist-dark.css themelist.css
+	ren create.css create-light.css
+	ren create-dark.css create.css
 	ren list.css list-light.css
 	ren list-dark.css list.css
-	popd
-	pushd wrapper\static
-	ren page.js page-light.js
-	ren page-dark.js page.js
+	ren swf.css swf-light.css
+	ren swf-dark.css swf.css
+)
+popd
+pushd server\css
+if exist "global-light.css" (
+	:: disable
+	ren global.css global-dark.css
+	ren global-light.css global.css
+) else ( 
+	:: enable
+	ren global.css global-light.css
+	ren global-dark.css global.css
 )
 popd
 pushd server\animation\414827163ad4eb60
@@ -960,10 +964,14 @@ if exist "cc-light.swf" (
 	:: disable
 	ren cc.swf cc-dark.swf
 	ren cc-light.swf cc.swf
+	ren cc_browser.swf cc_browser-dark.swf
+	ren cc_browser-light.swf cc_browser.swf
 ) else ( 
 	:: enable
 	ren cc.swf cc-light.swf
 	ren cc-dark.swf cc.swf
+	ren cc_browser.swf cc_browser-light.swf
+	ren cc_browser-dark.swf cc_browser.swf
 )
 popd
 goto optionscreen
@@ -986,9 +994,9 @@ if exist "main-norpc.js" (
 popd
 goto optionscreen
 
-::::::::::::::::::
-:: Video List   ::
-::::::::::::::::::
+::::::::::::::::
+:: Video List ::
+::::::::::::::::
 :gridview
 echo Toggling setting...
 pushd wrapper\pages\html
@@ -1073,6 +1081,17 @@ if exist "themelist-allthemes.xml" (
 	:: enable
 	ren themelist.xml themelist-allthemes.xml
 	ren themelist-lessthemes.xml themelist.xml
+)
+popd
+pushd wrapper\pages\html
+if exist "create-allthemes.html" (
+	:: disable
+	ren create.html create-lessthemes.html
+	ren create-allthemes.html create.xml
+) else ( 
+	:: enable
+	ren create.html create-allthemes.html
+	ren create-lessthemes.html create.html
 )
 popd
 goto optionscreen
