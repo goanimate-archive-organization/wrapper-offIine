@@ -1,161 +1,153 @@
+/***
+this css has the video list stuff
+***/
+
+/**
+basic table stuff
+**/
+/* the table itself */
 table {
-	width: 100%;
-	max-width: 100%;
-	margin-bottom: 127px;
-	margin-right: auto;
-	margin-left: auto;
-	margin-top: 70px;
+	/* style */
 	background-color: transparent;
 	border-collapse: collapse;
 	border-spacing: 0;
 	font-size: 14px;
+	/* layout */
+	width: 100%;
+	max-width: 100%;
+	margin-top: 70px;
+	margin-bottom: 127px;
+	margin-left: auto;
+	margin-right: auto;
 }
-
+/* different table width */
 @media(min-width: 768px) {
 	table {
 		width: 750px;
 	}
-
-	tr>:nth-child(2)>* {
-		width: 350px;
-	}
 }
-
 @media(min-width: 992px) {
 	table {
 		width: 970px;
 	}
-
-	tr>:nth-child(2)>* {
-		width: 580px;
-	}
 }
-
 @media(min-width: 1200px) {
 	table {
 		width: 1170px;
 	}
-
-	tr>:nth-child(2)>* {
-		width: 780px;
-	}
 }
-
+/* table head */
 thead {
 	font-weight: 200;
+	border-top: 1px solid #ddd;
+	border-bottom: 2px solid #ddd;
 }
-
+/* all video rows */
+tbody>tr {
+	border-top: 0;
+	border-bottom: 1px solid #ddd;
+}
+tbody>tr:hover {
+	background: linear-gradient(#dedede, #f7f7f7);
+}
+/* table data */
 td {
 	padding: 8px;
 	vertical-align: middle;
 	line-height: 1.42857143;
 }
 
-thead {
-	border-bottom: 2px solid #ddd;
-	border-top: 1px solid #ddd;
-}
-
-tbody>tr {
-	border-top: 0;
-	border-bottom: 1px solid #ddd;
-}
-
-tbody>tr:hover {
-	background: linear-gradient(360deg, hsl(0 0% 87% / 1) 0%, hsl(0 0% 97% / 1) 100%);
-}
-
+/**
+thumbnail
+**/
+/* thumbnail container */
 tr>:nth-child(1) {
 	width: 64px;
+	word-break: break-word;
 }
-
+/* the thumbnail */
 tr>:nth-child(1)>img {
 	height: 36px;
 }
 
-tr>:nth-child(1) {
-	word-break: break-word;
-}
-
+/**
+video title
+**/
 tr>:nth-child(2) {
 	color: #999;
 }
 
-tr>:nth-child(2)>:nth-child(2) {
-	font-family: monospace;
-}
-
+/**
+last modified
+**/
+/* last modified container */
 tr>:nth-child(3) {
 	width: 250px;
 }
-
+/* everything inside the last modified container */
 tr>:nth-child(3)>* {
-	font-family: monospace;
-    display: inline-block;
-    text-align: center;
-    font-size: 14px;
+	/* style */
+	text-align: center;
+	font-size: 12px;
+	/* layout */
+	display: inline-block;
+	width: 8.5px;
 }
 
+/**
+buttons
+**/
+/* buttons container */
 tr>:nth-child(4) {
+	/* style */
 	font-family: 'GlyphiconsRegular';
 	text-decoration: none;
-	padding-top: 5px;
 	font-size: 14px;
-	width: 120px;
+	/* layout */
+	padding-top: 5px;
+	width: 90px;
 }
-
+/* the buttons */
 tr>:nth-child(4)>a {
-	display: inline-block;
-	text-decoration: none;
-	padding-right: 10px;
+	/* style */
 	color: #474747;
+	text-decoration: none;
+	/* layout */
+	display: inline-block;
+	padding-right: 10px;
 }
-
 tr>:nth-child(4)>a:hover {
 	color: #d85e27;
 }
-
+/* play button */
 tr>:nth-child(4)>:nth-child(1)::before {
 	content: '\E174';
 }
-
+/* edit button */
 tr>:nth-child(4)>:nth-child(2)::before {
 	content: '\E235';
 }
-
+/* download button */
 tr>:nth-child(4)>:nth-child(3)::before {
 	content: '\E182';
 }
 
+/**
+table footer stuff
+**/
 tfoot>tr>td {
 	text-align: center;
 	border: none;
 }
-
+/* load more */
 tfoot>tr>td>a {
+	/* style */
 	text-decoration: none;
 	color: #474747;
 	font-size: 14px;
 }
 
-form {
-	display: none;
-}
-
-		.warning {
-			font-size: 14px;
-			padding: 10px 0;
-			background-color: #fd7;
-			text-align: center;
-		}
-
-		.warning::before {
-			font-family: 'GlyphiconsRegular';
-			padding-right: 4px;
-			content: '\E079';
-			font-size: 12px;
-		}
-
-		.warning>a {
-			color: #5596e6;
-		}
+/**
+file upload form
+**/
+form { display: none }
