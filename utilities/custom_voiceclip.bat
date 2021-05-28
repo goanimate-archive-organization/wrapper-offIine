@@ -58,6 +58,7 @@ if "%VOCHOICE%"=="2" (
 		echo:
 		pause & goto import
 	)
+	if "%PROGRAMSNAME%"=="" ( echo Invalid program name. It can't be blank. Please try again. & goto programnameaskretry )
 )
 if "%VOCHOICE%"=="3" ( goto import )
 :import
@@ -89,6 +90,8 @@ if not "%VOEXT%"==.mp3 (
 echo Press 1 if you'd like to import another file.
 echo Otherwise, press Enter to exit.
 echo:
-set /p FUTURE= Response :
+:futureretry
+set /p FUTURE= Response: 
 if "%FUTURE%"=="1" ( cls & goto main )
 if "%FUTURE%"=="" exit
+echo Time to choose. & goto futureretry

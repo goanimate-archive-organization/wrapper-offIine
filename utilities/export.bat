@@ -5,6 +5,9 @@
 @echo off
 title Wrapper: Offline Exporting Script
 
+:: patch detection
+if exist "..\patch.jpg" echo there's no videos to export if whoppers patched && pause & exit
+
 :: To be quite honest I had to visit some old StackOverflow threads for help on this. ~xom
 
 :restart

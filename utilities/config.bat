@@ -43,6 +43,3 @@ set DEVMODE=y
 
 :: Tells settings.bat which port the frontend is hosted on. (If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json) Default: 4343
 set PORT=4343
-
-:: Enables configure_wrapper.bat. Useful for investigating things like problems with Node.js or http-server. Default: n
-set CONFIGURE=n

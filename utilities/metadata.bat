@@ -8,5 +8,5 @@ if "%SUBSCRIPT%"=="" ( start notepad.exe "%CD%\%~nx0" & exit )
 endlocal
 
 :: Version number and build number
-set WRAPPER_VER=1.3.3
-set WRAPPER_BLD=14
+set WRAPPER_VER=1.3.1
+set WRAPPER_BLD=0.5
