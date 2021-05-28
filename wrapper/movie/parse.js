@@ -2,7 +2,7 @@ var themeFolder = process.env.THEME_FOLDER;
 var mp3Duration = require("mp3-duration");
 var char = require("../character/main");
 var ttsInfo = require("../tts/info");
-const caché = require('../data/caché');
+const caché = require('../asset/caché');
 var source = process.env.CLIENT_URL;
 var header = process.env.XML_HEADER;
 var get = require("../misc/get");
@@ -527,7 +527,7 @@ module.exports = {
 					var buff = charBuffers[id];
 					var hasHeader = buff.subarray(0, hLen / 2).toString() == header.substr(0, hLen / 2);
 					var start = buff.includes("file_name") ? buff.indexOf(".xml") + 6 : hasHeader ? hLen + 9 : 9;
-					xmlBuffers.push(Buffer.from(`<cc_char file_name='ugc.char.${id}.xml' ${buff.subarray(start)}`));
+					xmlBuffers.push(Buffer.from(`<cc_char file_name='ugc.char.${id}.xml' x${buff.subarray(start)}`));
 				}
 
 				if (thumb) {
