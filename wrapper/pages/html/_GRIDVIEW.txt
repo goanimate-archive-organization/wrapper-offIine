@@ -1,0 +1,1 @@
+STOP! Do not delete this! This file is necessary for settings.bat to handle video list switching.
