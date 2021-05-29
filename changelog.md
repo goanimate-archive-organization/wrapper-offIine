@@ -13,9 +13,9 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Changed
   - The First Noel is now Egzod & Maestro Chives - Royalty (ft. Neoni) because l hate that song
 ### Fixed
-  - reset_install.bat Deletion.
   - Create.html DON'T messed up.
-  - Truncated themelist TURNED OFF! because I WANT THAT THEMES!!!
+### Deleted
+  - reset_install.bat
 ## Build 14
 ### Changed
   - balabolka txt to md
@@ -25,6 +25,9 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Checks Folder because is not here in utilities folder
   - Import files are deleted after opening import.bat so im gonna add import_these folder
   - ffdec NEVER MESSES!
+## Build 39
+### Deleted
+  - patch.jpg cuz no one unjk
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
