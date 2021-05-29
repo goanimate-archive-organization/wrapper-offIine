@@ -90,7 +90,7 @@ tr>:nth-child(3)>* {
 	text-align: center;
 	font-size: 12px;
 	/* layout */
-	display: inline-block;
+	display: inline;
 	width: 8.5px;
 }
 
@@ -151,3 +151,93 @@ tfoot>tr>td>a {
 file upload form
 **/
 form { display: none }
+
+/** video grid **/
+#grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	width: 95%;
+	grid-gap: 2%;
+	padding: 0%;
+}
+
+#video {
+	padding: 1%;
+	color: #000;
+	text-decoration: #fff;
+}
+	
+#preview_thumb>img {
+	width: 300px;
+	border-radius: 6px;
+	transition: .15s cubic-bezier(.22,.61,.36,1);
+}
+	
+#preview_thumb>img:hover {
+	transform: scale(1.05);
+	transition: .15s cubic-bezier(.22,.61,.36,1);
+}
+
+#buttons {
+	float: right;
+}
+
+#title {
+	font-size: 20px;
+	margin-top: 5px;
+}
+
+#duration {
+	position: grid;
+	float: center;
+	background-color: rgba(104, 104, 104, 0.795);
+	width: 20%;
+	height: 0%;
+	padding: 1px;
+	text-align: center;
+	top: 52.7%;
+	left: 0%;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+#thumbnail {
+	width: 100%;
+}
+
+#buttons {
+	font-family: 'GlyphiconsRegular';
+	text-decoration: none;
+	padding-top: 5px;
+	font-size: 20px;
+	width: 100%;
+}
+
+#buttons>a {
+	display: inline-block;
+	text-decoration: none;
+	padding-right: 10px;
+	color: #000;
+}
+
+#buttons>a:hover {
+	color: #d85e27;
+}
+
+#buttons>:nth-child(1)::before {
+	content: '\E174';
+}
+
+#buttons>:nth-child(2)::before {
+	content: '\E235';
+}
+
+#buttons>:nth-child(3)::before {
+	content: '\E182';
+}
+
+#date {
+	font-family: monospace;
+}
