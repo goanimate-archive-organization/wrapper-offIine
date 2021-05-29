@@ -444,7 +444,7 @@ module.exports = (voiceName, text) => {
 					{
 						host: "localhost",
 						port: "4664",
-						path: `/vo/rewritable.mp3`,
+						path: `/vo/rewriteable.mp3`,
 					},
 					(r) => {
 						var buffers = [];
