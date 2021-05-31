@@ -1,12 +1,6 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
 :: License: MIT
-set SUBSCRIPT=y
-if not exist utilities\metadata.bat ( goto metamissing )
-call utilities\metadata.bat
-if exist %tmp%\importserver.bat ( del %tmp%\importserver.bat )
-cls
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Initializing...]
 
 ::::::::::::::::::::
 :: Initialization ::
@@ -18,6 +12,40 @@ title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Initializing...]
 :: Lets variables work or something idk im not a nerd
 SETLOCAL ENABLEDELAYEDEXPANSION
 
+:: Idk what this is
+if exist %tmp%\importserver.bat ( del %tmp%\importserver.bat )
+
+:: Load metadata
+if not exist utilities\metadata.bat ( set NOMETA=y & goto metamissing )
+set SUBSCRIPT=y
+call utilities\metadata.bat
+goto metaavailable
+
+:metamissing
+if %NOMETA%==y (
+	title Wrapper: Offline [Metadata Missing]
+	echo The metadata's missing for some reason?
+	echo Restoring...
+	goto metacopy
+)
+
+:returnfrommetacopy
+if not exist utilities\metadata.bat ( echo Something is horribly wrong. You may be in a read-only system/admin folder. & pause & exit )
+if %NOMETA%==n ( set SUBSCRIPT=y & call utilities\metadata.bat )
+
+:rebootasadmin
+if %ADMIN%==n (
+	echo Set UAC = CreateObject^("Shell.Application"^) > %tmp%\requestAdmin.vbs
+	set params= %*
+	echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1 >> %tmp%\requestAdmin.vbs
+	start "" %tmp%\requestAdmin.vbs
+	exit /B
+)
+:metaavailable
+
+:: Set title
+title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Initializing...]
+
 :: Make sure we're starting in the correct folder, and that it worked (otherwise things would go horribly wrong)
 pushd "%~dp0"
 if !errorlevel! NEQ 0 goto error_location
@@ -27,21 +55,7 @@ if not exist server ( goto error_location )
 goto noerror_location
 :error_location
 echo Doesn't seem like this script is in a Wrapper: Offline folder.
-pause & exit
-:metamissing
-title Wrapper: Offline [Metadata Missing]
-echo The metadata's missing for some reason?
-echo Restoring...
-goto metacopy
-:returnfrommetacopy
-if not exist utilities\metadata.bat ( echo Something is horribly wrong. You may be in a read-only system/admin folder. & pause & exit )
-call utilities\metadata.bat
-:devmodeerror
-echo Ooh, sorry. You have to have developer mode on
-echo in order to access these features.
-echo:
-echo Please turn developer mode on in the settings, then try again.
-goto wrapperidle
+pause && exit
 :noerror_location
 
 :: patch detection
@@ -67,7 +81,7 @@ if not exist "utilities\checks" md utilities\checks
 :: Operator, attention!
 if not exist "utilities\checks\disclaimer.txt" (
 	echo DISCLAIMER
-  echo:
+	echo:
 	echo Wrapper: Offline is a project to preserve the original GoAnimate flash-based themes.
 	echo We believe they should be archived for others to use and learn about in the future.
 	echo All business themes have been removed, please use Vyond Studio if you wish to get those.
@@ -103,8 +117,7 @@ if not exist "utilities\checks\disclaimer.txt" (
 
 :: Welcome, Director Ford!
 echo Wrapper: Offline
-echo A project from VisualPlugin originally adapted by Benson
-echo Adapted by xomdjl_ and the Wrapper: Offline Team
+echo A project from VisualPlugin adapted by the W:O team
 echo Version !WRAPPER_VER!, build !WRAPPER_BLD!
 echo:
 
@@ -157,8 +170,12 @@ if !INCLUDEDCHROMIUM!==y set BROWSER_TYPE=chrome
 
 :: Flash Player
 if !VERBOSEWRAPPER!==y ( echo Checking for Flash installation... )
+if exist "!windir!\SysWOW64\Macromed\Flash\*pepflashplayer64_34_0_0_155.dll" set FLASH_CHROMIUM_DETECTED=y
+if exist "!windir!\System32\Macromed\Flash\*pepflashplayer64_34_0_0_155.dll" set FLASH_CHROMIUM_DETECTED=y
 if exist "!windir!\SysWOW64\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
 if exist "!windir!\System32\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
+if exist "!windir!\SysWOW64\Macromed\Flash\*NPSWF64_34_0_0_155.dll" set FLASH_FIREFOX_DETECTED=y
+if exist "!windir!\System32\Macromed\Flash\*NPSWF64_34_0_0_155.dll" set FLASH_FIREFOX_DETECTED=y
 if exist "!windir!\SysWOW64\Macromed\Flash\*plugin.exe" set FLASH_FIREFOX_DETECTED=y
 if exist "!windir!\System32\Macromed\Flash\*plugin.exe" set FLASH_FIREFOX_DETECTED=y
 if !BROWSER_TYPE!==chrome (
@@ -360,16 +377,14 @@ if !ADMINREQUIRED!==y (
 				goto postadmincheck
 			)
 			pause
-			echo Set UAC = CreateObject^("Shell.Application"^)>> %temp%\requestAdmin.vbs
-			echo UAC.ShellExecute "%~s0", "", "", "runas", 1>> %temp%\requestAdmin.vbs
-			start %temp%\requestAdmin.vbs
-			exit /B
+			set ADMIN=n
+			goto rebootasadmin
 		)
 	)
 	if !VERBOSEWRAPPER!==y ( echo Admin rights detected. && echo:)
 )
 :postadmincheck
-if exist "%temp%\requestAdmin.vbs" ( del "%temp%\requestAdmin.vbs" )
+if exist "%tmp%\requestAdmin.vbs" ( del "%tmp%\requestAdmin.vbs">nul )
 
 :: Flash Player
 if !FLASH_DETECTED!==n (
@@ -465,7 +480,11 @@ if !FLASH_DETECTED!==n (
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n (
+				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
+				start "" "install_flash_player.bat"
+				popd
+			)
 	)
 	if !BROWSER_TYPE!==firefox (
 		echo Starting the Clean Flash Player installer...
@@ -478,7 +497,11 @@ if !FLASH_DETECTED!==n (
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n (
+				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
+				start "" "install_flash_player.bat"
+				popd
+			)
 	)
 	if !BROWSER_TYPE!==trident (
 		echo Starting the Clean Flash Player installer...
@@ -491,7 +514,11 @@ if !FLASH_DETECTED!==n (
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" !INSTALL_FLAGS! /quiet )
+		if !DRYRUN!==n (
+				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
+				start "" "install_flash_player.bat"
+				popd
+		)
 	)
 
 	echo Flash has been installed.
@@ -597,7 +624,7 @@ if !HTTPSERVER_DETECTED!==n (
 
 		:: Double check for installation
 		echo Checking for http-server installation again...
-		npm list -g | find "http-server" > nul
+		call npm list -g | find "http-server" > nul
 		if !errorlevel! == 0 (
 			goto httpserverinstalled
 		) else (
@@ -627,7 +654,7 @@ if !HTTPSERVER_DETECTED!==n (
 			echo:
 			echo Local file installation failed. Something's not right.
 			echo Unless this was intentional, ask for support or install http-server manually.
-			echo Enter "npm install http-server -g" into a command prompt.
+			echo Enter "npm install http-server -g" into a separate Command Prompt window.
 			echo:
 			pause
 			exit
@@ -668,7 +695,7 @@ if !HTTPSCERT_DETECTED!==n (
 			if !VERBOSEWRAPPER!==n ( cls )
 			echo For Wrapper: Offline to work, it needs an HTTPS certificate to be installed.
 			echo If you have administrator privileges, you should reopen start_wrapper.bat as Admin.
-			echo ^(do this by right-clicking start_wrapper.bat and click "Run as Administrator"^)
+			echo ^(it will do this automatically if you say you have admin rights^)
 			echo:
 			echo If you can't do that, there's another method, but it's less reliable and is done per-browser.
 			echo: 
@@ -677,7 +704,7 @@ if !HTTPSCERT_DETECTED!==n (
 			set /p CERTCHOICE= Response:
 			echo:
 			if not '!certchoice!'=='' set certchoice=%certchoice:~0,1%
-			if /i "!certchoice!"=="y" echo This window will now close so you can restart it with admin. & pause & exit
+			if /i "!certchoice!"=="y" echo This window will now close so you can restart it with admin. & set ADMIN=n & goto rebootasadmin
 			if /i "!certchoice!"=="n" goto certnonadmin
 			echo You must answer Yes or No. && goto certaskretry
 
@@ -788,7 +815,7 @@ title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Loading...]
 if !VERBOSEWRAPPER!==y (
 	if !CEPSTRAL!==n (
 		echo Closing any existing node and/or PHP apps and batch processes...
-		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline,Server for imported voice clips TTS voice) do (
+		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
 			if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
 		)
 		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
@@ -890,9 +917,8 @@ cls
 :wrapperstarted
 
 echo:
-popd
 echo Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! running
-echo A project from VisualPlugin adapted by the W:O Team
+echo A project from VisualPlugin adapted by the W:O team
 echo:
 if !VERBOSEWRAPPER!==n ( echo DON'T CLOSE THIS WINDOW^^! Use the quit option ^(0^) when you're done. )
 if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the extra CMD windows for extra output. )
@@ -904,6 +930,8 @@ if !DEVMODE!==y (
 	echo Standard options:
 	echo --------------------------------------
 )
+:: Spacing when dev mode is off
+if !DEVMODE!==n ( echo: )
 echo Enter 1 to reopen the video list
 echo Enter 2 to open the settings
 echo Enter 3 to import a file
@@ -1277,6 +1305,13 @@ pause
 cls
 goto wrapperstarted
 
+:devmodeerror
+echo You have to have developer mode on
+echo in order to access these features.
+echo:
+echo Please turn developer mode on in the settings, then try again.
+goto wrapperidle
+
 ::::::::::::::
 :: Shutdown ::
 ::::::::::::::
@@ -1465,16 +1500,18 @@ goto returnfromconfigcopy
 
 :metacopy
 if not exist utilities ( md utilities )
-echo :: Wrapper: Offline Metadata>> utilities\config.bat
-echo :: Important useful variables that are displayed by start_wrapper.bat>> utilities\config.bat
-echo :: You probably shouldn't touch this. This only exists to make things easier for the devs everytime we go up a build number or something like that.>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens this file in Notepad when run>> utilities\config.bat
-echo setlocal>> utilities\config.bat
-echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\config.bat
-echo endlocal>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Version number and build number>> utilities\config.bat
-echo set WRAPPER_VER=1.3.1>> utilities\config.bat
-echo set WRAPPER_BLD=5>> utilities\config.bat
+echo :: Wrapper: Offline Metadata>> utilities\metadata.bat
+echo :: Important useful variables that are displayed by start_wrapper.bat>> utilities\metadata.bat
+echo :: You probably shouldn't touch this. This only exists to make things easier for the devs everytime we go up a build number or something like that.>> utilities\metadata.bat
+echo:>> utilities\metadata.bat
+echo :: Opens this file in Notepad when run>> utilities\metadata.bat
+echo setlocal>> utilities\metadata.bat
+echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\metadata.bat
+echo endlocal>> utilities\metadata.bat
+echo:>> utilities\metadata.bat
+echo :: Version number and build number>> utilities\metadata.bat
+echo set WRAPPER_VER=1.3.1>> utilities\metadata.bat
+echo set WRAPPER_BLD=05>> utilities\metadata.bat
+echo:>> utilities\metadata.bat
+set NOMETA=n
 goto returnfrommetacopy
