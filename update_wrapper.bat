@@ -35,6 +35,7 @@ if not exist utilities\config.bat ( goto error_location )
 call utilities\config.bat
 
 
+title Upgrading Wrapper: Offline
 echo Would you like to upgrade?
 echo:
 echo Press Y to install the update, press N to cancel.
@@ -42,7 +43,6 @@ echo:
 :installaskretry
 set /p INSTALLCHOICE= Response:
 echo:
-if not '!installchoice!'=='' set installchoice=%installchoice:~0,1%
 if /i "!installchoice!"=="0" goto end
 if /i "!installchoice!"=="y" goto checkforgit
 if /i "!installchoice!"=="n" goto end
@@ -118,6 +118,7 @@ echo NO UPDATE FOR YOU^^!
 PING -n 5 127.0.0.1>nul
 echo COME BACK, ONE YEAR^^!
 PING -n 4 127.0.0.1>nul
+:: goes into the normal ending
 
 :: normal end
 :end
