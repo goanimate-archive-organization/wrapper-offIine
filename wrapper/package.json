@@ -21,6 +21,7 @@
 		"object-hash": "^2.0.3",
 		"randomstring": "^1.1.5",
 		"truncate": "^2.1.0",
+		"ws": "^7.4.6",
 		"xmldoc": "^1.1.2"
 	}
 }
