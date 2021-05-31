@@ -3002,6 +3002,7 @@
 	<prop id="cc_walking_stick.swf" name="walking stick" holdable="1" placeable="1" wearable="0" facing="left" thumb="" enable="Y" is_premium="N" aid="9032" money="0" sharing="0"/>
 	<prop id="cc_wine1.swf" name="wine1" holdable="1" placeable="1" wearable="0" facing="left" thumb="" enable="Y" is_premium="N" aid="9033" money="0" sharing="0"/>
 	<prop id="cc_wool_ball.swf" name="wool ball" holdable="1" placeable="1" wearable="0" facing="left" thumb="" enable="Y" is_premium="N" aid="9034" money="0" sharing="0"/>
+	<prop id="msp_ncc_tv_remote.swf" name="TV Remote" holdable="1" placeable="1" wearable="0" facing="left" thumb="" enable="Y" is_premium="N" aid="12159" money="0" sharing="0" />	
 	<prop id="cc_angel ring.swf" name="angel ring" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="9035" money="0" sharing="0"/>
 	<prop id="cc_crown.swf" name="crown" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="9036" money="0" sharing="0"/>
 	<prop id="cc_devilcorn.swf" name="devil horn" holdable="0" placeable="1" wearable="1" facing="left" thumb="" enable="Y" is_premium="N" aid="9037" money="0" sharing="0"/>
