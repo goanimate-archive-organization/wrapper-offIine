@@ -13,6 +13,22 @@ function toAttrString(table) {
 function toParamString(table) {
 	return Object.keys(table)
 		.map((key) => `<param name="${key}" value="${toAttrString(table[key])}">`)
+		.join(" ");  
+const fUtil = require("../misc/file");
+const stuff = require("./info");
+const http = require("http");
+
+function toAttrString(table) {
+	return typeof table == "object"
+		? Object.keys(table)
+				.filter((key) => table[key] !== null)
+				.map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(table[key])}`)
+				.join("&")
+		: table.replace(/"/g, '\\"');
+}
+function toParamString(table) {
+	return Object.keys(table)
+		.map((key) => `<param name="${key}" value="${toAttrString(table[key])}">`)
 		.join(" ");
 }
 function toObjectString(attrs, params) {
@@ -225,11 +241,9 @@ module.exports = function (req, res, url) {
 		<main>
 			${toObjectString(attrs, params)}
 		</main>
-
 		<form enctype='multipart/form-data' action='/upload_movie' method='post'>
 			<input id='file' type="file" onchange="this.form.submit()" name='import' />
 		</form>
-
 		<form enctype='multipart/form-data' action='/upload_character' method='post'>
 			<input id='file2' type="file" onchange="this.form.submit()" name='import' />
 		</form>
