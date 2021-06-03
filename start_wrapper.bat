@@ -458,7 +458,7 @@ if !FLASH_DETECTED!==n (
 	echo Rip and tear, until it is done.
 	for %%i in (firefox,palemoon,tor,iexplore,maxthon,microsoftedge,chrome,chrome64,chromium,opera,brave,torch,waterfox,basilisk,Basilisk-Portable) do (
 		if !VERBOSEWRAPPER!==y (
-			 taskkill /f /im %%i.exe /t
+			 taskkill /f /im %%i.exe /t >nul
 			 wmic process where name="%%i.exe" call terminate
 		) else (
 			 taskkill /f /im %%i.exe /t >nul
@@ -773,7 +773,7 @@ if !ADMINREQUIRED!==y (
 color 0f
 echo Restarting explorer.exe...
 echo:
-TASKKILL /F /IM explorer.exe
+TASKKILL /F /IM explorer.exe >nul
 PING -n 2 127.0.0.1>nul
 start explorer.exe
 cls
@@ -795,6 +795,7 @@ if /i "!restartpc!"=="y" (
 	PING -n 11 127.0.0.1>nul
 	echo Rebooting your PC...
 	call shutdown /r /t 00
+	exit
 )
 if /i "!restartpc!"=="n" goto continuing
 
