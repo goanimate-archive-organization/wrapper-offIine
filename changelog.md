@@ -28,6 +28,10 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ## Build 39
 ### Deleted
   - patch.jpg cuz no one unjk
+## Build 44
+### Changed
+  - Writing the Future to Elektronomia - Energy cuz sounds like it
+  - Remove business themes from gitignore
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
