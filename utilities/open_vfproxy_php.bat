@@ -9,4 +9,4 @@ echo Starting PHP server for VFProxy...
 echo:
 call ..\..\utilities\php\php.exe -S 127.0.0.1:8181
 echo:
-pause & exit
+exit
