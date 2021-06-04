@@ -1,3 +1,4 @@
+
 # General Wrapper Offline Stuff
 Wrapper Offline.lnk
 wrapper/_CACHÉ/*
@@ -148,3 +149,14 @@ dist
 # VEGAS audio waveform peak files
 *.sfk
 *.sfap0
+wrapper/_THEMES/_themelist-allthemes.xml
+wrapper/_THEMES/_themelist-lessthemes.xml
+wrapper/_THEMES/_themelist.xml
+wrapper/static/info-nowatermark.json
+wrapper/static/info-nowave.json
+wrapper/static/info-watermark.json
+wrapper/static/info-wave.json
+wrapper/static/page-debug.js
+wrapper/static/page-nodebug.js
+wrapper/static/page.js
+wrapper/static/watermarkON.txt
