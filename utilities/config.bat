@@ -29,7 +29,7 @@ set CUSTOMBROWSER=n
 set BROWSER_TYPE=n
 
 :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n
-set DRYRUN=n
+set DRYRUN=y
 
 :: Makes it so it uses the Cepstral website instead of VFProxy. Default: n
 set CEPSTRAL=n
