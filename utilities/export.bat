@@ -238,7 +238,7 @@ set WHICHSTEP=""
 set /p WHICHSTEP= Option: 
 echo:
 if %WHICHSTEP%==1 (
-	taskkill /im avidemux.exe >nul 2>&1
+	taskkill /f /im avidemux.exe >nul 2>&1
 	goto render_step2
 ) else if %WHICHSTEP%==2 (
 	goto render_step3
@@ -289,7 +289,7 @@ if %BROWSERCHOICE%==1 (
 )
 
 echo:
-taskkill /im avidemux.exe >nul 2>&1
+taskkill /f /im avidemux.exe >nul 2>&1
 cls
 echo As you can see, the movie won't play right away. That's normal.
 echo:
@@ -620,39 +620,27 @@ if %OUTRO%==1 (
 :render_completed
 echo:
 set WHATTODONEXT=0
-echo The entire rendering process has been complete^!
+echo The entire rendering process has been complete^^!
 echo:
 echo Press 1 to open the rendered file
 echo Press 2 to go to the render output folder
-echo Press 3 to exit out of this window right away
+echo Press 3 to exit out of this window
 echo Press 4 to export another video
 echo:
+:final_choice
 set /p WHATTODONEXT= Option:
-if %WHATTODONEXT%==1 (
+	if %WHATTODONEXT%==1 (
 	start "%OUTPUT_PATH%\%OUTPUT_FILE%"
-	goto last_step
-) else if %WHATTODONEXT%==2 (
+	echo:
+	goto final_choice
+	) else if %WHATTODONEXT%==2 (
 	start explorer.exe /select,"%OUTPUT_PATH%\%OUTPUT_FILE%"
-	goto last_step
-) else if %WHATTODONEXT%==3 (
+	echo:
+	goto final_choice
+	) else if %WHATTODONEXT%==3 (
 	exit
-) else if %WHATTODONEXT%==4 (
+	) else if %WHATTODONEXT%==4 (
 	set RESTARTVALUE=1
-cls
-goto restart
-)
-
-
-:last_step
-echo:
-set LAST=0
-echo Press 1 to export another video. Otherwise, press Enter to exit.
-set /p LAST= Choice:
-if %LAST%==1 (
 	cls
-	set RESTARTVALUE=1
 	goto restart
-	) else (
-	taskkill /im avidemux.exe >nul 2>&1
-	exit
 	)
