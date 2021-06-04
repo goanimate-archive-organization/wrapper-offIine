@@ -189,9 +189,15 @@ if !DEVMODE!==y (
 ) else ( 
 	echo ^(14^) Developer mode is[91m OFF [0m
 )
+:: Auto restarting NPM
+if !AUTONODE!==y (
+	echo ^(15^) Auto-restarting NPM is[92m ON [0m
+) else ( 
+	echo ^(15^) Auto-restarting NPM is[91m OFF [0m
+)
 :: Character solid archive
 if exist "server\characters\characters.zip" (
-    echo ^(15^) Original LVM character IDs are[91m OFF [0m
+    echo ^(16^) Original LVM character IDs are[91m OFF [0m
 )
 
 if !DEVMODE!==y (
@@ -459,10 +465,30 @@ if "!choice!"=="?14" (
 	echo The developer settings will be visible both in these settings and in the Wrapper launcher.
 	goto reaskoptionscreen
 )
+:: Auto restarting NPM
+if "!choice!"=="15" (
+	set TOTOGGLE=AUTONODE
+	if !AUTONODE!==n (
+		set TOGGLETO=y
+	) else (
+		set TOGGLETO=n
+	)
+	set CFGLINE=48
+	goto toggleoption
+)
+
+if "!choice!"=="?15" (
+	echo By default, when the NPM crashes, an error message appears in the 
+	echo NPM window requiring a key input to restart it.
+        echo:
+	echo Enabling this feature skips the error message and pause completely,
+	echo restarting the NPM as soon as it crashes.
+	goto reaskoptionscreen
+)
 :: Character solid archive
 if exist "server\characters\characters.zip" (
-    if "!choice!"=="15" goto extractchars
-    if "!choice!"=="?15" (
+    if "!choice!"=="16" goto extractchars
+    if "!choice!"=="?16" (
         echo When first getting Wrapper: Offline, all non-stock characters are put into a single zip file.
         echo This is because if they're all separate, extracting takes forever and is incredibly annoying.
         echo If you wish to import characters made on the LVM when it was still up and hosted by Vyond,
@@ -1353,7 +1379,6 @@ cls
 		)
 		if "!settingsres!"=="" ( echo You must select a valid option. && goto settinginexretry )
 	)
-
 
 :end
 endlocal
