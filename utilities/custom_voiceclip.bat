@@ -11,6 +11,7 @@ pushd "%~dp0"
 pushd "%~dp0"
 
 :main
+if not exist "..\server\vo" ( mkdir ..\server\vo )
 echo Welcome to the Wrapper: Offline voice clip importer.
 echo:
 if exist "..\server\vo\rewriteable.mp3" ( echo Do keep in mind that if you import a new voice clip, it will overwrite & echo the one you previously imported. & echo: )
@@ -95,11 +96,11 @@ echo voiceover files that are already there.^)
 :vopathretry
 set /p VOPATH= Path:
 if not exist "%VOPATH%" ( echo Uhh, that file doesn't seem to exist. Please try again. && goto vopathretry ) 
-for %%b in "%VOPATH%" do ( set VOEXT=%%~xb )
+for %%b in ("%VOPATH%") do ( set VOEXT=%%~xb )
 if not "%VOEXT%"==.mp3 (
 	echo Converting audio file to .mp3 and importing resulting file...
 	if not exist "..\server\vo" ( pushd "..\server" && md "vo" && popd )
-	call ffmpeg\ffmpeg.exe -i "%VOPATH% "..\server\vo\rewriteable.mp3" -y>nul
+	call ffmpeg\ffmpeg.exe -i "%VOPATH%" "..\server\vo\rewriteable.mp3" -y>nul
 	echo Successfully converted and imported^!
 	echo:
 	goto future
@@ -111,6 +112,8 @@ if not "%VOEXT%"==.mp3 (
 	echo:
 	goto future
 )
+
+
 
 :future
 echo Press 1 if you'd like to import another file.
