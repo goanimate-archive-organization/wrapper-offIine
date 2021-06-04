@@ -2483,6 +2483,7 @@
         <library type="GoUpper" id="3005" path="3005" name="3005" thumb="3005_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoUpper" id="3006" path="3006" name="3006" thumb="3006_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoUpper" id="3007" path="3007" name="3007" thumb="3007_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
+        <library type="GoUpper" id="gay" path="gay" name="gay" thumb="gay_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
 		
 <!-- FEET START HERE -->
         <library type="GoLower" id="000" path="000" name="000" thumb="000_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
