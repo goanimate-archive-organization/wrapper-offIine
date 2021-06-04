@@ -39,7 +39,11 @@ set CEPSTRAL=n
 set INCLUDEDBASILISK=n
 
 :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n
-set DEVMODE=y
+set DEVMODE=n
 
 :: Tells settings.bat which port the frontend is hosted on. (If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json) Default: 4343
 set PORT=4343
+
+:: Automatically restarts the NPM whenever it crashes. Default: y
+set AUTONODE=y
+
