@@ -261,7 +261,7 @@ echo Which browser do you want to use for the process?
 echo:
 echo Press 1 for Basilisk
 echo Press 2 for Chromium
-echo Press 3 for your custom set browser
+echo Press 3 for your custom set browser ^(Must be specified in settings.bat^)
 echo Press 4 for your default browser
 :BrowserSelect
 set /p BROWSERCHOICE= Browser:
@@ -533,6 +533,7 @@ goto resetcustomoutro
 	)
 	
 :output
+cls
 echo Where would you like to output to?
 echo Press Enter to output to the utilities\renders folder.
 echo:
@@ -551,63 +552,47 @@ if not exist "renders" ( mkdir "renders" )
 goto render
 
 :render_yesoutro
-echo Because you chose to have an outro, this will
-echo require 4 different FFMPEG processes.
-echo:
-echo For the first one, it'll be encoding the
-echo input to a proper format.
-echo:
-pause
-echo:
+cls
 echo Starting ffmpeg...
-echo:
-call ffmpeg\ffmpeg.exe -i "%FFMPEGINPUT%" %WATERMARKARGS%-vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
-echo:
-echo Now, it's time for the next FFMPEG process,
-echo which will encode it to TS, which is
-echo required so concat will work properly.
-echo:
-pause
-echo:
-echo Starting ffmpeg...
-echo:
-call ffmpeg\ffmpeg.exe -i "%TEMPPATH%" -c copy -y "%TEMPPATH2%"
-echo:
-echo Now, it's time for the next FFMPEG process,
-echo which will merge the outro video file and
-echo the video file together using the concat
-echo command.
-echo:
-echo Believe it or not, this isn't the final step.
-echo After this we'll convert the .TS to a .MP4.
-echo:
-pause
-:: This shit right here was where I began to have a really weird problem with the program working. ~xom
-echo:
-echo Starting ffmpeg...
-echo:
-if %ISVIDEOWIDE%==0 (
-	call ffmpeg\ffmpeg.exe -i "concat:%TEMPPATH2%|%OUTRO149%" -c copy -y "%TEMPPATH3%"
+if "%VERBOSEWRAPPER%"=="y" (
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "concat:%TEMPPATH2%|%OUTRO169%" -c copy -y "%TEMPPATH3%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%">nul
 )
-echo:
-echo Now, it's time for the final step.
-echo:
-echo This will convert the resulting .TS file
-echo into an H.264/AAC .MP4 file, which will make
-echo it compatible with most common video editors,
-echo especially VEGAS Pro.
-echo:
-pause
-echo:
-echo Starting ffmpeg...
-echo:
-call ffmpeg\ffmpeg.exe -i "%TEMPPATH3%" -vcodec h264 -acodec aac "%OUTPUT_PATH%\%OUTPUT_FILE%"
+PING -n 2 127.0.0.1>nul
+if "%VERBOSEWRAPPER%"=="y" (
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH%" -c copy -y "%TEMPPATH2%"
+) else (
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH%" -c copy -y "%TEMPPATH2%">nul
+)
+PING -n 2 127.0.0.1>nul
+if exist "tmpconcat.txt" ( del tmpconcat.txt )
+echo file '%TEMPPATH2%'>> tmpconcat.txt
+if %ISVIDEOWIDE%==0 (
+	echo file '%OUTRO149%'>> tmpconcat.txt
+) else (
+	echo file '%OUTRO169%'>> tmpconcat.txt
+)
+if "%VERBOSEWRAPPER%"=="y" (
+	call ffmpeg\ffmpeg.exe -f concat -i tmpconcat.txt -codec copy -safe 0 -y "%TEMPPATH3%"
+) else (
+	call ffmpeg\ffmpeg.exe -f concat -i tmpconcat.txt -codec copy -safe 0 -y "%TEMPPATH3%">nul
+)
+PING -n 2 127.0.0.1>nul
+del tmpconcat.txt>nul
+if "%VERBOSEWRAPPER%"=="y" (
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec h264 -acodec aac "%OUTPUT_PATH%\%OUTPUT_FILE%"
+) else (
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec h264 -acodec aac "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+)
 goto render_completed
 
 :render_nooutro
-call ffmpeg\ffmpeg.exe -i "%FFMPEGINPUT%" %WATERMARKARGS%-vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
+if "%VERBOSEWRAPPER%"=="y" (
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
+) else (
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+)
 goto render_completed
 
 :render
@@ -618,6 +603,11 @@ if %OUTRO%==1 (
 )
 
 :render_completed
+echo Deleting any temporary files...
+for %%i in (%TEMPPATH%,%TEMPPATH2%,%TEMPPATH3%) do (
+	if exist "%%i" ( del "%%i" )
+)
+cls
 echo:
 set WHATTODONEXT=0
 echo The entire rendering process has been complete^^!
