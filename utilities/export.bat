@@ -6,7 +6,7 @@
 title Wrapper: Offline Exporting Script
 
 :: patch detection
-if exist "..\image.png" echo there's no videos to export if whoppers patched && pause & exit
+if exist "..\image.jpg" echo there's no videos to export if whoppers patched && pause & exit
 
 :: To be quite honest I had to visit some old StackOverflow threads for help on this. ~xom
 
