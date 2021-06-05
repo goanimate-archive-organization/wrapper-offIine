@@ -1,5 +1,5 @@
-:: W:O Video Exporting Script
-:: Author: xomdjl_#1337 (ytpmaker1000@gmail.com)
+:: Wrapper: Offline Video Exporting Script
+:: Original Author: xomdjl_#1337 (ytpmaker1000@gmail.com)
 :: License: MIT
 
 @echo off
@@ -23,7 +23,10 @@ set OUTRO149=%CD%\misc\Outro14by9.ts
 set VOLUME=1.5
 set OUTPUT_PATH=%CD%\renders
 set OUTPUT_FILENAME=Wrapper_Video_%date:~-4,4%-%date:~-7,2%-%date:~-10,2%T%time:~-11,2%-%time:~-8,2%-%time:~-5,2%Z
-set OUTPUT_FILE=%OUTPUT_FILENAME%.mp4
+set FILESUFFIX=mp4
+set VCODEC=h264
+set ACODEC="aac -crf 17"
+set OUTPUT_FILE=%OUTPUT_FILENAME%.%FILESUFFIX%
 SETLOCAL ENABLEDELAYEDEXPANSION
 set SUBSCRIPT=y
 call config.bat
@@ -219,8 +222,10 @@ set ISWIDEPROMPT=0
 set /p ISWIDEPROMPT= Is Wide?:
 if %ISWIDEPROMPT%==1 (
 	set WIDTH=1920
+	set HEIGHT=1080
 ) else if %ISWIDEPROMPT%==2 (
 	set WIDTH=1680
+	set HEIGHT=1080
 ) else (
 	echo You must choose a valid option.
 	echo:
@@ -350,15 +355,17 @@ echo:
 cls
 echo Is the video widescreen ^(16:9^) or standard ^(14:9^)?
 echo:
-echo Press 1 if it's widescreen. ^(1920x1080^)
-echo Press 2 if it's standard. ^(1680x1080^)
+echo Press 1 if it's widescreen.
+echo Press 2 if it's standard.
 echo:
 :VideoWideSelect
 set /p ISVIDEOWIDE= Which One?:
 if %ISVIDEOWIDE%==1 (
 	set WIDTH=1920
+	set HEIGHT=1080
 ) else if %ISVIDEOWIDE%==2 (
 	set WIDTH=1680
+	set HEIGHT=1080
 ) else (
 	echo You must choose either widescreen or standard.
 	echo:
@@ -390,7 +397,7 @@ echo:
 cls
 
 if %OUTRO%==0 (
-goto output
+goto resolution
 ) else (
 goto outrocheck
 
@@ -471,7 +478,11 @@ goto resetcustomoutro
 		ren Outro16by9.ts OriginalOutro16by9.ts
 		echo Encoding outro to compatible H.264/AAC .TS file with FFMPEG...
 		PING -n 1.5 127.0.0.1>nul
-		start ffmpeg\ffmpeg.exe -i "%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%"
+		if "%VERBOSEWRAPPER%"=="y" (
+			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%">nul
+		) else (
+			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%"
+		)
 		echo Custom outro successfully encoded and added^!
 		echo:
 		pause
@@ -482,7 +493,7 @@ goto resetcustomoutro
 		
 	:videofilter
 	if %DEVMODE%==n (
-	goto output
+	goto resolution
 	) else (
 	goto vf
 	)
@@ -499,7 +510,7 @@ goto resetcustomoutro
 	echo:
 	if %VFRESPONSE%==1 (
 		goto avfilters
-		) else goto output (
+		) else goto resolution (
 		)
 		
 		:avfilters
@@ -532,6 +543,58 @@ goto resetcustomoutro
 		cls
 	)
 	
+:resolution
+cls
+echo What resolution would you like your video to be in?
+echo:
+if %ISVIDEOWIDE%==1 (
+	echo ^(1^) 240p ^(426x240^)
+	echo ^(2^) 360p ^(640x360^)
+	echo ^(3^) 480p ^(854x480^)
+	echo ^(4^) 720p ^(1280x720^)
+	echo ^(5^) 1080p ^(1920x1080^) ^(Default^)
+) else (
+	echo ^(1^) 240p ^(373x240^)
+	echo ^(2^) 360p ^(560x360^)
+	echo ^(3^) 480p ^(747x480^)
+	echo ^(4^) 720p ^(1120x720^)
+	echo ^(5^) 1080p ^(1680x1080^) ^(Default^)
+)
+echo:
+:resolutionretry
+set /p RESOLUTIONOPTION= Option: 
+if %ISVIDEOWIDE%==1 (
+	if "%RESOLUTIONOPTION%"=="1" ( set WIDTH=426 & set HEIGHT=240 & goto format )
+	if "%RESOLUTIONOPTION%"=="2" ( set WIDTH=640 & set HEIGHT=360 & goto format )
+	if "%RESOLUTIONOPTION%"=="3" ( set WIDTH=854 & set HEIGHT=480 & goto format )
+	if "%RESOLUTIONOPTION%"=="4" ( set WIDTH=1280 & set HEIGHT=720 & goto format )
+	if "%RESOLUTIONOPTION%"=="5" ( set WIDTH=1920 & set HEIGHT=1080 & goto format )
+) else (
+	if "%RESOLUTIONOPTION%"=="1" ( set WIDTH=373 & set HEIGHT=240 & goto format )
+	if "%RESOLUTIONOPTION%"=="2" ( set WIDTH=560 & set HEIGHT=360 & goto format )
+	if "%RESOLUTIONOPTION%"=="3" ( set WIDTH=747 & set HEIGHT=480 & goto format )
+	if "%RESOLUTIONOPTION%"=="4" ( set WIDTH=1120 & set HEIGHT=720 & goto format )
+	if "%RESOLUTIONOPTION%"=="5" ( set WIDTH=1680 & set HEIGHT=1080 & goto format )
+)
+echo Invalid option. Please try again. && goto resolutionretry
+
+:format
+cls
+echo Which format would you like your video to be in?
+echo:
+echo ^(1^) MPEG-4 Video File ^(H.264/AAC^) ^(Default^)
+echo ^(2^) Audio/Video Interleave ^(x264/LAME^)
+echo ^(3^) WebM Video File ^(VPX9/Vorbis^)
+echo ^(4^) Windows Media Video ^(WMV2/WMAV2^)
+echo:
+:formatretry
+set /p FORMATTYPE= Option: 
+if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & VCODEC=h264 & ACODEC="aac -crf 17" & goto output )
+if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & VCODEC=libx264 & ACODEC=libmp3lame & goto output )
+if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & VCODEC=libvpx & ACODEC=libvorbis & goto output )
+if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & VCODEC=wmv2 & ACODEC=wmav2 & goto output )
+echo Invalid option. Please try again. && goto formatretry
+
 :output
 cls
 echo Where would you like to output to?
@@ -543,10 +606,10 @@ set /p OUTPUT_PATH= Path:
 echo:
 echo What would you like your video file to be named?
 echo Press enter to make the filename %OUTPUT_FILE%.
-echo ^(.mp4 will be added automatically.^)
+echo ^(.%FILESUFFIX% will be added automatically.^)
 echo:
 set /p OUTPUT_FILENAME= Filename:
-set OUTPUT_FILE=%OUTPUT_FILENAME%.mp4
+set OUTPUT_FILE=%OUTPUT_FILENAME%.%FILESUFFIX%
 echo:
 if not exist "renders" ( mkdir "renders" )
 goto render
@@ -554,10 +617,11 @@ goto render
 :render_yesoutro
 cls
 echo Starting ffmpeg...
+PING -n 3 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%">nul
 )
 PING -n 2 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
@@ -581,17 +645,17 @@ if "%VERBOSEWRAPPER%"=="y" (
 PING -n 2 127.0.0.1>nul
 del tmpconcat.txt>nul
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec h264 -acodec aac "%OUTPUT_PATH%\%OUTPUT_FILE%"
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC% "%OUTPUT_PATH%\%OUTPUT_FILE%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec h264 -acodec aac "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC% "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
 )
 goto render_completed
 
 :render_nooutro
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC% -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:1080%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC% -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
 )
 goto render_completed
 
