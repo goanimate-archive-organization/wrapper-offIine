@@ -6,7 +6,7 @@
 title Wrapper: Offline Exporting Script
 
 :: patch detection
-if exist "..\image.jpg" echo there's no videos to export if whoppers patched && pause & exit
+if exist "..\patch.jpg" echo there's no videos to export if whoppers patched && pause & exit
 
 :: To be quite honest I had to visit some old StackOverflow threads for help on this. ~xom
 
@@ -25,7 +25,9 @@ set OUTPUT_PATH=%CD%\renders
 set OUTPUT_FILENAME=Wrapper_Video_%date:~-4,4%-%date:~-7,2%-%date:~-10,2%T%time:~-11,2%-%time:~-8,2%-%time:~-5,2%Z
 set FILESUFFIX=mp4
 set VCODEC=h264
-set ACODEC="aac -crf 17"
+set ACODEC=aac
+set CRF=17
+set ADDITIONAL=" -crf %CRF%"
 set OUTPUT_FILE=%OUTPUT_FILENAME%.%FILESUFFIX%
 SETLOCAL ENABLEDELAYEDEXPANSION
 set SUBSCRIPT=y
@@ -479,9 +481,9 @@ goto resetcustomoutro
 		echo Encoding outro to compatible H.264/AAC .TS file with FFMPEG...
 		PING -n 1.5 127.0.0.1>nul
 		if "%VERBOSEWRAPPER%"=="y" (
-			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%">nul
+			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -crf 17 -y "%OUTRO169%">nul
 		) else (
-			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -y "%OUTRO169%"
+			start ffmpeg\ffmpeg.exe -i "file:%CUSTOMOUTRO%" -vcodec h264 -acodec aac -crf 17 -y "%OUTRO169%"
 		)
 		echo Custom outro successfully encoded and added^!
 		echo:
@@ -589,11 +591,35 @@ echo ^(4^) Windows Media Video ^(WMV2/WMAV2^)
 echo:
 :formatretry
 set /p FORMATTYPE= Option: 
-if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & VCODEC=h264 & ACODEC="aac -crf 17" & goto output )
-if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & VCODEC=libx264 & ACODEC=libmp3lame & goto output )
-if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & VCODEC=libvpx & ACODEC=libvorbis & goto output )
-if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & VCODEC=wmv2 & ACODEC=wmav2 & goto output )
+if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & VCODEC=h264 & ACODEC=aac & ADDITIONAL=" -crf 17" & goto outputcheck )
+if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & VCODEC=libx264 & ACODEC=libmp3lame & ADDITIONAL="" goto outputcheck )
+if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & VCODEC=libvpx & ACODEC=libvorbis & ADDITIONAL="" goto outputcheck )
+if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & VCODEC=wmv2 & ACODEC=wmav2 & ADDITIONAL="" goto outputcheck )
 echo Invalid option. Please try again. && goto formatretry
+
+:outputcheck
+if "%DEVMODE%"=="y" (
+	if "%VCODEC%"=="h264" ( goto crfvalue )
+) else (
+	goto output
+)
+
+:crfvalue
+echo ^(Developer mode-exclusive option^)
+echo:
+echo What quality ^(CRF^) do you want your video to be in?
+echo ^(0 is lossless, 17 is the default, 51 is lowest quality^)
+echo:
+:crfretry
+set /p CRF= CRF: 
+for /l %%f in (0,1,51) do (
+	for %%g in (%%f) do (
+		if not %CRF%==%%g ( echo Invalid option. Please try again. & goto crfretry )
+	) else (
+		goto output
+	)
+)
+
 
 :output
 cls
@@ -619,9 +645,9 @@ cls
 echo Starting ffmpeg...
 PING -n 3 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -y "%TEMPPATH%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%">nul
 )
 PING -n 2 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
@@ -645,17 +671,17 @@ if "%VERBOSEWRAPPER%"=="y" (
 PING -n 2 127.0.0.1>nul
 del tmpconcat.txt>nul
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC% "%OUTPUT_PATH%\%OUTPUT_FILE%"
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% "%OUTPUT_PATH%\%OUTPUT_FILE%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC% "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%TEMPPATH3%" -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
 )
 goto render_completed
 
 :render_nooutro
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC% -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale=%WIDTH%:%HEIGHT%%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC% -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
 )
 goto render_completed
 
