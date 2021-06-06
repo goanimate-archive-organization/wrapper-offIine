@@ -18,6 +18,21 @@ goto noerror_location
 :error_location
 echo Doesn't seem like this script is in a Wrapper: Offline folder.
 goto end
+:gitpullerror
+echo ERROR: Could not pull the latest version of the Git
+echo repository.
+echo:
+echo Would you like to try to "reset" the repository? [Y/n]
+:gitpullretry
+set /p GITRESET= Response: 
+if "!gitreset!"=="0" goto end
+if /i "!gitreset!"=="y" (
+	echo Resetting repository...
+	call git reset --hard
+	echo Attempting to pull update again...
+	call git pull || echo It still failed. You'll have to close the window and try again later. & echo: & pause & exit /B
+)
+if /i "!gitreset!"=="n" goto endseinfeld
 :noerror_location
 
 :: Prevents CTRL+C cancelling and keeps window open when crashing
@@ -86,7 +101,7 @@ call utilities\7za.exe a "utilities\misc\temp\importarchive.zip" .\server\store\
 if !VERBOSEWRAPPER!==y ( echo Pulling latest version of repository from GitHub through Git... )
 PING -n 4 127.0.0.1>nul
 :: Perform the update
-call git pull
+call git pull || goto gitpullerror
 :: Bring back user data
 if !VERBOSEWRAPPER!==y ( echo Deleting config.bat from repository and replacing it with user's copy... )
 pushd utilities
