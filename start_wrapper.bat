@@ -471,56 +471,43 @@ if !FLASH_DETECTED!==n (
 	if !BROWSER_TYPE!==chrome (
 		echo Starting the Clean Flash Player installer...
 		echo:
-		if not exist "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" (
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo https://github.com/darktohka/clean-flash-builds/releases/tag/v1.6
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n (
-				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
-				start "" "install_flash_player.bat"
-				popd
-			)
+		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
 	)
 	if !BROWSER_TYPE!==firefox (
 		echo Starting the Clean Flash Player installer...
-		if not exist "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" (
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo https://github.com/darktohka/clean-flash-builds/releases/tag/v1.6
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n (
-				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
-				start "" "install_flash_player.bat"
-				popd
-			)
+		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
 	)
 	if !BROWSER_TYPE!==trident (
 		echo Starting the Clean Flash Player installer...
-		if not exist "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155\install_flash_player.bat" (
+		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo https://github.com/darktohka/clean-flash-builds/releases/tag/v1.6
+			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n (
-				pushd "utilities\installers\ChineseFlash-Patched-Win-34.0.0.155" 
-				start "" "install_flash_player.bat"
-				popd
-		)
+		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
 	)
-
 	echo Flash has been installed.
 	echo:
 )
