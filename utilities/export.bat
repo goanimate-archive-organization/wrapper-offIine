@@ -27,6 +27,8 @@ set FILESUFFIX=mp4
 set VCODEC=h264
 set ACODEC=aac
 set CRF=17
+set RESOLUTIONOPTION=5
+set FORMATTYPE=1
 set ADDITIONAL=" -crf %CRF%"
 set OUTPUT_FILE=%OUTPUT_FILENAME%.%FILESUFFIX%
 SETLOCAL ENABLEDELAYEDEXPANSION
@@ -112,7 +114,7 @@ goto findMovieId
 
 
 :findMovieId
-if %FINDMOVIEIDCHOICE%==1 (
+if "%FINDMOVIEIDCHOICE%"=="1" (
 	echo:
 	echo Opening the _SAVED folder...
 	start explorer.exe "..\wrapper\_SAVED\"
@@ -124,7 +126,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo IN THE INPUT. MAKE SURE TO SHORTEN "movie" TO "m" TOO.
 	echo:
 	set /p MOVIEID= Movie ID: 
-) else if %FINDMOVIEIDCHOICE%==2 (
+) else if "%FINDMOVIEIDCHOICE%"=="2" (
 	echo:
 	echo Opening the video list in your default browser...
 	start http://localhost:%PORT%
@@ -133,7 +135,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo It should be in this format: m-%RANDOM%
 	echo:
 	set /p MOVIEID= Movie ID: 
-) else if %FINDMOVIEIDCHOICE%==3 (
+) else if "%FINDMOVIEIDCHOICE%"=="3" (
 	echo:
 	echo Opening the video list in the included Chromium...
 	start ungoogled-chromium\chromium.exe --allow-outdated-plugins --app="http://localhost:%PORT%"
@@ -142,7 +144,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo It should be in this format: m-%RANDOM%
 	echo:
 	set /p MOVIEID= Movie ID: 
-) else if %FINDMOVIEIDCHOICE%==4 (
+) else if "%FINDMOVIEIDCHOICE%"=="4" (
 	echo:
 	echo Opening the video list in the included Basilisk...
 	start basilisk\Basilisk-Portable\Basilisk-Portable.exe http://localhost:%PORT%
@@ -151,7 +153,7 @@ if %FINDMOVIEIDCHOICE%==1 (
 	echo It should be in this format: m-%RANDOM%
 	echo:
 	set /p MOVIEID= Movie ID: 
-) else if %FINDMOVIEIDCHOICE%==5 (
+) else if "%FINDMOVIEIDCHOICE%"=="5" (
 	echo:
 	echo Please enter your movie ID.
 	echo It should be in this format: m-%RANDOM%
@@ -173,7 +175,7 @@ set /p CONTFAILRENDER= Response:
 echo:
 cls
 
-if %CONTFAILRENDER%==1 (
+if "%CONTFAILRENDER%"=="1" (
 	if not exist "%FFMPEGINPUT%" (
 		if not exist "%TEMPPATH%" (
 			goto error2
@@ -222,10 +224,10 @@ echo:
 :iswidereask
 set ISWIDEPROMPT=0
 set /p ISWIDEPROMPT= Is Wide?:
-if %ISWIDEPROMPT%==1 (
+if "%ISWIDEPROMPT%"=="1" (
 	set WIDTH=1920
 	set HEIGHT=1080
-) else if %ISWIDEPROMPT%==2 (
+) else if "%ISWIDEPROMPT%"=="2" (
 	set WIDTH=1680
 	set HEIGHT=1080
 ) else (
@@ -244,10 +246,10 @@ echo:
 set WHICHSTEP=""
 set /p WHICHSTEP= Option: 
 echo:
-if %WHICHSTEP%==1 (
+if "%WHICHSTEP%"=="1" (
 	taskkill /f /im avidemux.exe >nul 2>&1
 	goto render_step2
-) else if %WHICHSTEP%==2 (
+) else if "%WHICHSTEP%"=="2" (
 	goto render_step3
 ) else (
 	echo You must choose a valid option.
@@ -273,19 +275,19 @@ echo Press 4 for your default browser
 :BrowserSelect
 set /p BROWSERCHOICE= Browser:
 echo:
-if %BROWSERCHOICE%==1 (
+if "%BROWSERCHOICE%"=="1" (
 	echo Opening your movie in Basilisk...
 	PING -n 2.5 127.0.0.1>nul
 	start basilisk\Basilisk-Portable\Basilisk-Portable.exe "http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
-) else if %BROWSERCHOICE%==2 (
+) else if "%BROWSERCHOICE%"=="2" (
 	echo Opening your movie in Chromium...
 	PING -n 2.5 127.0.0.1>nul
 	start ungoogled-chromium\chromium.exe --allow-outdated-plugins --app="http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
-) else if %BROWSERCHOICE%==3 (
+) else if "%BROWSERCHOICE%"=="3" (
 	echo Opening your movie in your custom set browser...
 	PING -n 2.5 127.0.0.1>nul
 	start %CUSTOMBROWSER% "http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
-) else if %BROWSERCHOICE%==4 (
+) else if "%BROWSERCHOICE%"=="4" (
 	echo Opening your movie in your default browser...
 	PING -n 2.5 127.0.0.1>nul
 	start "" "http://localhost:%PORT%/recordWindow?movieId=%MOVIEID%&isWide=%ISWIDE%"
@@ -362,10 +364,10 @@ echo Press 2 if it's standard.
 echo:
 :VideoWideSelect
 set /p ISVIDEOWIDE= Which One?:
-if %ISVIDEOWIDE%==1 (
+if "%ISVIDEOWIDE%"=="1" (
 	set WIDTH=1920
 	set HEIGHT=1080
-) else if %ISVIDEOWIDE%==2 (
+) else if "%ISVIDEOWIDE%"=="2" (
 	set WIDTH=1680
 	set HEIGHT=1080
 ) else (
@@ -398,7 +400,7 @@ set /p OUTRO= Response:
 echo:
 cls
 
-if %OUTRO%==0 (
+if "%OUTRO%"=="0" (
 goto resolution
 ) else (
 goto outrocheck
@@ -470,7 +472,7 @@ goto resetcustomoutro
 	set /p CUSTOMOUTROCHOICE= Response: 
 	echo:
 	cls
-	if %CUSTOMOUTROCHOICE%==1 (
+	if "%CUSTOMOUTROCHOICE%"=="1" (
 		echo Drag the path to your custom outro in here.
 		echo:
 		set /p CUSTOMOUTRO= Path: 
@@ -510,7 +512,7 @@ goto resetcustomoutro
 	echo:
 	set /p VFRESPONSE= Response: 
 	echo:
-	if %VFRESPONSE%==1 (
+	if "%VFRESPONSE%"=="1" (
 		goto avfilters
 		) else goto resolution (
 		)
@@ -522,7 +524,7 @@ goto resetcustomoutro
 		set /p AVFILTERLIST= Response:
 		echo:
 		cls
-		if %AVFILTERLIST%==1 (
+		if "%AVFILTERLIST%"=="1" (
 		goto filterlist
 		) else goto filterargs (
 		)
@@ -549,7 +551,7 @@ goto resetcustomoutro
 cls
 echo What resolution would you like your video to be in?
 echo:
-if %ISVIDEOWIDE%==1 (
+if "%ISVIDEOWIDE%"=="1" (
 	echo ^(1^) 240p ^(426x240^)
 	echo ^(2^) 360p ^(640x360^)
 	echo ^(3^) 480p ^(854x480^)
@@ -565,7 +567,7 @@ if %ISVIDEOWIDE%==1 (
 echo:
 :resolutionretry
 set /p RESOLUTIONOPTION= Option: 
-if %ISVIDEOWIDE%==1 (
+if "%ISVIDEOWIDE%"=="1" (
 	if "%RESOLUTIONOPTION%"=="1" ( set WIDTH=426 & set HEIGHT=240 & goto format )
 	if "%RESOLUTIONOPTION%"=="2" ( set WIDTH=640 & set HEIGHT=360 & goto format )
 	if "%RESOLUTIONOPTION%"=="3" ( set WIDTH=854 & set HEIGHT=480 & goto format )
@@ -591,10 +593,34 @@ echo ^(4^) Windows Media Video ^(WMV2/WMAV2^)
 echo:
 :formatretry
 set /p FORMATTYPE= Option: 
-if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & set VCODEC=h264 & set ACODEC=aac & set ADDITIONAL=" -crf 17" & goto outputcheck )
-if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & set VCODEC=libx264 & set ACODEC=libmp3lame & set ADDITIONAL="" & goto outputcheck )
-if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & set VCODEC=libvpx & set ACODEC=libvorbis & set ADDITIONAL="" & goto outputcheck )
-if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & set VCODEC=wmv2 & set ACODEC=wmav2 & set ADDITIONAL="" & goto outputcheck )
+if "%FORMATTYPE%"=="1" (
+set FILESUFFIX=mp4
+set VCODEC=h264
+set ACODEC=aac
+set ADDITIONAL=""
+goto outputcheck
+)
+if "%FORMATTYPE%"=="2" (
+set FILESUFFIX=avi
+set VCODEC=libx264
+set ACODEC=libmp3lame
+set ADDITIONAL=""
+goto outputcheck
+)
+if "%FORMATTYPE%"=="3" (
+set FILESUFFIX=webm
+set VCODEC=libvpx
+set ACODEC=libvorbis
+set ADDITIONAL=""
+goto outputcheck
+)
+if "%FORMATTYPE%"=="4" (
+set FILESUFFIX=wmv
+set VCODEC=wmv2
+set ACODEC=wmav2
+set ADDITIONAL=""
+goto outputcheck
+)
 echo Invalid option. Please try again. && goto formatretry
 
 :outputcheck
@@ -632,6 +658,7 @@ echo:
 set /p OUTPUT_FILENAME= Filename:
 set OUTPUT_FILE=%OUTPUT_FILENAME%.%FILESUFFIX%
 echo:
+taskkill /f /im avidemux.exe >nul 2>&1
 if not exist "renders" ( mkdir "renders" )
 goto render
 
@@ -640,9 +667,9 @@ cls
 echo Starting ffmpeg...
 PING -n 3 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%" %VF%-r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%" %VF%-r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec h264 -acodec aac -crf 17 -y "%TEMPPATH%">nul
 )
 PING -n 2 127.0.0.1>nul
 if "%VERBOSEWRAPPER%"=="y" (
@@ -674,9 +701,9 @@ goto render_completed
 
 :render_nooutro
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%" %VF%-r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%"
 ) else (
-	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%"%VF% -r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
+	call ffmpeg\ffmpeg.exe -i "file:%FFMPEGINPUT%" -vf scale="%WIDTH%:%HEIGHT%" %VF%-r 25 -filter:a loudnorm,volume=%VOLUME% -vcodec %VCODEC% -acodec %ACODEC%%ADDITIONAL% -y "%OUTPUT_PATH%\%OUTPUT_FILE%">nul
 )
 goto render_completed
 
@@ -692,7 +719,7 @@ echo Deleting any temporary files...
 for %%i in (%TEMPPATH%,%TEMPPATH2%,%TEMPPATH3%) do (
 	if exist "%%i" ( del "%%i" )
 )
-cls
+
 echo:
 set WHATTODONEXT=0
 echo The entire rendering process has been complete^^!
@@ -704,18 +731,19 @@ echo Press 4 to export another video
 echo:
 :final_choice
 set /p WHATTODONEXT= Option:
-	if %WHATTODONEXT%==1 (
+	if "%WHATTODONEXT%"=="1" (
 	start "%OUTPUT_PATH%\%OUTPUT_FILE%"
 	echo:
 	goto final_choice
-	) else if %WHATTODONEXT%==2 (
+	) else if "%WHATTODONEXT%"=="2" (
 	start explorer.exe /select,"%OUTPUT_PATH%\%OUTPUT_FILE%"
 	echo:
 	goto final_choice
-	) else if %WHATTODONEXT%==3 (
+	) else if "%WHATTODONEXT%"=="3" (
 	exit
-	) else if %WHATTODONEXT%==4 (
+	) else if "%WHATTODONEXT%"=="4" (
 	set RESTARTVALUE=1
 	cls
 	goto restart
 	)
+	goto final_choice
