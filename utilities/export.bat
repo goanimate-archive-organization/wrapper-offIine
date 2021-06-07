@@ -591,10 +591,10 @@ echo ^(4^) Windows Media Video ^(WMV2/WMAV2^)
 echo:
 :formatretry
 set /p FORMATTYPE= Option: 
-if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & VCODEC=h264 & ACODEC=aac & ADDITIONAL=" -crf 17" & goto outputcheck )
-if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & VCODEC=libx264 & ACODEC=libmp3lame & ADDITIONAL="" goto outputcheck )
-if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & VCODEC=libvpx & ACODEC=libvorbis & ADDITIONAL="" goto outputcheck )
-if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & VCODEC=wmv2 & ACODEC=wmav2 & ADDITIONAL="" goto outputcheck )
+if "%FORMATTYPE%"=="1" ( set FILESUFFIX=mp4 & set VCODEC=h264 & set ACODEC=aac & set ADDITIONAL=" -crf 17" & goto outputcheck )
+if "%FORMATTYPE%"=="2" ( set FILESUFFIX=avi & set VCODEC=libx264 & set ACODEC=libmp3lame & set ADDITIONAL="" & goto outputcheck )
+if "%FORMATTYPE%"=="3" ( set FILESUFFIX=webm & set VCODEC=libvpx & set ACODEC=libvorbis & set ADDITIONAL="" & goto outputcheck )
+if "%FORMATTYPE%"=="4" ( set FILESUFFIX=wmv & set VCODEC=wmv2 & set ACODEC=wmav2 & set ADDITIONAL="" & goto outputcheck )
 echo Invalid option. Please try again. && goto formatretry
 
 :outputcheck
@@ -610,16 +610,11 @@ echo:
 echo What quality ^(CRF^) do you want your video to be in?
 echo ^(0 is lossless, 17 is the default, 51 is lowest quality^)
 echo:
+echo ^(NOTE: ONLY enter a number between 0 and 51, otherwise it
+echo could screw up the entire exporting process for this session.^)
+echo:
 :crfretry
 set /p CRF= CRF: 
-for /l %%f in (0,1,51) do (
-	for %%g in (%%f) do (
-		if not %CRF%==%%g ( echo Invalid option. Please try again. & goto crfretry )
-	) else (
-		goto output
-	)
-)
-
 
 :output
 cls
@@ -657,16 +652,16 @@ if "%VERBOSEWRAPPER%"=="y" (
 )
 PING -n 2 127.0.0.1>nul
 if exist "tmpconcat.txt" ( del tmpconcat.txt )
-echo file '%TEMPPATH2%'>> tmpconcat.txt
+echo file '%TEMPPATH2%'>>tmpconcat.txt
 if %ISVIDEOWIDE%==0 (
-	echo file '%OUTRO149%'>> tmpconcat.txt
+	echo file '%OUTRO149%'>>tmpconcat.txt
 ) else (
-	echo file '%OUTRO169%'>> tmpconcat.txt
+	echo file '%OUTRO169%'>>tmpconcat.txt
 )
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -f concat -i tmpconcat.txt -codec copy -safe 0 -y "%TEMPPATH3%"
+	call ffmpeg\ffmpeg.exe -f concat -i "file:%CD%\tmpconcat.txt" -codec copy -safe 0 -y "%TEMPPATH3%"
 ) else (
-	call ffmpeg\ffmpeg.exe -f concat -i tmpconcat.txt -codec copy -safe 0 -y "%TEMPPATH3%">nul
+	call ffmpeg\ffmpeg.exe -f concat -i "file:%CD%\tmpconcat.txt" -codec copy -safe 0 -y "%TEMPPATH3%">nul
 )
 PING -n 2 127.0.0.1>nul
 del tmpconcat.txt>nul
