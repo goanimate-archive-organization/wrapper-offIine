@@ -896,6 +896,17 @@ if exist "_themelist-allthemes.xml" (
 	ren _themelist-lessthemes.xml _themelist.xml
 )
 popd
+pushd wrapper\pages\html
+if exist "create-allthemes.html" (
+	:: disable
+	ren create.html create-lessthemes.html
+	ren create-allthemes.html create.html
+) else ( 
+	:: enable
+	ren create.html create-allthemes.html
+	ren create-lessthemes.html create.html
+)
+popd
 goto optionscreen
 
 :::::::::::::::
