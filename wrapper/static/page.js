@@ -13,22 +13,6 @@ function toAttrString(table) {
 function toParamString(table) {
 	return Object.keys(table)
 		.map((key) => `<param name="${key}" value="${toAttrString(table[key])}">`)
-		.join(" ");  
-const fUtil = require("../misc/file");
-const stuff = require("./info");
-const http = require("http");
-
-function toAttrString(table) {
-	return typeof table == "object"
-		? Object.keys(table)
-				.filter((key) => table[key] !== null)
-				.map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(table[key])}`)
-				.join("&")
-		: table.replace(/"/g, '\\"');
-}
-function toParamString(table) {
-	return Object.keys(table)
-		.map((key) => `<param name="${key}" value="${toAttrString(table[key])}">`)
 		.join(" ");
 }
 function toObjectString(attrs, params) {
@@ -131,7 +115,7 @@ module.exports = function (req, res, url) {
 					storePath: process.env.STORE_URL + "/<store>",
 					isEmbed: 1,
 					ctc: "go",
-					ut: 30,
+					ut: 60,
 					bs: "default",
 					appCode: "go",
 					page: "",
