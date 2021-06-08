@@ -7,6 +7,13 @@ wrapper/main.js
 wrapper/main-rpc.js
 wrapper/main-norpc.js
 wrapper/static/info-*.json
+wrapper/tts/load.js
+wrapper/tts/load-seamus.js
+wrapper/tts/main.js
+wrapper/tts/main-seamus.js
+wrapper/tts/voices.js
+wrapper/tts/info.json
+wrapper/tts/info-cepstral.json
 !_*/_NO_REMÖVE
 utilities/backups/*
 utilities/import_these/*
