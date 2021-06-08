@@ -1,1 +1,0 @@
-This .TXT file is required for incase you decide to disable waveforms but you want to keep the watermark.
