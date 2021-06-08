@@ -594,41 +594,39 @@ echo:
 :formatretry
 set /p FORMATTYPE= Option: 
 if "%FORMATTYPE%"=="1" (
-set FILESUFFIX=mp4
-set VCODEC=h264
-set ACODEC=aac
-set ADDITIONAL=""
-goto outputcheck
+	set FILESUFFIX=mp4
+	set VCODEC=h264
+	set ACODEC=aac
+	set ADDITIONAL=" -crf %CRF%"
+	goto outputcheck
 )
 if "%FORMATTYPE%"=="2" (
-set FILESUFFIX=avi
-set VCODEC=libx264
-set ACODEC=libmp3lame
-set ADDITIONAL=""
-goto outputcheck
+	set FILESUFFIX=avi
+	set VCODEC=libx264
+	set ACODEC=libmp3lame
+	set ADDITIONAL=""
+	goto outputcheck
 )
 if "%FORMATTYPE%"=="3" (
-set FILESUFFIX=webm
-set VCODEC=libvpx
-set ACODEC=libvorbis
-set ADDITIONAL=""
-goto outputcheck
+	set FILESUFFIX=webm
+	set VCODEC=libvpx
+	set ACODEC=libvorbis
+	set ADDITIONAL=""
+	goto outputcheck
 )
 if "%FORMATTYPE%"=="4" (
-set FILESUFFIX=wmv
-set VCODEC=wmv2
-set ACODEC=wmav2
-set ADDITIONAL=""
-goto outputcheck
+	set FILESUFFIX=wmv
+	set VCODEC=wmv2
+	set ACODEC=wmav2
+	set ADDITIONAL=""
+	goto outputcheck
 )
 echo Invalid option. Please try again. && goto formatretry
 
 :outputcheck
 if "%DEVMODE%"=="y" (
 	if "%VCODEC%"=="h264" ( goto crfvalue )
-) else (
-	goto output
-)
+) else goto output
 
 :crfvalue
 echo ^(Developer mode-exclusive option^)
@@ -686,9 +684,9 @@ if %ISVIDEOWIDE%==0 (
 	echo file '%OUTRO169%'>>tmpconcat.txt
 )
 if "%VERBOSEWRAPPER%"=="y" (
-	call ffmpeg\ffmpeg.exe -f concat -i "file:%CD%\tmpconcat.txt" -codec copy -safe 0 -y "%TEMPPATH3%"
+	call ffmpeg\ffmpeg.exe -f concat -safe 0 -i "file:%CD%\tmpconcat.txt" -codec copy -y "%TEMPPATH3%"
 ) else (
-	call ffmpeg\ffmpeg.exe -f concat -i "file:%CD%\tmpconcat.txt" -codec copy -safe 0 -y "%TEMPPATH3%">nul
+	call ffmpeg\ffmpeg.exe -f concat -safe 0 -i "file:%CD%\tmpconcat.txt" -codec copy -y "%TEMPPATH3%">nul
 )
 PING -n 2 127.0.0.1>nul
 del tmpconcat.txt>nul

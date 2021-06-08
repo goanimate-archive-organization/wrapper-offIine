@@ -17,7 +17,8 @@ echo:
 if exist "..\server\vo\rewriteable.mp3" ( echo Do keep in mind that if you import a new voice clip, it will overwrite & echo the one you previously imported. & echo: )
 echo Press 1 to record your voice using the Windows Sound Recorder.
 echo Press 2 to record your voice with an external program ^(e.g. Audacity^)
-echo Press 3 if you have an audio file you'd like to use.
+echo Press 3 to use included Balabolka to generate a TTS voice that Wrapper doesn't have.
+echo Press 4 if you have an audio file you'd like to use.
 echo:
 :vochoiceretry
 set /p VOCHOICE= Response: 
@@ -84,7 +85,15 @@ if "%VOCHOICE%"=="2" (
 	)
 	if "%PROGRAMSNAME%"=="" ( echo Invalid program name. It can't be blank. Please try again. & goto programnameaskretry )
 )
-if "%VOCHOICE%"=="3" ( goto import )
+if "%VOCHOICE%"=="3" (
+	echo Opening Balabolka...
+	start balabolka\balabolka.exe && echo Balabolka has been opened.
+	echo:
+	echo When finished making your audio, you may press any key to go to the next step.
+	echo:
+	pause & goto import
+)
+if "%VOCHOICE%"=="4" ( goto import )
 if "%VOCHOICE%"=="" ( echo Invalid option. Please try again. & goto vochoiceretry )
 :import
 echo Drag your audio file in here and hit Enter.
