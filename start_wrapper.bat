@@ -1110,7 +1110,7 @@ if !INCLUDEDBASILISK!==y (
 goto wrapperidle
 
 :open_files
-pushd ..
+pushd
 echo Opening the wrapper-offline folder...
 start explorer.exe "%CD%"
 popd
