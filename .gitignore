@@ -6,13 +6,13 @@ wrapper/_THEMES/import.xml
 wrapper/main.js
 wrapper/main-rpc.js
 wrapper/main-norpc.js
+wrapper/static/info-*.json
 !_*/_NO_REMÖVE
 utilities/backups/*
 utilities/import_these/*
 utilities/renders/*
 utilities/misc/temp/*
 utilities/grounded_messages/*
-utilities/decrypted_assets/*
 utilities/config.bat
 utilities/checks/disclaimer.txt
 server/characters/*
