@@ -96,8 +96,14 @@ if !VERBOSEWRAPPER!==y ( echo Saving custom settings in temporary file... )
 pushd utilities
 copy config.bat tmpcfg.bat>nul
 popd
-if !VERBOSEWRAPPER!==y ( echo Saving imported assets to temporary files... )
-call utilities\7za.exe a "utilities\misc\temp\importarchive.zip" .\server\store\3a981f5cb2739137\import\*>nul
+if exist "server\store\3a981f5cb2739137\import\*\*.*" (
+	set IMPORTEDASSETS=y
+	if !VERBOSEWRAPPER!==y ( echo Saving imported assets to temporary files... )
+	call utilities\7za.exe a "utilities\misc\temp\importarchive.zip" .\server\store\3a981f5cb2739137\import\*>nul
+) else (
+	set IMPORTEDASSETS=n
+	if !VERBOSEWRAPPER!==Y ( echo Skipping saving the imported assets as it could not detect any. )
+)
 if !VERBOSEWRAPPER!==y ( echo Pulling latest version of repository from GitHub through Git... )
 PING -n 4 127.0.0.1>nul
 :: Perform the update
@@ -108,15 +114,33 @@ pushd utilities
 del config.bat
 ren tmpcfg.bat config.bat
 popd
-if !VERBOSEWRAPPER!==y ( echo Deleting all the imported assets from the repository and replacing it with user's assets... )
-pushd server\store\3a981f5cb2739137
-rd /q /s import
-md import
-popd
-call utilities\7za.exe e "utilities\misc\temp\importarchive.zip" -o"server\store\3a981f5cb2739137\import" -y>nul
-del utilities\misc\temp\importarchive.zip>nul
-del "wrapper\_THEMES\import.xml">nul
-copy "server\store\3a981f5cb2739137\import\theme.xml" "wrapper\_THEMES\import.xml">nul
+if !IMPORTEDASSETS!==y (
+	if !VERBOSEWRAPPER!==y ( echo Deleting all the imported assets from the repository and replacing it with user's assets... )
+	pushd server\store\3a981f5cb2739137
+	rd /q /s import
+	md import
+	popd
+	call utilities\7za.exe e "utilities\misc\temp\importarchive.zip" -o"server\store\3a981f5cb2739137\import" -y>nul
+	del utilities\misc\temp\importarchive.zip>nul
+	del "wrapper\_THEMES\import.xml">nul
+	copy "server\store\3a981f5cb2739137\import\theme.xml" "wrapper\_THEMES\import.xml">nul
+) else (
+	if !VERBOSEWRAPPER!==y ( echo Deleting all the imported assets from the repository... )
+	pushd server\store\3a981f5cb2739137
+	rd /q /s import
+	md import
+	pushd import
+	echo ^<?xml version="1.0" encoding="utf-8"?^> >>theme.xml
+	echo ^<theme id="import" name="Imported Assets" cc_theme_id="import"^> >>theme.xml
+	echo 	^<char id="327068788" name="the benson apparition" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y"^> >>theme.xml
+	echo 	^<tags^>family,every,copy,of,wrapper,offline,is,_free,software,but,is,also,_cat:personalized^</tags^> >>theme.xml
+	echo 	^</char^> >>theme.xml
+	echo:>>theme.xml
+	echo ^</theme^> >>theme.xml
+	popd
+	call utilities\7za.exe a "server\store\3a981f5cb2739137\import\import.zip" "server\store\3a981f5cb2739137\import\theme.xml" >nul
+	copy "server\store\3a981f5cb2739137\import\theme.xml" "wrapper\_THEMES\import.xml">nul
+)
 
 :: congratulations new version
 if !VERBOSEWRAPPER!==n ( cls )

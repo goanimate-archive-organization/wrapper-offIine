@@ -1485,6 +1485,9 @@ echo:>> utilities\config.bat
 echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
 echo set PORT=4343>> utilities\config.bat
 echo:>> utilities\config.bat
+echo :: Automatically restarts the NPM whenever it crashes. Default: y>> utilities\config.bat
+echo set AUTONODE=y>> utilities\config.bat
+echo:>> utilities\config.bat
 goto returnfromconfigcopy
 
 :metacopy
@@ -1499,8 +1502,8 @@ echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> util
 echo endlocal>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 echo :: Version number and build number>> utilities\metadata.bat
-echo set WRAPPER_VER=1.3.1>> utilities\metadata.bat
-echo set WRAPPER_BLD=05>> utilities\metadata.bat
+echo set WRAPPER_VER=1.3.3>> utilities\metadata.bat
+echo set WRAPPER_BLD=44>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 set NOMETA=n
 goto returnfrommetacopy

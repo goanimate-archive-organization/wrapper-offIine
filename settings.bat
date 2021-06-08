@@ -122,7 +122,7 @@ if !SKIPCHECKDEPENDS!==n (
 	echo ^(4^) Checking dependencies is[91m OFF [0m
 )
 :: Waveforms
-if exist "wrapper\static\info-nowave.json" (
+if exist "wrapper\static\info-nowave*.json" (
 	echo ^(5^) Waveforms are[92m ON [0m
 ) else ( 
 	echo ^(5^) Waveforms are[91m OFF [0m
@@ -157,7 +157,7 @@ if exist "wrapper\pages\html\_OLDLISTVIEW.txt" (
 	echo ^(9^) View on the video list is set to[91m Classic List [0m
 )
 :: Watermark
-if exist "wrapper\static\info-nowatermark.json" (
+if exist "wrapper\static\info-*nowatermark*.json" (
 	echo ^(10^) Wrapper: Offline watermark is[92m ON [0m
 ) else ( 
 	echo ^(10^) Wrapper: Offline watermark is[91m OFF [0m
@@ -915,25 +915,27 @@ goto optionscreen
 :waveformchange
 echo Toggling setting...
 pushd wrapper\static
-if exist "watermarkON.txt" (
-	if exist "info-nowave-watermark.json" (
-		:: disable (watermark)
-		ren info.json info-wave-watermark.json
-		ren info-nowave-watermark.json info.json
+if exist "info-nowave.json" (
+	:: disable
+	ren info.json info-wave.json
+	ren info-nowave.json info.json
+	if exist "info-watermark.json" (
+		ren info-watermark.json info-wave-watermark.json
+		ren info-nowave-watermark.json info-watermark.json
 	) else (
-		:: enable (watermark)
-		ren info.json info-wave.json
-		ren info-nowave.json info.json
+		ren info-nowatermark.json info-wave-nowatermark.json
+		ren info-nowave-nowatermark.json info-nowatermark.json
 	)
 ) else (
-	if exist "info-nowave.json" (
-		:: disable
-		ren info.json info-wave.json
-		ren info-nowave.json info.json
+	:: enable
+	ren info.json info-nowave.json
+	ren info-wave.json info.json
+	if exist "info-watermark.json" (
+		ren info-watermark.json info-nowave-watermark.json
+		ren info-wave-watermark.json info-watermark.json
 	) else (
-		:: enable
-		ren info.json info-nowave.json
-		ren info-wave.json info.json
+		ren info-nowatermark.json info-nowave-nowatermark.json
+		ren info-wave-nowatermark.json info-nowatermark.json
 	)
 )
 popd
@@ -1193,12 +1195,24 @@ if exist "info-nowatermark.json" (
 	:: disable
 	ren info.json info-watermark.json
 	ren info-nowatermark.json info.json
-	if exist "watermarkON.txt" ( del watermarkON.txt )
+	if exist "info-wave.json" (
+		ren info-wave.json info-wave-watermark.json
+		ren info-wave-nowatermark.json info-wave.json
+	) else (
+		ren info-nowave.json info-nowave-watermark.json
+		ren info-nowave-nowatermark.json info-nowave.json
+	)
 ) else ( 
 	:: enable
 	ren info.json info-nowatermark.json
 	ren info-watermark.json info.json
-	echo This .TXT file is required for incase you decide to disable waveforms but you want to keep the watermark.>watermarkON.txt
+	if exist "info-wave.json" (
+		ren info-wave.json info-wave-nowatermark.json
+		ren info-wave-watermark.json info-wave.json
+	) else (
+		ren info-nowave.json info-nowave-nowatermark.json
+		ren info-nowave-watermark.json info-nowave.json
+	)
 )
 popd
 goto optionscreen
@@ -1282,6 +1296,9 @@ echo set DEVMODE=n>> !cfg!
 echo:>> !cfg!
 echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> !cfg!
 echo set PORT=4343>> !cfg!
+echo:>> !cfg!
+echo :: Automatically restarts the NPM whenever it crashes. Default: y>> !cfg!
+echo set AUTONODE=y>> !cfg!
 echo:>> !cfg!
 cls
 %0
