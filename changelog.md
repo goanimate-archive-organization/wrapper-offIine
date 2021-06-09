@@ -43,6 +43,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - > config.bat really???
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
+## Build 5
 ### Added
   - Reload settings and metadata option
   - swf.css for page styling
