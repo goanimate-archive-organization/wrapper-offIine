@@ -1,6 +1,6 @@
 @echo off
 
-title Grounded Script Generator
+title Grounses Script Generator
 
 :grounded
 echo What is yor lazy potato characters name?
@@ -33,7 +33,7 @@ pause & exit
 )
 if "%OPTION%"=="2" (
 echo:
-echo %GROUNDED%>"lazy_grounded_messages\%CHARACTER% does %WRONGDOING% and gets grounded.txt"
+echo %GROUNDED%>"lazy_grounded_messages\%CHARACTER% does %WRONGDOING% and gets grounses.txt"
 echo Saved to .TXT file.
 echo:
 pause & exit
