@@ -22,6 +22,11 @@ This includes:
   - SilentCMD
   - Chromium Web Store
   - FlashPatch
+  - Runasti
+  - Balabolka
+  - Php
+  - Avidemux
+  - FFmpeg
 
 ungoogled-chromium is under the BSD 3-Clause license, which grants similar rights, but has some differences from MIT. Basilisk is under the Mozillav2 Public License, MediaInfo has a similar BSD 2-Clause license. 7zip's license is mostly LGPL, but some parts are under the BSD 3-clause License, and some parts have an unRAR restriction. Stylus is under the GNU GPLv3 license. FFMPEG is under both the GNU General Public license and the GNU Lesser General Public license. Avidemux is under the GNU General Public license. These licenses can be found in each program's folder in utilities\sourcecode.
 
@@ -66,7 +71,7 @@ Wrapper: Offline credits:
 | MJ, the Spirit (D) (B)	   | Facial expression fix, video/imported asset backup tool, action pack tool creator, bug fixes                                                         |
 | MegaT (C)                        | CC browser code                                                                                                                                      |
 | narutofan420                     | Main developer of 1.3.1's base build, New CSS theme on video and theme lists, dark mode character creator                                                                                  |
-| Spark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks.                                                                                        |
+| Spark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks, WOR stuff                                                                                        |
 
 These are unaffiliated people that they haven't directly done anything for the project (and probably don't even know it exists) but still deserve credit for their things. Kinda like a shoutout but in a project's readme. ***Please do not contact them about Wrapper: Offline.***
 
