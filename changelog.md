@@ -72,7 +72,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Fixed bug where Wrapper tries to load thumbnails from localhost instead of localhost:4343
   - Updated Wrapper credits
   - Character scaling
-
+## Build 10
 ### Fixed
   - Updater now checks for .git existence
 
