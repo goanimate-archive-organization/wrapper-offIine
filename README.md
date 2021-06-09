@@ -27,6 +27,7 @@ This includes:
   - Php
   - Avidemux
   - FFmpeg
+  - NCH Software
 
 ungoogled-chromium is under the BSD 3-Clause license, which grants similar rights, but has some differences from MIT. Basilisk is under the Mozillav2 Public License, MediaInfo has a similar BSD 2-Clause license. 7zip's license is mostly LGPL, but some parts are under the BSD 3-clause License, and some parts have an unRAR restriction. Stylus is under the GNU GPLv3 license. FFMPEG is under both the GNU General Public license and the GNU Lesser General Public license. Avidemux is under the GNU General Public license. These licenses can be found in each program's folder in utilities\sourcecode.
 

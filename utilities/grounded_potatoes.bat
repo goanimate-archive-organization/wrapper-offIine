@@ -2,7 +2,7 @@
 
 title Grounses Script Generator
 
-:grounded
+:grounses
 echo What is yor lazy potato characters name?
 echo:
 set /p CHARACTER= Character: 
@@ -22,7 +22,7 @@ echo Press 2 to save it to a .TXT file in utilities\lazy_grounded_messages
 echo Press 3 to generate another one
 echo Press 4 to exit
 echo:
-:groundedreask
+:grounsesreask
 set /p OPTION= Option: 
 if "%OPTION%"=="1" (
 echo:
@@ -40,12 +40,12 @@ pause & exit
 )
 if "%OPTION%"=="3" (
 cls
-goto grounded
+goto grounses
 )
 if "%OPTION%"=="4" (
 exit
 )
 if "%OPTION%"=="" (
 echo You must choose a valid option.
-goto groundedreask
+goto grounsesreask
 )
