@@ -15,7 +15,7 @@ if not exist "..\server\vo" ( mkdir ..\server\vo )
 echo Welcome to the Wrapper: Offline voice clip importer.
 echo:
 if exist "..\server\vo\rewriteable.mp3" ( echo Do keep in mind that if you import a new voice clip, it will overwrite & echo the one you previously imported. & echo: )
-echo Press 1 to record your voice using the Windows Sound Recorder.
+echo Press 1 to record your voice using the NCH RecordPad Sound Recorder.
 echo Press 2 to record your voice with an external program ^(e.g. Audacity^)
 echo Press 3 to use included Balabolka to generate a TTS voice that Wrapper doesn't have.
 echo Press 4 if you have an audio file you'd like to use.
@@ -23,9 +23,9 @@ echo:
 :vochoiceretry
 set /p VOCHOICE= Response: 
 if "%VOCHOICE%"=="1" (
-	echo Opening the Windows Sound Recorder...
+	echo Opening the nch Sound Recorder..
 	PING -n 2 127.0.0.1>nul
-	start explorer.exe shell:appsFolder\Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe!App
+	start Recordpad\recordpad.exe
 	echo When finished recording, you may press any key to go to the next step.
 	echo:
 	pause & goto import
