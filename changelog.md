@@ -32,6 +32,15 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Changed
   - Writing the Future to Elektronomia - Energy cuz sounds like it
   - Remove business themes from gitignore
+## Build 55
+### Added
+  - Custom Assets 2.0 (with blurry)
+  - NCH Recordpad Sound Recorder
+### Changed
+  - custom_voiceclip.bat : Windows Sound Recorder becomes NCH Recordpad Sound Recorder
+  - Node installer becomes v14.17.0
+### Fixed
+  - > config.bat really???
 
 ## Version 1.3.0 - 2021-04-24 - feature packed
 ## Build 12
