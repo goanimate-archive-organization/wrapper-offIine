@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
-<theme id="import" name="Imported Assets" cc_theme_id="import">
-	<char id="327068788" name="the benson apparition" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,every,copy,of,wrapper,offline,is,_free,software,but,is,also,_cat:personalized</tags>
-	</char>
-</theme>
+<?xml version="1.0" encoding="utf-8"?> 
+<theme id="import" name="Imported Assets" cc_theme_id="import"> 
+	<char id="327068788" name="the benson apparition" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y"> 
+	<tags>family,every,copy,of,wrapper,offline,is,_free,software,but,is,also,_cat:personalized</tags> 
+	</char> 
+
+</theme> 
