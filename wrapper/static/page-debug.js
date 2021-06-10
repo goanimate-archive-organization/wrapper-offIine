@@ -225,9 +225,11 @@ module.exports = function (req, res, url) {
 		<main>
 			${toObjectString(attrs, params)}
 		</main>
+
 		<form enctype='multipart/form-data' action='/upload_movie' method='post'>
 			<input id='file' type="file" onchange="this.form.submit()" name='import' />
 		</form>
+
 		<form enctype='multipart/form-data' action='/upload_character' method='post'>
 			<input id='file2' type="file" onchange="this.form.submit()" name='import' />
 		</form>
