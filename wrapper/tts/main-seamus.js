@@ -478,13 +478,11 @@ module.exports = (voiceName, text) => {
 									var vs = /__VIEWSTATE" value="([^"]+)/.exec(html);
 									var vg = /__VIEWSTATEGENERATOR" value="([^"]+)/.exec(html);
 									var ev = /__EVENTVALIDATION" value="([^"]+)/.exec(html);
-
 									if (vs && ev && vg) {
 										vs = vs[1];
 										vg = vg[1];
 										ev = ev[1];
 									} else rej();
-
 									var q = qs.encode({
 										__EVENTTARGET: "Button1",
 										__EVENTARGUMENT: "",
@@ -494,7 +492,6 @@ module.exports = (voiceName, text) => {
 										ddlVoices: voice.arg,
 										TextBox1: text,
 									});
-
 									const req = https.request(
 										{
 											hostname: "ttsdemo.sestek.com",
