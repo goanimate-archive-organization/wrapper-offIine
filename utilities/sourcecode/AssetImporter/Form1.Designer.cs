@@ -49,6 +49,11 @@ namespace AssetImporter
             this.label8 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.label10 = new System.Windows.Forms.Label();
+            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -138,7 +143,7 @@ namespace AssetImporter
             this.richTextBox1.Location = new System.Drawing.Point(14, 207);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(508, 122);
+            this.richTextBox1.Size = new System.Drawing.Size(508, 78);
             this.richTextBox1.TabIndex = 8;
             this.richTextBox1.Text = "";
             // 
@@ -147,7 +152,7 @@ namespace AssetImporter
             this.button2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
             this.button2.Font = new System.Drawing.Font("Segoe UI", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.button2.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.button2.Location = new System.Drawing.Point(14, 338);
+            this.button2.Location = new System.Drawing.Point(16, 476);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(508, 66);
             this.button2.TabIndex = 11;
@@ -250,7 +255,7 @@ namespace AssetImporter
             // 
             this.button4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
             this.button4.ForeColor = System.Drawing.SystemColors.HighlightText;
-            this.button4.Location = new System.Drawing.Point(438, 185);
+            this.button4.Location = new System.Drawing.Point(438, 181);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(82, 23);
             this.button4.TabIndex = 20;
@@ -262,18 +267,70 @@ namespace AssetImporter
             // 
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.label5.Location = new System.Drawing.Point(14, 407);
+            this.label5.Location = new System.Drawing.Point(16, 545);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(373, 15);
             this.label5.TabIndex = 21;
             this.label5.Text = "Made with <3 by xomdjl_ (xomdjl_#1337, ytpmaker1000@gmail.com)";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.label9.Location = new System.Drawing.Point(16, 423);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(55, 15);
+            this.label9.TabIndex = 22;
+            this.label9.Text = "Progress:";
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(18, 441);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(506, 29);
+            this.progressBar1.TabIndex = 23;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.BackColor = System.Drawing.Color.Transparent;
+            this.label10.ForeColor = System.Drawing.SystemColors.ActiveBorder;
+            this.label10.Location = new System.Drawing.Point(253, 448);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(23, 15);
+            this.label10.TabIndex = 24;
+            this.label10.Text = "0%";
+            // 
+            // richTextBox2
+            // 
+            this.richTextBox2.Location = new System.Drawing.Point(16, 308);
+            this.richTextBox2.Name = "richTextBox2";
+            this.richTextBox2.ReadOnly = true;
+            this.richTextBox2.Size = new System.Drawing.Size(508, 112);
+            this.richTextBox2.TabIndex = 26;
+            this.richTextBox2.Text = "";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.label11.Location = new System.Drawing.Point(13, 290);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(83, 15);
+            this.label11.TabIndex = 25;
+            this.label11.Text = "Progress Logs:";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
-            this.ClientSize = new System.Drawing.Size(534, 428);
+            this.ClientSize = new System.Drawing.Size(534, 568);
+            this.Controls.Add(this.richTextBox2);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.label9);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.textBox4);
@@ -323,6 +380,11 @@ namespace AssetImporter
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.Label label11;
     }
 }
 

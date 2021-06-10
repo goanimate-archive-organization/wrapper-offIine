@@ -193,10 +193,6 @@ namespace AssetImporter
                         comboBox1.Text = "Prop";
                         if (comboBox1.Text == "Prop")
                         {
-                            comboBox2.Items.Add("Yes");
-                            comboBox2.Items.Add("No");
-                            comboBox3.Items.Add("Yes");
-                            comboBox3.Items.Add("No");
                             label3.Text = "Holdable:";
                             label3.Visible = true;
                             comboBox2.Visible = true;
@@ -334,20 +330,39 @@ namespace AssetImporter
 
         private void button2_Click(object sender, EventArgs e)
         {
-            richTextBox1.Text = "Importing file to necessary directory... (If it already exists, it'll automatically be overwritten)";
             string destFile = System.IO.Path.Combine(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\" + Globals.ASSETLOC, Globals.fileName);
+            if (File.Exists(destFile))
+            {
+                MessageBox.Show("It looks like the file already exists. Are you sure you want to import this file?\r\n\r\n(NOTE: It will overwrite the file.)", "Imported File Already Exists", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                if (MessageBox.Show("It looks like the file already exists. Are you sure you want to import this file?\r\n\r\n(NOTE: It will overwrite the file.)", "Imported File Already Exists", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes) 
+                {
+                    label9.Text = "Progress: Importing file to necessary directory...";
+                    System.IO.File.Copy(textBox1.Text, destFile, true);
+                    progressBar1.Value += 25;
+                    label10.Text = progressBar1.Value + "%";
+                }
+            } else
+            {
+                label9.Text = "Progress: Importing file to necessary directory...";
+                System.IO.File.Copy(textBox1.Text, destFile, true);
+                progressBar1.Value += 25;
+                label10.Text = progressBar1.Value + "%";
+            }
+            
 
-            System.IO.File.Copy(textBox1.Text, destFile, true);
-
-            richTextBox1.Text = "Adding generated string to XML...";
+            label9.Text = "Progress: Adding generated string to XML...";
             var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
             fileContent[fileContent.Count - 1] = "  " + Globals.CFXML + "\r\n</theme>";
             File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
+            progressBar1.Value += 25;
+            label10.Text = progressBar1.Value + "%";
 
-            richTextBox1.Text = "Copying new theme.xml to the _THEMES folder...";
+            label9.Text = "Progress: Copying new theme.xml to the _THEMES folder...";
             System.IO.File.Copy(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", Globals.absolutePath + "\\wrapper\\_THEMES\\import.xml", true);
+            progressBar1.Value += 25;
+            label10.Text = progressBar1.Value + "%";
 
-            richTextBox1.Text = "Zipping it up because it demands that we do so...";
+            label9.Text = "Progress: Zipping it up because it demands that we do so...";
 
             Process p = new Process();
 
@@ -364,12 +379,20 @@ namespace AssetImporter
 
             string text = p.StandardOutput.ReadToEnd();
             richTextBox1.Text = text;
+            if (text.Contains("Open archive: "))
+            {
+                progressBar1.Value += 25;
+                label10.Text = progressBar1.Value + "%";
+            }
 
             p.WaitForExit();
 
             if (p.HasExited == true)
             {
-                MessageBox.Show("Finished importing your file!\r\n\r\nIt should be in the \"Imported Assets\" theme.", "Importing Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Finished importing your file!\r\n\r\nIt should be in the \"Imported Assets\" theme.\r\n\r\nYou may need to reload the LVM in order for it to show up, however.", "Importing Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                label9.Text = "Progress:";
+                progressBar1.Value -= 100;
+                label10.Text = "0%";
             }
         }
     }
