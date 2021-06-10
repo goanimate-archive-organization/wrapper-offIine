@@ -12,7 +12,7 @@ echo:
 set /p WRONGDOING= Wrongdoing: 
 echo:
 echo Generating grounded message...
-set GROUNDED=O! %CHARACTER%, how pogoto der u %WRONGDOING%! That's it! You're grounses 4 %RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM% potatoes! Go 2 iyour lazy potato rum naw!
+set GROUNDED=O! %CHARACTER%, how pogoto der u %WRONGDOING%! That's it! You're grounses 4 %RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM% potatoes! Go 2 iyour lazy potato rum naw!
 echo Grounded message:
 start mshta vbscript:Execute("CreateObject(""SAPI.SpVoice"").Speak(""%GROUNDED%"")(window.close)")
 echo %GROUNDED%
