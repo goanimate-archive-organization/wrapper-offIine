@@ -8,4 +8,4 @@ cd {PATH}
 npm install
 npm start
 ```
-**When done, go to your web browser and navigate to `***localhost***`.**
+**When done, go to your web browser and navigate to ***`localhost`***.**
