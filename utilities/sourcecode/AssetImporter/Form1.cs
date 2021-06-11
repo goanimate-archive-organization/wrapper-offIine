@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,6 +20,23 @@ namespace AssetImporter
             textBox3.Text = Globals.absolutePath;
         }
 
+        private void reset()
+        {
+            progressBar1.Value -= 100;
+            label10.Text = "0%";
+            textBox1.Text = "";
+            textBox4.Text = "";
+            comboBox1.Items.Clear();
+            comboBox2.Items.Clear();
+            comboBox2.Visible = false;
+            comboBox3.Items.Clear();
+            comboBox3.Visible = false;
+            label3.Visible = false;
+            label7.Visible = false;
+            richTextBox1.Text = "";
+            richTextBox2.Text = "";
+            label9.Text = "Progress:";
+        }
         public static class Globals
         {
             public static String filePath = "";
@@ -56,6 +73,7 @@ namespace AssetImporter
                     Globals.fileNameNoExt = Path.GetFileNameWithoutExtension(Globals.filePath);
                     textBox1.Text = Globals.filePath;
                     textBox4.Text = Globals.fileNameNoExt;
+                    Globals.absolutePath = textBox3.Text;
                     if (Globals.fileExt == ".jpg")
                     {
                         comboBox1.Items.Add("Prop");
@@ -330,7 +348,17 @@ namespace AssetImporter
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string destFile = System.IO.Path.Combine(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\" + Globals.ASSETLOC, Globals.fileName);
+            string assetPath = Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\" + Globals.ASSETLOC;
+            string destFile = System.IO.Path.Combine(assetPath, Globals.fileName);
+            if (Directory.Exists(assetPath))
+            {
+                label9.Text = "Progress: ";
+            }
+            else
+            {
+                label9.Text = "Progress: Creating directory since it does not exist yet...";
+                System.IO.Directory.CreateDirectory(assetPath);
+            }
             if (File.Exists(destFile))
             {
                 MessageBox.Show("It looks like the file already exists. Are you sure you want to import this file?\r\n\r\n(NOTE: It will overwrite the file.)", "Imported File Already Exists", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
@@ -348,11 +376,17 @@ namespace AssetImporter
                 progressBar1.Value += 25;
                 label10.Text = progressBar1.Value + "%";
             }
+
+            if (File.Exists(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\" + Globals.fileName))
+            {
+                label9.Text = "Progress: Moving file to the right directory since it appears it imported in the wrong place...";
+                System.IO.File.Move(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\" + Globals.fileName, destFile);
+            }
             
 
             label9.Text = "Progress: Adding generated string to XML...";
             var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
-            fileContent[fileContent.Count - 1] = "  " + Globals.CFXML + "\r\n</theme>";
+            fileContent[fileContent.Count - 1] = "    " + Globals.CFXML + "\r\n</theme>";
             File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
             progressBar1.Value += 25;
             label10.Text = progressBar1.Value + "%";
@@ -378,7 +412,7 @@ namespace AssetImporter
             p.Start();
 
             string text = p.StandardOutput.ReadToEnd();
-            richTextBox1.Text = text;
+            richTextBox2.Text = text;
             if (text.Contains("Open archive: "))
             {
                 progressBar1.Value += 25;
@@ -391,8 +425,7 @@ namespace AssetImporter
             {
                 MessageBox.Show("Finished importing your file!\r\n\r\nIt should be in the \"Imported Assets\" theme.\r\n\r\nYou may need to reload the LVM in order for it to show up, however.", "Importing Finished", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 label9.Text = "Progress:";
-                progressBar1.Value -= 100;
-                label10.Text = "0%";
+                reset();
             }
         }
     }
