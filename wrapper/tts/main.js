@@ -384,6 +384,11 @@ module.exports = (voiceName, text) => {
 						port: "443",
 						headers: {
 							"Content-Type": "application/x-www-form-urlencoded",
+							"Cookie": "PHPSESSID=95a5b6935c7e7a94b4c668b9b4d6122e",
+							"Host": "readloud.net",
+							"Origin": "https://readloud.net",
+							"Referer": `https://readloud.net/{$voice.arg}`,
+							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 						},
 					},
 					(r) => {
@@ -391,10 +396,11 @@ module.exports = (voiceName, text) => {
 						r.on("data", (d) => buffers.push(d));
 						r.on("end", () => {
 							const html = Buffer.concat(buffers);
-							const beg = html.indexOf("/tmp/");
-							const end = html.indexOf(".mp3", beg) + 4;
+							const beg = html.indexOf("<source src='") + 13;
+							const end = html.indexOf("'>", beg);
 							const sub = html.subarray(beg, end).toString();
 							const loc = `https://readloud.net${sub}`;
+							console.log(loc);
 							get(loc).then(res).catch(rej);
 						});
 						r.on("error", rej);
@@ -403,6 +409,9 @@ module.exports = (voiceName, text) => {
 				req.end(
 					qs.encode({
 						but1: text,
+						butS: 0,
+						butP: 0,
+						butPauses: 0,
 						but: "Submit",
 					})
 				);
