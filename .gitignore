@@ -20,6 +20,10 @@ utilities/import_these/*
 utilities/renders/*
 utilities/misc/temp/*
 utilities/grounded_messages/*
+utilities/sourcecode/AssetImporter/bin/*
+utilities/sourcecode/AssetImporter/obj/*
+utilities/sourcecode/AssetImporter/Properties/*
+utilities/sourcecode/AssetImporter/.vs/*
 utilities/config.bat
 utilities/checks/disclaimer.txt
 server/characters/*
