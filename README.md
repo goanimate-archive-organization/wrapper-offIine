@@ -70,6 +70,7 @@ Wrapper: Offline credits:
 | MegaT (C)                        | CC browser code                                                                                                                                      |
 | narutofan420                     | Main developer of 1.3.1's base build, New CSS theme on video and theme lists, dark mode character creator                                                                                  |
 | RegularSpark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks, WOR stuff                                                                                        |
+| zoccorus                    | custom assets, common assets, NCH for custom_voiceclip.bat                                                                                       |
 
 These are unaffiliated people that they haven't directly done anything for the project (and probably don't even know it exists) but still deserve credit for their things. Kinda like a shoutout but in a project's readme. ***Please do not contact them about Wrapper: Offline.***
 
