@@ -47,7 +47,7 @@ module.exports = function (req, res, url) {
 					clientThemePath: process.env.CLIENT_URL + "/<client_theme>",
 					original_asset_id: query["id"] || null,
 					themeId: "family",
-					ut: 60,
+					ut: 30,
 					bs: "adam",
 					appCode: "go",
 					page: "",
@@ -115,7 +115,7 @@ module.exports = function (req, res, url) {
 					storePath: process.env.STORE_URL + "/<store>",
 					isEmbed: 1,
 					ctc: "go",
-					ut: 60,
+					ut: 30,
 					bs: "default",
 					appCode: "go",
 					page: "",
@@ -225,9 +225,11 @@ module.exports = function (req, res, url) {
 		<main>
 			${toObjectString(attrs, params)}
 		</main>
+
 		<form enctype='multipart/form-data' action='/upload_movie' method='post'>
 			<input id='file' type="file" onchange="this.form.submit()" name='import' />
 		</form>
+
 		<form enctype='multipart/form-data' action='/upload_character' method='post'>
 			<input id='file2' type="file" onchange="this.form.submit()" name='import' />
 		</form>
