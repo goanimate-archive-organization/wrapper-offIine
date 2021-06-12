@@ -6,12 +6,12 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v3.1": {
-      "AssetImporter/1.0.0": {
+      "RC4ify/1.0.0": {
         "dependencies": {
           "RC4Cryptography": "1.0.1"
         },
         "runtime": {
-          "AssetImporter.dll": {}
+          "RC4ify.dll": {}
         }
       },
       "RC4Cryptography/1.0.1": {
@@ -25,7 +25,7 @@
     }
   },
   "libraries": {
-    "AssetImporter/1.0.0": {
+    "RC4ify/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
