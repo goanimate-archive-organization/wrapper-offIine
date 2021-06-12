@@ -1,4 +1,4 @@
-
+﻿
 namespace AssetImporter
 {
     partial class Form1
@@ -54,6 +54,8 @@ namespace AssetImporter
             this.label10 = new System.Windows.Forms.Label();
             this.richTextBox2 = new System.Windows.Forms.RichTextBox();
             this.label11 = new System.Windows.Forms.Label();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -320,12 +322,36 @@ namespace AssetImporter
             this.label11.TabIndex = 25;
             this.label11.Text = "Progress Logs:";
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.checkBox1.Location = new System.Drawing.Point(285, 184);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(147, 19);
+            this.checkBox1.TabIndex = 27;
+            this.checkBox1.Text = "XML has extra new line";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.checkBox2.Location = new System.Drawing.Point(102, 289);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(356, 19);
+            this.checkBox2.TabIndex = 28;
+            this.checkBox2.Text = "Add extra new line (only check once, backwards compatibility)";
+            this.checkBox2.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
             this.ClientSize = new System.Drawing.Size(534, 568);
+            this.Controls.Add(this.checkBox2);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.richTextBox2);
             this.Controls.Add(this.label11);
             this.Controls.Add(this.label10);
@@ -385,5 +411,8 @@ namespace AssetImporter
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.RichTextBox richTextBox2;
         private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox checkBox2;
     }
 }
+

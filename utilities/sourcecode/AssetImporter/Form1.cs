@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -245,6 +245,7 @@ namespace AssetImporter
                             richTextBox1.Text = Globals.CFXML;
                         }
                     }
+                    // Uses the included MediaInfo.exe to calculate exact duration in milliseconds if the file is an *.mp3 file
                     if (Globals.fileExt == ".mp3")
                     {
                         Process p = new Process();
@@ -385,11 +386,32 @@ namespace AssetImporter
             
 
             label9.Text = "Progress: Adding generated string to XML...";
-            var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
-            fileContent[fileContent.Count - 1] = "    " + Globals.CFXML + "\r\n</theme>";
-            File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
-            progressBar1.Value += 25;
-            label10.Text = progressBar1.Value + "%";
+            if (checkBox2.Checked == false)
+            {
+                var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
+                if (checkBox1.Checked == false)
+                {
+                    fileContent[fileContent.Count - 1] = "    " + Globals.CFXML + "\r\n</theme>";
+                }
+                else
+                {
+                    fileContent[fileContent.Count - 2] = "    " + Globals.CFXML + "\r\n\r\n</theme>";
+                }
+                File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
+                progressBar1.Value += 25;
+                label10.Text = progressBar1.Value + "%";
+            }
+            else
+            {
+                var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
+                fileContent[fileContent.Count - 1] = "\r\n\r\n</theme>";
+                File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
+                var fileContent1 = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
+                fileContent1[fileContent1.Count - 2] = "    " + Globals.CFXML + "\r\n\r\n</theme>";
+                File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
+                progressBar1.Value += 25;
+                label10.Text = progressBar1.Value + "%";
+            }
 
             label9.Text = "Progress: Copying new theme.xml to the _THEMES folder...";
             System.IO.File.Copy(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", Globals.absolutePath + "\\wrapper\\_THEMES\\import.xml", true);
