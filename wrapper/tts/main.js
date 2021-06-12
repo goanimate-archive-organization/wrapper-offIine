@@ -386,8 +386,8 @@ module.exports = (voiceName, text) => {
 							"Content-Type": "application/x-www-form-urlencoded",
 							"Cookie": "PHPSESSID=95a5b6935c7e7a94b4c668b9b4d6122e",
 							"Host": "readloud.net",
-							"Origin": "https://readloud.net",
-							"Referer": `https://readloud.net/{$voice.arg}`,
+							Origin: "https://readloud.net",
+							Referer: `https://readloud.net/{$voice.arg}`,
 							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 						},
 					},
@@ -489,11 +489,13 @@ module.exports = (voiceName, text) => {
 									var vs = /__VIEWSTATE" value="([^"]+)/.exec(html);
 									var vg = /__VIEWSTATEGENERATOR" value="([^"]+)/.exec(html);
 									var ev = /__EVENTVALIDATION" value="([^"]+)/.exec(html);
+
 									if (vs && ev && vg) {
 										vs = vs[1];
 										vg = vg[1];
 										ev = ev[1];
 									} else rej();
+
 									var q = qs.encode({
 										__EVENTTARGET: "Button1",
 										__EVENTARGUMENT: "",
@@ -503,6 +505,7 @@ module.exports = (voiceName, text) => {
 										ddlVoices: voice.arg,
 										TextBox1: text,
 									});
+
 									const req = https.request(
 										{
 											hostname: "ttsdemo.sestek.com",
