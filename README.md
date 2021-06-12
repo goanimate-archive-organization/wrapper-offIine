@@ -43,9 +43,9 @@ Original Wrapper credits:
 | Name             | Contribution         |
 | ---------------- | -------------------- |
 | VisualPlugin (C) | GoAnimate Wrapper    |
-| xomdjl_ (D)      | Custom/Modded Assets |
-| CLarramore (D)   | Bug fixes            |
-| Poley Magik      | Asset Recreation     |
+| imageny (D)      | Custom/Modded Assets |
+| ASAPthegacha174  |  Bug fixes           |
+| themario100      | Asset Recreation     |
 
 Some members of the original team have asked to not be given credit, and they have been removed.
 
@@ -56,20 +56,20 @@ Wrapper: Offline credits:
 | Name                             | Contribution                                                                                                                                         |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Benson (D)                       | Wrapper: Offline                                                                                                                                     |
-| Poley Magik                      | CC Toon adventure, Expanded Color Palette, Head props and wearables and much more.                                                                   |
-| NathanTDA                        | Logo                                                                                                                                                 |
+| themario100                      | CC Toon adventure, Expanded Color Palette, Head props and wearables and much more.                                                                   |
+| NathanWin7587                      | Logo                                                                                                                                                 |
 | VisualPlugin (C)                 | Text to speech voices, background importing, tons of bug fixes and more                                                                              |
-| CLarramore (D) (B) 		   | Various bug fixes and development for some of the features                                                                                           |
-| **xomdjl_** (D)         	   | Lead developer for v1.3.0 and onward, export script, pick a theme page, implementing the Flashpoint version of Basilisk browser, TTS voices and more |       
+| ASAPthegacha174 (D) (B) 		   | Various bug fixes and development for some of the features                                                                                           |
+| imageny (D)         	   | Lead developer for v1.3.0 and onward, export script, pick a theme page, implementing the Flashpoint version of Basilisk browser, TTS voices and more |       
 | creepyjokes2000 (D)        	   | Waveform fix, improved actions                                                                                                                       |
 | JoshAnimate                 	   | Headgear fix                                                                                                                                         |
 | 2Epik4u (D) (B)                  | Discord RPC, maintainer of Wrapper: Offline and private GitHub repository creator                                                                    |
 | GoTest334 (B)                    | Maintainer of Wrapper: Offline Discord                                                                                                               |
 | The Invincible Sphynx Cat (B)    | Beta testing, suggestions, remastered GoAnimate tracks (provided separately, not included)                                                           |	
-| MJ, the Spirit (D) (B)	   | Facial expression fix, video/imported asset backup tool, action pack tool creator, bug fixes                                                         |
+| Messat Jemican(D) (B)	   | Facial expression fix, video/imported asset backup tool, action pack tool creator, bug fixes                                                         |
 | MegaT (C)                        | CC browser code                                                                                                                                      |
 | narutofan420                     | Main developer of 1.3.1's base build, New CSS theme on video and theme lists, dark mode character creator                                                                                  |
-| Spark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks, WOR stuff                                                                                        |
+| RegularSpark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks, WOR stuff                                                                                        |
 
 These are unaffiliated people that they haven't directly done anything for the project (and probably don't even know it exists) but still deserve credit for their things. Kinda like a shoutout but in a project's readme. ***Please do not contact them about Wrapper: Offline.***
 
@@ -82,6 +82,7 @@ These are unaffiliated people that they haven't directly done anything for the p
 | ss64.com           | Incredible CMD info resource     |
 | robvanderwoude.com | Also amazing CMD info resource   |
 | darktohka          | Creator of FlashPatch            |
+| Peter Lupton       | Owner of NCH Software            |
 
 ## Footnotes
 [1] - See <https://www.gnu.org/philosophy/free-sw.html> for a better definition of free software.
