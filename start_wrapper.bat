@@ -1332,6 +1332,7 @@ if exist %tmp%\importserver.bat ( del %tmp%\importserver.bat )
 
 if !VERBOSEWRAPPER!==y (
 	if !DRYRUN!==n (
+	TASKKILL /IM SilentCMD.exe /F >nul 2>&1 
 	TASKKILL /IM node.exe /F >nul 2>&1
 	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline,Server for imported voice clips TTS voice) do (
 	TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
@@ -1343,7 +1344,7 @@ if !VERBOSEWRAPPER!==y (
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe >nul 2>&1
+			TASKKILL /IM chromium.exe /F >nul 2>&1
 		)
 		if !INCLUDEDBASILISK!==y ( 
 			TASKKILL /IM "utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe" /F >nul 2>&1
@@ -1353,13 +1354,14 @@ if !VERBOSEWRAPPER!==y (
 ) else (
 	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
 	if !DRYRUN!==n ( 
+		TASKKILL /IM SilentCMD.exe /F >nul 2>&1 
 		if !CEPSTRAL!==n ( 
 			TASKKILL /IM php.exe /F >nul 2>&1
 		)
 	)
 	if !DRYRUN!==n ( 
 		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe /F 2>nul
+			TASKKILL /IM chromium.exe /F >nul 2>&1 
 		)
 		if !INCLUDEDBASILISK!==y ( 
 			TASKKILL /IM utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F 2>nul
