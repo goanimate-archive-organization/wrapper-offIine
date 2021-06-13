@@ -85,5 +85,5 @@ These are unaffiliated people that they haven't directly done anything for the p
 | darktohka          | Creator of FlashPatch            |
 | Peter Lupton       | Owner of NCH Software            |
 
-## Footnotes
+## *Footnotes*
 [1] - See <https://www.gnu.org/philosophy/free-sw.html> for a better definition of free software.
