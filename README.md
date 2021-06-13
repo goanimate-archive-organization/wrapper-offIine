@@ -1,18 +1,18 @@
-# Wrapper: Offline
+# *Wrapper: Offline*
 After learning that GoAnimate Wrapper (a project by VisualPlugin) would be shut down, Wrapper: Offline was created. (simply called "Offline" for the rest of this page) Unlike the original project, Offline can not be shut down or "patched". You have the files all on your computer. This project is important for historical and archival purposes, as the ability to use this legacy editor and themes would be completely gone without it. Besides simply emulating the original Flash editor, some additional features and improvements have been made. And Offline will continue to get additional updates in the future.
 
-## Running / Installation
+## *Running / Installation*
 To start Wrapper: Offline on Windows, open `start_wrapper.bat`. It'll automate just about everything for you and, well, start Wrapper: Offline. On your first run, you will likely need to right-click it and click "Run as Administrator". This allows it to properly install what it needs to run. After your initial run, you shouldn't need to do that again, you can start it as normal.
 
 If you want to import videos and characters from the original Wrapper or any other clones of it, open its folder and drag the "_SAVED" folder into Offline's "wrapper" folder. If you have already made any videos or characters, this will not work. Please only import on a new install with no saved characters or videos, or take the "_SAVED" folder in Offline out before dragging the old one in. If you want to import character IDs from the original LVM, you can paste `&original_asset_id=[ID HERE]` at the end of the link for the matching character creator.
 
-## Updates & Support
+## *Updates & Support*
 For support, the first thing you should do is [read through the wiki](https://github.com/GoAnimate-Stuff-by-Zoccorus/wrapper-offline/wiki) it most likely has what you want to know. If you can't find what you need, you can join the [Discord server](https://discord.gg/Kf7BzSw). Joining the support server is recommended, as there is a whole community to help you out.
 
-## Dependencies
+## *Dependencies*
 This program relies on Flash, Node.js and http-server to work properly. SilentCMD is also used to suppress all the extra logging noise you'd only need for troubleshooting and development. These all have been included with the project (utilities folder) to ensure full offline operation and will be installed if missing. The "wrapper" folder and http-server have their own dependencies, but they are included as well.
 
-## License
+## *License*
 Most of this project is free/libre software[1] under the MIT license. You have the freedom to run, change, and share this as much as you want.
 This includes:
   - Files in the "wrapper" folder
@@ -36,7 +36,7 @@ You can create or modify any of the server assets too if you'd like. They're enc
 
 While completely unnecessary, if you decide to use your freedom to change the software, it would be greatly appreciated if you sent it to me so I can implement it into the main program! With credit down here of course :)
 
-## Credits
+## *Credits*
 **Please do not contact anyone on the list for support, use the Discord server.**
 
 Original Wrapper credits:
