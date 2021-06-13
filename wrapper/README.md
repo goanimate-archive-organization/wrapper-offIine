@@ -6,6 +6,6 @@ This is an API wrapper for the Legacy Video Maker, which had been retired on ***
 ***```console
 cd {PATH}
 npm install
-npm start
-***```
+npm start```
+
 ***When done, go to your web browser and navigate to ***`localhost`***.***
