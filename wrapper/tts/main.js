@@ -26,10 +26,10 @@ module.exports = (voiceName, text) => {
 					method: "POST",
 					headers: {
 						"content-type": "application/json",
-						cookie: "__stripe_mid=0a37ccc8-cc13-474d-97da-aa0a5f9f47398bdf7a; __cfduid=d022698980296baa7fa7313e4cf44f5631616037532; connect.sid=s%3AgvSXg1g2nPq-07vxD25_STJDMnFVSydC.CnUtht28g%2BsJ8NMGhRQeB0oBrs5W5kCD8pOI4MPJeDw; __stripe_sid=2dd1624f-ae48-472a-b598-b7d5cab469ecc72729",
+						"cookie": "__stripe_mid=0a37ccc8-cc13-474d-97da-aa0a5f9f47398bdf7a; __cfduid=d022698980296baa7fa7313e4cf44f5631616037532; connect.sid=s%3AgvSXg1g2nPq-07vxD25_STJDMnFVSydC.CnUtht28g%2BsJ8NMGhRQeB0oBrs5W5kCD8pOI4MPJeDw; __stripe_sid=2dd1624f-ae48-472a-b598-b7d5cab469ecc72729",
 						"csrf-token": "",
-						origin: "https://voicemaker.in",
-						referer: "https://voicemaker.in/",
+						"origin": "https://voicemaker.in",
+						"referer": "https://voicemaker.in/",
 						"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 						"x-requested-with": "XMLHttpRequest",
 					},
@@ -112,8 +112,8 @@ module.exports = (voiceName, text) => {
 						host: "cache-a.oddcast.com",
 						path: `/tts/gen.php?${q}`,
 						headers: {
-							Referer: "https://www.oddcast.com/",
-							Origin: "https://www.oddcast.com/",
+							"Referer": "https://www.oddcast.com/",
+							"Origin": "https://www.oddcast.com/",
 							"User-Agent":
 								"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36",
 						},
@@ -247,9 +247,9 @@ module.exports = (voiceName, text) => {
                         method: "POST",
                         headers: {
 							"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-							Cookie: "AcaBoxLogged=logged; AcaBoxUsername=goaniwrap; acabox=p21jj8f3gv30hhv0mruvt1fsm3; AcaBoxFirstname=Keegan",
-							Origin: "https://acapela-box.com",
-							Referer: "https://acapela-box.com/AcaBox/index.php",
+							"Cookie": "AcaBoxLogged=logged; AcaBoxUsername=goaniwrap; acabox=p21jj8f3gv30hhv0mruvt1fsm3; AcaBoxFirstname=Keegan",
+							"Origin": "https://acapela-box.com",
+							"Referer": "https://acapela-box.com/AcaBox/index.php",
 							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 							"X-Requested-With": "XMLHttpRequest",
                         },
@@ -325,8 +325,8 @@ module.exports = (voiceName, text) => {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-							Origin: "https://texttospeech.wideo.co",
-							Referer: "https://texttospeech.wideo.co/",
+							"Origin": "https://texttospeech.wideo.co",
+							"Referer": "https://texttospeech.wideo.co/",
 							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
                         },
                     },
@@ -426,10 +426,10 @@ module.exports = (voiceName, text) => {
 						headers: {
 							"content-type": "text/xml",
 							"accept-encoding": "gzip, deflate, br",
-							origin: "https://www.cereproc.com",
-							referer: "https://www.cereproc.com/en/products/voices",
+							"origin": "https://www.cereproc.com",
+							"referer": "https://www.cereproc.com/en/products/voices",
 							"x-requested-with": "XMLHttpRequest",
-							cookie: "Drupal.visitor.liveDemo=666",
+							"cookie": "Drupal.visitor.liveDemo=666",
 						},
 					},
 					(r) => {
