@@ -16,7 +16,7 @@ wrapper/tts/info.json
 wrapper/tts/info-cepstral.json
 !_*/_NO_REMÖVE
 utilities/backups/*
-utilities/import_these/*
+utilities/legacy/import_these/*
 utilities/renders/*
 utilities/misc/temp/*
 utilities/grounded_messages/*

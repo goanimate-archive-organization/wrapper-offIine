@@ -10,11 +10,11 @@ title Wrapper: Offline Import Script
 SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: Move to base folder, and make sure it worked (otherwise things would go horribly wrong)
-pushd "%~dp0"
+pushd "%~dp0.."
 if !errorlevel! NEQ 0 goto error_location
 pushd ..
 if !errorlevel! NEQ 0 goto error_location
-if not exist utilities\legacy_import.bat ( goto error_location )
+if not exist utilities\import.bat ( goto error_location )
 if not exist wrapper ( goto error_location )
 if not exist server ( goto error_location )
 popd utilities

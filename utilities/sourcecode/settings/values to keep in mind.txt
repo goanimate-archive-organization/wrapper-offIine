@@ -1,0 +1,14 @@
+Form1 Window:
+
+452, 547 (Standard)
+828, 543 (Developer Mode)
+
+Title position:
+
+55, 9 (Standard)
+236, 9 (Developer)
+
+Button position:
+
+57, 428 (Standard)
+238, 428 (Developer)

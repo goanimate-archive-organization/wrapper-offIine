@@ -56,6 +56,7 @@ namespace AssetImporter
             this.label11 = new System.Windows.Forms.Label();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.checkBox3 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -70,6 +71,7 @@ namespace AssetImporter
             // 
             // textBox1
             // 
+            this.textBox1.AllowDrop = true;
             this.textBox1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
             this.textBox1.ForeColor = System.Drawing.SystemColors.HighlightText;
             this.textBox1.Location = new System.Drawing.Point(11, 69);
@@ -77,6 +79,8 @@ namespace AssetImporter
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(435, 23);
             this.textBox1.TabIndex = 1;
+            this.textBox1.DragDrop += new System.Windows.Forms.DragEventHandler(this.textBox1_DragDrop);
+            this.textBox1.DragOver += new System.Windows.Forms.DragEventHandler(this.textBox1_DragOver);
             // 
             // button1
             // 
@@ -344,12 +348,26 @@ namespace AssetImporter
             this.checkBox2.Text = "Add extra new line (only check once, backwards compatibility)";
             this.checkBox2.UseVisualStyleBackColor = true;
             // 
+            // checkBox3
+            // 
+            this.checkBox3.AutoSize = true;
+            this.checkBox3.ForeColor = System.Drawing.SystemColors.HighlightText;
+            this.checkBox3.Location = new System.Drawing.Point(252, 159);
+            this.checkBox3.Name = "checkBox3";
+            this.checkBox3.Size = new System.Drawing.Size(107, 19);
+            this.checkBox3.TabIndex = 29;
+            this.checkBox3.Text = "RC4 Encryption";
+            this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.Visible = false;
+            // 
             // Form1
             // 
+            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(25)))));
             this.ClientSize = new System.Drawing.Size(534, 568);
+            this.Controls.Add(this.checkBox3);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.richTextBox2);
@@ -413,6 +431,7 @@ namespace AssetImporter
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox checkBox3;
     }
 }
 
