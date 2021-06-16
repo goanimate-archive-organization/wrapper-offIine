@@ -11,9 +11,9 @@ module.exports = function (req, res, url) {
 		parse.unpackCharXml(buffer, numId);
 		fs.unlinkSync(path);
 		res.statusCode = 302;
-		const tIDbeg = numId.IndexOf('" theme_id="') + 12;
-		const tIDend = numId.IndexOf('" "');
-		const themeId = numId.subarray(beg, end).toString();
+		const tIDbeg = buffer.IndexOf('" theme_id="') + 12;
+		const tIDend = buffer.IndexOf('" "');
+		const themeId = buffer.subarray(beg, end).toString();
 		const url = `/cc?themeId=${themeId}&original_asset_id=c-${numId}`
 		res.setHeader('Location', url);
 		res.end();
