@@ -179,7 +179,7 @@ for %%a in (import_these\*) do (
 		:: Uses MediaInfo to get sound duration in exact milliseconds
 		echo Calculating sound duration...
 		echo:
-		for /f "delims=" %%b in ('mediainfo\MediaInfo.exe "--Output=General;%%Duration%%" "%%a"') do set CFDUR=%%b
+		for /f "delims=" %%b in ('MediaInfo.exe "--Output=General;%%Duration%%" "%%a"') do set CFDUR=%%b
 	)
 
 	echo Moving file to theme...
