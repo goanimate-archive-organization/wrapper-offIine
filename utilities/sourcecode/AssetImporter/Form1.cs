@@ -266,7 +266,7 @@ namespace AssetImporter
                         p.StartInfo.RedirectStandardInput = true;
                         p.StartInfo.RedirectStandardOutput = true;
                         p.StartInfo.RedirectStandardError = true;
-                        p.StartInfo.FileName = Globals.absolutePath + "\\utilities\\mediainfo.exe";
+                        p.StartInfo.FileName = Globals.absolutePath + "\\utilities\\mediainfo\MediaInfo.exe";
                         p.StartInfo.Arguments = "\"--Output=General;%Duration%\" \"" + textBox1.Text + "\"";
 
                         p.Start();
