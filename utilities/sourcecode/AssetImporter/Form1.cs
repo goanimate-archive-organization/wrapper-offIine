@@ -171,7 +171,33 @@ namespace AssetImporter
                     }
                     if (Globals.fileExt == ".gif")
                     {
-                        MessageBox.Show("Do keep in mind that if you are importing an animated GIF, it will only import the first frame.", "Heads up", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("Do keep in mind that if you are importing an animated GIF, it will only import the first frame.\r\n\r\nHowever, we can convert it to SWF if you'd like. Press Yes if you would like to do so, otherwise press No.", "Heads up", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                        if (MessageBox.Show("Do keep in mind that if you are importing an animated GIF, it will only import the first frame.\r\n\r\nHowever, we can convert it to SWF if you'd like. Press Yes if you would like to do so, otherwise press No.", "Heads up", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+                        {
+                            Process p = new Process();
+
+                            // Redirect the output stream of the child process.
+                            p.StartInfo.CreateNoWindow = true;
+                            p.StartInfo.UseShellExecute = false;
+                            p.StartInfo.RedirectStandardInput = true;
+                            p.StartInfo.RedirectStandardOutput = true;
+                            p.StartInfo.RedirectStandardError = true;
+                            p.StartInfo.FileName = Globals.absolutePath + "\\utilities\\ffmpeg\\ffmpeg.exe";
+                            p.StartInfo.Arguments = "-i \"" + Globals.filePath + "\" \"" + Path.GetPathRoot(Globals.filePath) + "\\" + Globals.fileName + ".swf -y";
+
+                            p.Start();
+
+                            string text = p.StandardOutput.ReadToEnd();
+                            richTextBox2.Text = text;
+
+                            if (p.HasExited == true)
+                            {
+                                MessageBox.Show("Conversion completed successfully!", "Conversion Completed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                textBox1.Text = Path.GetPathRoot(Globals.filePath) + "\\" + Globals.fileName + ".swf";
+                                Globals.filePath = textBox1.Text;
+                                Globals.fileExt = ".swf";
+                            }
+                        }
                         comboBox1.Items.Add("Prop");
                         comboBox1.Items.Add("Backdrop");
                         comboBox1.Text = "Prop";
@@ -431,11 +457,11 @@ namespace AssetImporter
                 var fileContent = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
                 if (checkBox1.Checked == false)
                 {
-                    fileContent[fileContent.Count - 1] = "    " + Globals.CFXML + "\r\n</theme>";
+                    fileContent[fileContent.Count - 1] = "	" + Globals.CFXML + "\r\n</theme>";
                 }
                 else
                 {
-                    fileContent[fileContent.Count - 2] = "    " + Globals.CFXML + "\r\n\r\n</theme>";
+                    fileContent[fileContent.Count - 2] = "	" + Globals.CFXML + "\r\n\r\n</theme>";
                 }
                 File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
                 progressBar1.Value += 25;
@@ -447,7 +473,7 @@ namespace AssetImporter
                 fileContent[fileContent.Count - 1] = "\r\n\r\n</theme>";
                 File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
                 var fileContent1 = File.ReadLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml").ToList();
-                fileContent1[fileContent1.Count - 2] = "    " + Globals.CFXML + "\r\n\r\n</theme>";
+                fileContent1[fileContent1.Count - 2] = "	" + Globals.CFXML + "\r\n\r\n</theme>";
                 File.WriteAllLines(Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml", fileContent);
                 progressBar1.Value += 25;
                 label10.Text = progressBar1.Value + "%";
