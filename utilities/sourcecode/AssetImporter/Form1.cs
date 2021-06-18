@@ -495,13 +495,13 @@ namespace AssetImporter
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.FileName = Globals.absolutePath + "\\utilities\\7za.exe";
-            p.StartInfo.Arguments = "a \"" + Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml\" \"" + Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml\" -y";
+            p.StartInfo.Arguments = "a \"" + Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\import.zip\" \"" + Globals.absolutePath + "\\server\\store\\3a981f5cb2739137\\import\\theme.xml\" -y";
 
             p.Start();
 
             string text = p.StandardOutput.ReadToEnd();
             richTextBox2.Text = text;
-            if (text.Contains("Open archive: "))
+            if (text.Contains("Add new data to archive: "))
             {
                 progressBar1.Value += 25;
                 label10.Text = progressBar1.Value + "%";
