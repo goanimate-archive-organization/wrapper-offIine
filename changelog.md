@@ -41,6 +41,14 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Node installer becomes v14.17.0
 ### Fixed
   - > config.bat really???
+## Final
+### Added
+  - Mediainfo sourcecode becomes 21.03
+### Changed
+  - License with markdown
+  - VFProxy batch : localhost instead of 127.0.0.1
+### Fixed
+  - include mediainfo
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
 ## Build 5
