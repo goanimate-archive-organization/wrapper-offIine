@@ -98,7 +98,8 @@ module.exports = function (req, res, url) {
 			break;
 		}
 
-		case "/go_full": {
+		case "/go_full":
+		case "/go_full/tutorial": {
 			let presave =
 				query.movieId && query.movieId.startsWith("m")
 					? query.movieId
@@ -122,7 +123,7 @@ module.exports = function (req, res, url) {
 					siteId: "go",
 					lid: 13,
 					isLogin: "Y",
-					retut: 1,
+					retut: 0,
 					clientThemePath: process.env.CLIENT_URL + "/<client_theme>",
 					themeId: "custom",
 					tlang: "en_US",
@@ -194,7 +195,7 @@ module.exports = function (req, res, url) {
 			document.title='${title}',flashvars=${JSON.stringify(params.flashvars)}
 		</script>
 		<script>
-			if(window.location.pathname == '/player' || window.location.pathname == '/go_full' || window.location.pathname == '/recordWindow') {
+			if(window.location.pathname == '/player' || window.location.pathname == '/go_full' || window.location.pathname == '/recordWindow' || window.location.pathname == '/go_full/tutorial') {
 				function hideHeader() {
 					document.getElementById("header").remove();
 				}
