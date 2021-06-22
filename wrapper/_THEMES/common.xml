@@ -18309,17 +18309,17 @@
     <tag>rock</tag>
     <tag>Smooth</tag>
   </sound>
-  <sound id="FunkyBeat.mp3" name="Funky Beat" downloadtype="progressive" subtype="tribeofnoise" duration="35600" enable="Y" is_premium="N" aid="6046" money="0" sharing="0"/>
-  <sound id="recipe_for_riches.mp3" name="Recipe For Riches" downloadtype="progressive" subtype="tribeofnoise" duration="227500" enable="Y" is_premium="N" aid="6047" money="0" sharing="0"/>
-  <sound id="tibetan_monks.mp3" name="Tibetan Monks" downloadtype="progressive" subtype="tribeofnoise" duration="217400" enable="Y" is_premium="N" aid="6048" money="0" sharing="0"/>
-  <sound id="swimming.mp3" name="Swimming" downloadtype="progressive" subtype="tribeofnoise" duration="301400" enable="Y" is_premium="N" aid="6049" money="0" sharing="0"/>
-  <sound id="salient.mp3" name="Salient" downloadtype="progressive" subtype="tribeofnoise" duration="297000" enable="Y" is_premium="N" aid="6050" money="0" sharing="0"/>
-  <sound id="smell_isnt_everything.mp3" name="Smell Isn't Everything" downloadtype="progressive" subtype="tribeofnoise" duration="134300" enable="Y" is_premium="N" aid="6051" money="0" sharing="0"/>
+  <sound id="FunkyBeat.mp3" name="Funky Beat" downloadtype="progressive" subtype="bgmusic" duration="35600" enable="Y" is_premium="N" aid="6046" money="0" sharing="0"/>
+  <sound id="recipe_for_riches.mp3" name="Recipe For Riches" downloadtype="progressive" subtype="bgmusic" duration="227500" enable="Y" is_premium="N" aid="6047" money="0" sharing="0"/>
+  <sound id="tibetan_monks.mp3" name="Tibetan Monks" downloadtype="progressive" subtype="bgmusic" duration="217400" enable="Y" is_premium="N" aid="6048" money="0" sharing="0"/>
+  <sound id="swimming.mp3" name="Swimming" downloadtype="progressive" subtype="bgmusic" duration="301400" enable="Y" is_premium="N" aid="6049" money="0" sharing="0"/>
+  <sound id="salient.mp3" name="Salient" downloadtype="progressive" subtype="bgmusic" duration="297000" enable="Y" is_premium="N" aid="6050" money="0" sharing="0"/>
+  <sound id="smell_isnt_everything.mp3" name="Smell Isn't Everything" downloadtype="progressive" subtype="bgmusic" duration="134300" enable="Y" is_premium="N" aid="6051" money="0" sharing="0"/>
   <sound id="wii_sports_title_screen.mp3" name="Wii Sports - Title Screen" downloadtype="progressive" subtype="bgmusic" duration="134300" enable="Y" is_premium="N" aid="6051" money="0" sharing="0"/>
   <sound id="Living_The_Dream.mp3" name="Living The Dream" downloadtype="progressive" subtype="bgmusic" duration="134300" enable="Y" is_premium="N" aid="6051" money="0" sharing="0"/>
   <sound id="wii_sports_sagpremix.mp3" name="Wii Sports - Remix SAGP" downloadtype="progressive" subtype="bgmusic" duration="134300" enable="Y" is_premium="N" aid="6051" money="0" sharing="0"/>
-  <sound id="peace_on_earth.mp3" name="Peace On Earth" downloadtype="progressive" subtype="tribeofnoise" duration="229600" enable="Y" is_premium="N" aid="6052" money="0" sharing="0"/>
-  <sound id="buzzin.mp3" name="Buzzin'" downloadtype="progressive" subtype="tribeofnoise" duration="70600" enable="Y" is_premium="N" aid="6053" money="0" sharing="0"/>
+  <sound id="peace_on_earth.mp3" name="Peace On Earth" downloadtype="progressive" subtype="bgmusic" duration="229600" enable="Y" is_premium="N" aid="6052" money="0" sharing="0"/>
+  <sound id="buzzin.mp3" name="Buzzin'" downloadtype="progressive" subtype="bgmusic" duration="70600" enable="Y" is_premium="N" aid="6053" money="0" sharing="0"/>
   <sound id="approved_weird_buzzer.swf" name="Buzzer" downloadtype="embed" subtype="soundeffect" duration="838" enable="Y" is_premium="N" aid="6685" money="0" sharing="0">
     <tag>Various Foley</tag>
   </sound>
