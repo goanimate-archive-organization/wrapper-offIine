@@ -315,50 +315,7 @@ if exist "%tmp%\requestAdmin.vbs" ( del "%tmp%\requestAdmin.vbs">nul )
 if !FLASH_DETECTED!==n (
 	:start_flash_install
 	echo Installing Flash Player...
-	echo:
-	if !BROWSER_TYPE!==n (
-		:: Ask what type of browser is being used.
-		echo What web browser do you use? If it isn't here,
-		echo look up whether it's based on Chromium or Firefox
-		echo:
-		echo If it's not based on either, then either
-		echo Wrapper: Offline will not be able to install Flash 
-		echo or it will not work properly.
-		echo:
-		echo Unless you know what you're doing and have a
-		echo version of Flash made for your browser, please
-		echo install a Chrome or Firefox based browser.
-		echo:
-		echo ^(NOTE: If it's Chromium-based, make sure the browser
-		echo is based on Chromium 87.0.4280.168 or lower.^)
-		echo:
-		echo Enter 1 for Chrome
-		echo Enter 2 for Firefox
-		echo Enter 3 for Edge
-		echo Enter 4 for Opera
-		echo Enter 5 for Brave
-		echo Enter 6 for Chrome-based browser
-		echo Enter 7 for Firefox-based browser
-		echo Enter 0 for a non-standard browser ^(skips install^)
-		:browser_ask
-		set /p FLASHCHOICE=Response:
-		echo:
-		if "!flashchoice!"=="1" goto chromium_chosen
-		if "!flashchoice!"=="2" goto firefox_chosen
-		if "!flashchoice!"=="3" goto chromium_chosen
-		if "!flashchoice!"=="4" goto chromium_chosen
-		if "!flashchoice!"=="5" goto chromium_chosen
-		if "!flashchoice!"=="6" goto chromium_chosen
-		if "!flashchoice!"=="7" goto firefox_chosen
-		if "!flashchoice!"=="0" echo Flash will not be installed.&& goto after_flash_install
-		echo You must pick a browser.&& goto browser_ask
-
-		:chromium_chosen
-		set BROWSER_TYPE=chrome && if !VERBOSEWRAPPER!==y ( echo Chromium-based browser picked. && echo:) && goto escape_browser_ask
-
-		:firefox_chosen
-		set BROWSER_TYPE=firefox && if !VERBOSEWRAPPER!==y ( echo Firefox-based browser picked. ) && goto escape_browser_ask
-	)
+	set BROWSER_TYPE=chrome && if !VERBOSEWRAPPER!==y ( echo Chromium-based browser picked. && echo:) && goto escape_browser_ask
 
 	:escape_browser_ask
 	echo To install Flash Player, Wrapper: Offline must kill any currently running web browsers.
@@ -385,34 +342,18 @@ if !FLASH_DETECTED!==n (
 	)
 	:lurebrowserslayer
 	echo:
-
-	if !BROWSER_TYPE!==chrome (
 		echo Starting the Flash Player installer...
 		echo:
 		if not exist "utilities\installers\flash_windows_chromium.msi" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo 
+			echo:
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
 		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_chromium.msi" !INSTALL_FLAGS! /quiet )
-	)
-	if !BROWSER_TYPE!==firefox (
-		echo Starting the Flash Player installer...
-		if not exist "utilities\installers\flash_windows_firefox.msi" (
-			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with one.
-			echo You may be able to get the installer here:
-	s		echo https://github.com/CleanFlash/installer/releases/tag/v1.1
-			echo Although Flash is needed, Offline will continue launching.
-			pause
-			goto after_flash_install
-		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_firefox.msi" !INSTALL_FLAGS! /quiet )
-	)
 	echo Flash has been installed.
 	echo:
 )
@@ -463,7 +404,7 @@ if !NODEJS_DETECTED!==n (
 		echo Which means it doesn't know which version of Node.js to install...
 		echo:
 		echo If you have no idea what that means, press 1 to just try anyway.
-		echoL
+		echo:
 		echo If you know what kind of architecture you're running, but Offline
 		echo didn't detect it, press 2.
 		echo:
@@ -484,8 +425,8 @@ if !NODEJS_DETECTED!==n (
 			echo:
 			if "!whatsystem!"=="1" set CPU_ARCHITECTURE=32
 			if "!whatsystem!"=="2" set CPU_ARCHITECTURE=64
-			if "!whatsystem!"=="32" echo Wasn't exactly the kind of response I was asking for but I'll take it anyways. & echo: & pause & set CPU_ARCHITECTURE=32
-			if "!whatsystem!"=="64" echo Wasn't exactly the kind of response I was asking for but I'll take it anyways. & echo: & pause & set CPU_ARCHITECTURE=64			
+			if "!whatsystem!"=="32" echo Why couldn't you just type 1? & echo: & pause & set CPU_ARCHITECTURE=32
+			if "!whatsystem!"=="64" echo Why couldn't you just type 2? & echo: & pause & set CPU_ARCHITECTURE=64			
 			if "!whatsystem!"=="" echo That's an invalid option. Please try again. && goto whatsystemreask
 		)
 		if "!cpuchoice!"=="3" echo Node.js will not be installed. && goto after_nodejs_install
@@ -763,11 +704,7 @@ PING -n 6 127.0.0.1>nul
 
 echo Opening Wrapper: Offline...
 		pushd utilities\ungoogled-chromium
-		if !APPCHROMIUM!==y (
-			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
-		) else (
-			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
-		)
+		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 
 echo Wrapper: Offline has been started^^! The video list should now be open.
 
@@ -858,49 +795,13 @@ echo Time to choose. && goto wrapperidle
 :reopen_webpage	
 		echo Opening Wrapper: Offline...
 		pushd utilities\ungoogled-chromium
-		if !APPCHROMIUM!==y (
-			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
-		) else (
-			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
-		)
+		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 goto wrapperidle
 
 :open_server
-if !INCLUDEDCHROMIUM!==n (
-if !INCLUDEDBASILISK!==n (
-	if !CUSTOMBROWSER!==n (
-		echo Opening the server page in your default browser...
-		if !DRYRUN!==n ( start https://localhost:4664 )
-	) else (
-		echo Opening the server page in your set browser...
-		echo If this does not work, you may have set the path wrong.
-		if !DRYRUN!==n ( start !CUSTOMBROWSER! https://localhost:4664 )
-	)
-	)
-	)
-) else (
-if !INCLUDEDCHROMIUM!==y (
-if !INCLUDEDBASILISK!==n (
-	echo Opening the server page using included Chromium...
+	echo Opening the server page...
 	pushd utilities\ungoogled-chromium
-	if !APPCHROMIUM!==y (
-		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=https://localhost:4664 --allow-outdated-plugins )
-	) else (
-		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile https://localhost:4664 --allow-outdated-plugins )
-	)
-	)
-	)
-) else (
-if !INCLUDEDCHROMIUM!==n (
-if !INCLUDEDBASILISK!==y (
-	echo Opening the server page using included Basilisk...
-	pushd utilities\basilisk\Basilisk-Portable
-    if !DRYRUN!==n ( start Basilisk-Portable.exe https://localhost:4664 )
-	)
-	popd
-)
-)
-)
+	if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=https://localhost:4664 --allow-outdated-plugins )
 goto wrapperidle
 
 :open_files
@@ -1142,27 +1043,8 @@ echo:>> utilities\config.bat
 echo :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n>> utilities\config.bat
 echo set SKIPDEPENDINSTALL=n>> utilities\config.bat
 echo:>> utilities\config.bat
-echo :: Opens Offline in an included copy of ungoogled-chromium. Allows continued use of Flash as modern browsers disable it. Default: y>> utilities\config.bat
-echo set INCLUDEDCHROMIUM=y>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens INCLUDEDCHROMIUM in headless mode. Looks pretty nice. Overrides CUSTOMBROWSER and BROWSER_TYPE. Default: y>> utilities\config.bat
-echo set APPCHROMIUM=y>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n>> utilities\config.bat
-echo set CUSTOMBROWSER=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n>> utilities\config.bat
-echo set BROWSER_TYPE=chrome>> utilities\config.bat
-echo:>> utilities\config.bat
 echo :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n>> utilities\config.bat
 echo set DRYRUN=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Makes it so it uses the Cepstral website instead of VFProxy. Default: n>> utilities\config.bat
-echo set CEPSTRAL=n>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.>> utilities\config.bat
-echo :: Allows continued use of Flash as modern browsers disable it. Default: n>> utilities\config.bat
-echo set INCLUDEDBASILISK=n>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> utilities\config.bat
 echo set DEVMODE=n>> utilities\config.bat
