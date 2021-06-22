@@ -43,7 +43,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - > config.bat really???
 ## Build 72
 ### Added
-  - Mediainfo sourcecode becomes 21.03
+  - Mediainfo 21.03
 ### Changed
   - License with markdown
   - VFProxy batch : localhost instead of 127.0.0.1
