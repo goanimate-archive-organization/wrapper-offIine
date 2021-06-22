@@ -132,6 +132,7 @@ module.exports = function (req, res, url) {
 					isWide: 1,
 					collab: 0,
 					nextUrl: "../pages/html/list.html",
+					noSkipTutorial: 1,
 				},
 				allowScriptAccess: "always",
 				allowFullScreen: "true",
