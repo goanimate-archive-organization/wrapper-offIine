@@ -35,11 +35,11 @@ if %NOMETA%==n ( set SUBSCRIPT=y & call utilities\metadata.bat )
 
 :rebootasadmin
 if %ADMIN%==n (
-	echo Set UAC = CreateObject^("Shell.Application"^)>> %tmp%\requestAdmin.vbs
-	set params= %*
-	echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1>> %tmp%\requestAdmin.vbs
-	start "" %tmp%\requestAdmin.vbs
-	exit /B
+	:: echo Set UAC = CreateObject^("Shell.Application"^)>> %tmp%\requestAdmin.vbs
+	:: set params= %*
+	:: echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1>> %tmp%\requestAdmin.vbs
+	:: start "" %tmp%\requestAdmin.vbs
+	exit
 )
 :metaavailable
 
@@ -78,45 +78,9 @@ if not exist server ( goto error_location )
 :: Create checks folder if nonexistent
 if not exist "utilities\checks" md utilities\checks
 
-:: Operator, attention!
-if not exist "utilities\checks\disclaimer.txt" (
-	echo DISCLAIMER
-	echo:
-	echo Wrapper: Offline is a project to preserve the original GoAnimate flash-based themes.
-	echo We believe they should be archived for others to use and learn about in the future.
-	echo All business themes have been removed, please use Vyond Studio if you wish to get those.
-	echo This is still unlawful use of copyrighted material, but ^(in our opinion^) morally justifiable use.
-	echo:
-	echo We are not affiliated in any form with Vyond or GoAnimate Inc. We generate no profit from this.
-	echo We do not wish to promote piracy, and we avoid distributing content that is still in use by GoAnimate Inc.
-	echo We have tried to reduce any harm we could do to GoAnimate Inc while making this project.
-	echo:
-	echo Excluding Adobe Flash and GoAnimate Inc's assets, Wrapper: Offline is free/libre software.
-	echo You are free to redistribute and/or modify it under the terms of the MIT ^(aka Expat^) license,
-	echo except for some dependencies which have different licenses with slightly different rights.
-	echo Read the LICENSE file in Offline's base folder and the licenses in utilities/sourcecode for more info.
-	echo:
-	echo By continuing to use Wrapper: Offline, you acknowledge the nature of this project, and your right to use it.
-	echo If you object to any of this, feel free to close Wrapper: Offline now.
-	echo You will be allowed to accept 20 seconds after this message has appeared.
-	echo: 
-	PING -n 21 127.0.0.1>nul
-	echo If you still want to use Wrapper: Offline, press Y. If you no longer want to, press N.
-	:disclaimacceptretry
-	set /p ACCEPTCHOICE= Response:
-	echo:
-	if /i "!acceptchoice!"=="y" goto disclaimaccepted
-	if /i "!acceptchoice!"=="n" exit
-	goto disclaimacceptretry
-	:disclaimaccepted
-	echo: 
-	echo Sorry for all the legalese, let's get back on track.
-	echo You've accepted the disclaimer. To reread it, remove this file. > utilities\checks\disclaimer.txt
-)
-
 :: Welcome, Director Ford!
 echo Wrapper: Offline
-echo A project from VisualPlugin adapted by the W:O team
+echo A project from VisualPlugin adapted by GoTest334 and the Wrapper: Offline team
 echo Version !WRAPPER_VER!, build !WRAPPER_BLD!
 echo:
 
@@ -161,7 +125,6 @@ set NEEDTHEDEPENDERS=n
 set ADMINREQUIRED=n
 set FLASH_DETECTED=n
 set FLASH_CHROMIUM_DETECTED=n
-set FLASH_FIREFOX_DETECTED=n
 set NODEJS_DETECTED=n
 set HTTPSERVER_DETECTED=n
 set HTTPSCERT_DETECTED=n
@@ -169,15 +132,8 @@ if !INCLUDEDCHROMIUM!==y set BROWSER_TYPE=chrome
 
 :: Flash Player
 if !VERBOSEWRAPPER!==y ( echo Checking for Flash installation... )
-if exist "!windir!\SysWOW64\Macromed\Flash\*pepflashplayer64_34_0_0_155.dll" set FLASH_CHROMIUM_DETECTED=y
-if exist "!windir!\System32\Macromed\Flash\*pepflashplayer64_34_0_0_155.dll" set FLASH_CHROMIUM_DETECTED=y
 if exist "!windir!\SysWOW64\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
 if exist "!windir!\System32\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
-if exist "!windir!\SysWOW64\Macromed\Flash\*NPSWF64_34_0_0_155.dll" set FLASH_FIREFOX_DETECTED=y
-if exist "!windir!\System32\Macromed\Flash\*NPSWF64_34_0_0_155.dll" set FLASH_FIREFOX_DETECTED=y
-if exist "!windir!\SysWOW64\Macromed\Flash\*plugin.exe" set FLASH_FIREFOX_DETECTED=y
-if exist "!windir!\System32\Macromed\Flash\*plugin.exe" set FLASH_FIREFOX_DETECTED=y
-if !BROWSER_TYPE!==chrome (
 	if !FLASH_CHROMIUM_DETECTED!==n (
 		echo Flash for Chrome could not be found.
 		echo:
@@ -190,36 +146,6 @@ if !BROWSER_TYPE!==chrome (
 		set FLASH_DETECTED=y
 		goto flash_checked
 	)
-)
-if !BROWSER_TYPE!==firefox (
-	if !FLASH_FIREFOX_DETECTED!==n (
-		echo Flash for Firefox could not be found.
-		echo:
-		set NEEDTHEDEPENDERS=y
-		set ADMINREQUIRED=y
-		goto flash_checked
-	) else (
-		echo Flash is installed.
-		echo:
-		set FLASH_DETECTED=y
-		goto flash_checked
-	)
-)
-:: just assume chrome it's what everyone uses
-if !BROWSER_TYPE!==n (
-	if !FLASH_CHROMIUM_DETECTED!==n (
-		echo Flash for Chrome could not be found.
-		echo:
-		set NEEDTHEDEPENDERS=y
-		set ADMINREQUIRED=y
-		goto flash_checked
-	) else (
-		echo Flash is installed.
-		echo:
-		set FLASH_DETECTED=y
-		goto flash_checked
-	)
-)
 :flash_checked
 
 :: Node.js
@@ -367,8 +293,8 @@ if !ADMINREQUIRED!==y (
 			)
 			echo To do this, it must be started with Admin rights.
 			echo:
-			echo Press any key to restart this window and accept
-			echo any admin prompts that pop up.
+			echo Close this window and re-open Wrapper: Offline as an Admin.
+			echo ^(right-click start_wrapper.bat and click "Run as Administrator"^)
 			echo:
 			if !DRYRUN!==y (
 				echo ...yep, dry run is going great so far, let's skip the exit
@@ -393,16 +319,15 @@ if !FLASH_DETECTED!==n (
 	if !BROWSER_TYPE!==n (
 		:: Ask what type of browser is being used.
 		echo What web browser do you use? If it isn't here,
-		echo look up whether it's based on Chromium, Firefox
-		echo or Trident.
+		echo look up whether it's based on Chromium or Firefox
 		echo:
 		echo If it's not based on either, then either
-		echo Wrapper: Offline will not be able to install Flash
-		echo or the Clean Flash Player won't work at all.
+		echo Wrapper: Offline will not be able to install Flash 
+		echo or it will not work properly.
 		echo:
 		echo Unless you know what you're doing and have a
 		echo version of Flash made for your browser, please
-		echo install a Chrome, Firefox or Trident based browser.
+		echo install a Chrome or Firefox based browser.
 		echo:
 		echo ^(NOTE: If it's Chromium-based, make sure the browser
 		echo is based on Chromium 87.0.4280.168 or lower.^)
@@ -412,11 +337,8 @@ if !FLASH_DETECTED!==n (
 		echo Enter 3 for Edge
 		echo Enter 4 for Opera
 		echo Enter 5 for Brave
-		echo Enter 6 for Internet Explorer
-		echo Enter 7 for Maxthon
-		echo Enter 8 for Chrome-based browser
-		echo Enter 9 for Firefox-based browser
-		echo Enter 10 for Trident-based browser
+		echo Enter 6 for Chrome-based browser
+		echo Enter 7 for Firefox-based browser
 		echo Enter 0 for a non-standard browser ^(skips install^)
 		:browser_ask
 		set /p FLASHCHOICE=Response:
@@ -426,11 +348,8 @@ if !FLASH_DETECTED!==n (
 		if "!flashchoice!"=="3" goto chromium_chosen
 		if "!flashchoice!"=="4" goto chromium_chosen
 		if "!flashchoice!"=="5" goto chromium_chosen
-		if "!flashchoice!"=="6" goto trident_chosen
-		if "!flashchoice!"=="7" goto trident_chosen
-		if "!flashchoice!"=="8" goto chromium_chosen
-		if "!flashchoice!"=="9" goto firefox_chosen
-		if "!flashchoice!"=="10" goto trident_chosen
+		if "!flashchoice!"=="6" goto chromium_chosen
+		if "!flashchoice!"=="7" goto firefox_chosen
 		if "!flashchoice!"=="0" echo Flash will not be installed.&& goto after_flash_install
 		echo You must pick a browser.&& goto browser_ask
 
@@ -468,44 +387,31 @@ if !FLASH_DETECTED!==n (
 	echo:
 
 	if !BROWSER_TYPE!==chrome (
-		echo Starting the Clean Flash Player installer...
+		echo Starting the Flash Player installer...
 		echo:
-		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
+		if not exist "utilities\installers\flash_windows_chromium.msi" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
+			echo 
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
+		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_chromium.msi" !INSTALL_FLAGS! /quiet )
 	)
 	if !BROWSER_TYPE!==firefox (
-		echo Starting the Clean Flash Player installer...
-		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
+		echo Starting the Flash Player installer...
+		if not exist "utilities\installers\flash_windows_firefox.msi" (
 			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
 			echo A normal copy of Wrapper: Offline should come with one.
 			echo You may be able to get the installer here:
-			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
+	s		echo https://github.com/CleanFlash/installer/releases/tag/v1.1
 			echo Although Flash is needed, Offline will continue launching.
 			pause
 			goto after_flash_install
 		)
-		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
-	)
-	if !BROWSER_TYPE!==trident (
-		echo Starting the Clean Flash Player installer...
-		if not exist "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" (
-			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with one.
-			echo You may be able to get the installer here:
-			echo https://github.com/CleanFlash/installer/releases/tag/v1.1
-			echo Although Flash is needed, Offline will continue launching.
-			pause
-			goto after_flash_install
-		)
-		if !DRYRUN!==n ( start "utilities\runasti\RunAsTI64.exe" "utilities\installers\CleanFlash_34.0.0.155_Installer.exe" )
+		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_firefox.msi" !INSTALL_FLAGS! /quiet )
 	)
 	echo Flash has been installed.
 	echo:
@@ -855,41 +761,13 @@ popd
 :: Prevents the video list opening too fast
 PING -n 6 127.0.0.1>nul
 
-:: Open Wrapper in preferred browser
-if !INCLUDEDCHROMIUM!==n (
-	if !INCLUDEDBASILISK!==n (
-		if !CUSTOMBROWSER!==n (
-			echo Opening Wrapper: Offline in your default browser...
-			if !DRYRUN!==n ( start http://localhost:!port! )
-		) else (
-			echo Opening Wrapper: Offline in your set browser...
-			echo If this does not work, you may have set the path wrong.
-			if !DRYRUN!==n ( start !CUSTOMBROWSER! http://localhost:!port! )
-		)
-	)
-)
-) else (
-if !INCLUDEDCHROMIUM!==y (
-	if !INCLUDEDBASILISK!==n (
-		echo Opening Wrapper: Offline using included Chromium...
+echo Opening Wrapper: Offline...
 		pushd utilities\ungoogled-chromium
 		if !APPCHROMIUM!==y (
 			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 		) else (
 			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
 		)
-	)
-)
-) else (
-if !INCLUDEDCHROMIUM!==n (
-	if !INCLUDEDBASILISK!==y (
-		echo Opening Wrapper: Offline using included Basilisk...
-		pushd utilities\basilisk\Basilisk-Portable
-		if !DRYRUN!==n ( start Basilisk-Portable.exe http://localhost:!port! )
-	)
-	popd
-)
-)
 
 echo Wrapper: Offline has been started^^! The video list should now be open.
 
@@ -905,7 +783,7 @@ cls
 
 echo:
 echo Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! running
-echo A project from VisualPlugin adapted by the W:O team
+echo A project from VisualPlugin adapted by GoTest334 and the Wrapper: Offline team
 echo:
 if !VERBOSEWRAPPER!==n ( echo DON'T CLOSE THIS WINDOW^^! Use the quit option ^(0^) when you're done. )
 if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the extra CMD windows for extra output. )
@@ -962,58 +840,6 @@ if "!choice!"=="?" goto open_faq
 if /i "!choice!"=="clr" goto wrapperstartedcls
 if /i "!choice!"=="cls" goto wrapperstartedcls
 if /i "!choice!"=="clear" goto wrapperstartedcls
-:: funni options
-if "!choice!"=="43" echo OH MY GOD. FOURTY THREE CHARS. NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO & goto wrapperidle
-if "!choice!"=="69" echo Nice. & goto wrapperidle
-if "!choice!"=="420" echo 420 blaze it m8 B^) & goto wrapperidle
-if "!choice!"=="666" echo AAAAAA SP00PY NUMBER ME SHID MY PANTS AAAAAAA & goto wrapperidle
-if "!choice!"=="doggis" ( 
-	start "" https://youtu.be/vmIAZZMiwKw
-	echo Ven, ven a Doggis^!
-	PING -n 8 127.0.0.1>nul
-	echo Doggis tiene el mejor hot dog.
-	PING -n 3 127.0.0.1>nul
-	echo Para los amigos, la polola y la prima^!
-	PING -n 4 127.0.0.1>nul
-	echo Doggis tiene el mejor hot dog.
-	PING -n 4 127.0.0.1>nul
-	echo Para la familia, el vecino y la hermana^!
-	PING -n 4 127.0.0.1>nul
-	echo Doggis tiene el mejor hot dog.
-	PING -n 4 127.0.0.1>nul
-	echo Ven, ven a Doggis^!
-	PING -n 4 127.0.0.1>nul
-	echo Muchos sabores a tu eleccion^!
-	PING -n 4 127.0.0.1>nul
-	echo Doggis tiene el mejor hot dog^!
-	PING -n 3 127.0.0.1>nul
-	echo ^(Para todos, el mejor hot dog.^)
-	PING -n 4 127.0.0.1>nul
-	pause
-	goto wrapperidle
-)	
-if /i "!choice!"=="benson" echo watch benson on youtube & goto wrapperidle
-if /i "!choice!"=="ford" echo what up son & goto wrapperidle
-if /i "!choice!"=="no" echo stahp & goto wrapperidle
-if /i "!choice!"=="yes" echo Alright. & goto wrapperidle
-if /i "!choice!"=="fuck off" goto youfuckoff
-if /i "!choice!"=="fuck you" echo No, fuck you. & goto wrapperidle
-if /i "!choice!"=="sex" echo that's fake & goto wrapperidle
-if /i "!choice!"=="watch benson on youtube" goto w_a_t_c_h
-if /i "!choice!"=="browser slayer" goto slayerstestaments
-if /i "!choice!"=="patch" goto patchtime
-if /i "!choice!"=="random" goto sayarandom
-if /i "!choice!"=="grounded" echo OH OH OH OH OH OH OH OH OH OH OH OH OH OH OH OH^^!^^!^^!^^!^^!^^!^^! %USERNAME%, HOW DARE YOU TYPE "GROUNDED" INTO START_WRAPPER.BAT^^!^^!^^! THAT'S IT^^! YOU'RE GROUNDED GROUNDED GROUNDED GROUNDED FOR %RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM%%RANDOM% YEARS^^!^^!^^!^^!^^!^^!^^!^^!^^!^^!^^! GO TO YOUR ROOM RIGHT FREAKING NOW^^!^^!^^! & goto wrapperidle
-if /i "!choice!"=="die please" echo die please & goto wrapperidle
-if /i "!choice!"=="spark" echo you suck at development & goto wrapperidle
-if /i "!choice!"=="fire" echo kindle fire on the iphone
-if /i "!choice!"=="32k" echo i'm gonna kill you with the 32k pasho watch the fuck out & goto wrapperidle
-if /i "!choice!"=="gotest334" echo Enough & goto wrapperidle
-if /i "!choice!"=="indian" echo 'that's all those indians can do they just think about colors all day' - Blukas's Dad & goto wrapperidle
-if /i "!choice!"=="kenos" echo HOLY SHIT IT'S KENOS HOLY ShIT OH MY GOD & goto wrapperidle
-if /i "!choice!"=="muslim" echo Muslim Banker supports your decision to type 'muslim' & goto wrapperidle
-if /i "!choice!"=="christmas jones" echo ragein gagein thinks he's so smart, i'll- i'll copyright your livestreams and you'- you'll get taken down^^! & goto wrapperidle
-if /i "!choice!"=="icy" echo you're being hacked by me and the esa gang right now & goto wrapperidle
 :: dev options
 if !DEVMODE!==y (
 	if /i "!choice!"=="amnesia" goto wipe_save
@@ -1029,44 +855,14 @@ if !DEVMODE!==n (
 )
 echo Time to choose. && goto wrapperidle
 
-:reopen_webpage
-if !INCLUDEDCHROMIUM!==n (
-	if !INCLUDEDBASILISK!==n (
-		if !CUSTOMBROWSER!==n (
-			echo Opening Wrapper: Offline in your default browser...
-			if !DRYRUN!==n ( start http://localhost:!port! )
-		) else (
-			echo Opening Wrapper: Offline in your set browser...
-			echo If this does not work, you may have set the path wrong.
-			if !DRYRUN!==n ( start !CUSTOMBROWSER! http://localhost:!port! )
-		)
-	)
-	)
-	)
-) else (
-if !INCLUDEDCHROMIUM!==y (
-	if !INCLUDEDBASILISK!==n (
-		echo Opening Wrapper: Offline using included Chromium...
+:reopen_webpage	
+		echo Opening Wrapper: Offline...
 		pushd utilities\ungoogled-chromium
 		if !APPCHROMIUM!==y (
 			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
 		) else (
 			if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile http://localhost:!port! --allow-outdated-plugins )
 		)
-	)
-	)
-	)
-) else (
-if !INCLUDEDCHROMIUM!==n (
-	if !INCLUDEDBASILISK!==y (
-		echo Opening Wrapper: Offline using included Basilisk...
-		pushd utilities\basilisk\Basilisk-Portable
-		if !DRYRUN!==n ( start Basilisk-Portable.exe http://localhost:!port! )
-		)
-		popd
-	)
-)
-)
 goto wrapperidle
 
 :open_server
@@ -1179,114 +975,6 @@ if !VERBOSEWRAPPER!==y (
 )
 start "" /wait /B "%~F0" point_insertion
 exit
-
-:w_a_t_c_h
-echo watch benson on youtube
-echo watch benson on youtube
-echo watch benson on youtube
-echo watch benson on youtube
-echo watch benson on youtube
-echo wa
-start https://www.youtube.com/channel/UCJwK22PVfKnSEuuoF2-vv3w?sub_confirmation=1
-goto wrapperidle
-
-:patchtime
-echo:
-echo would you like to patch whoper online
-echo press y or n
-:patchtimeretry
-set /p PATCHCHOICE= Response:
-echo:
-if not '!patchchoice!'=='' set patchchoice=%patchchoice:~0,1%
-if /i "!patchchoice!"=="y" echo too bad B^) & goto wrapperidle
-if /i "!patchchoice!"=="n" echo good & goto wrapperidle
-echo yes or no question here && goto patchtimeretry
-
-:sayarandom
-:: welcome to "inside jokes with no context" land
-set /a _rand=!RANDOM!*15/32767
-if !_rand!==0 echo stress level ^>0
-if !_rand!==1 echo Something random.
-if !_rand!==2 echo oisjdoiajfgmafvdsdg
-if !_rand!==3 echo my head is unscrewed & echo what do i need it for
-if !_rand!==4 echo when you're eating popcorn you're eating busted nuts
-if !_rand!==5 echo chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken 
-if !_rand!==6 echo when u nut so hard that ur roblox crashes
-if !_rand!==7 echo seven seven seven seven seven seven seven seven seven seven seven seven seven seven seven seven
-if !_rand!==8 echo DONT ASK HOW I GOT IT OR YOU WILL BE BANNED FROM MY CHANNEL WITH NO SECOND CHANCES
-if !_rand!==9 echo everything you know is wrong & echo black is white up is down and short is long
-if !_rand!==10 echo It's a chekcpoint.
-if !_rand!==11 echo Another monday... & echo Another mind-numbing, run-of-the-mill monday... & echo ANOTHER MUNDANE, MORIBUND, HUMDRUM MONDAY!
-if !_rand!==12 echo try typing "with style" when exiting
-if !_rand!==13 echo elmo
-if !_rand!==14 echo gnorm gnat says: trans rights are human rights
-if !_rand!==15 echo wrapper inline
-goto wrapperidle
-
-:slayerstestaments
-cls
-color 04
-PING -n 4 127.0.0.1>nul
-echo In the first age,
-PING -n 3 127.0.0.1>nul
-echo In the first battle,
-PING -n 3 127.0.0.1>nul
-echo When the shadows first lengthened,
-PING -n 4 127.0.0.1>nul
-echo One stood.
-PING -n 3 127.0.0.1>nul
-echo Slowed by the waste of unoptimized websites,
-PING -n 4 127.0.0.1>nul
-echo His soul harvested by the trackers of Google
-PING -n 5 127.0.0.1>nul
-echo And exposed beyond anonymity, 
-PING -n 4 127.0.0.1>nul
-echo He chose the path of perpetual torment.
-PING -n 6 127.0.0.1>nul
-echo In his ravenous hatred,
-PING -n 3 127.0.0.1>nul
-echo He found no peace,
-PING -n 3 127.0.0.1>nul
-echo And with boiling blood,
-PING -n 3 127.0.0.1>nul
-echo He scoured the search results,
-PING -n 4 127.0.0.1>nul
-echo Seeking vengeance against the companies who had wronged him.
-PING -n 6 127.0.0.1>nul
-echo He wore the crown of the Taskkillers,
-PING -n 4 127.0.0.1>nul
-echo and those that tasted the bite of his sword
-PING -n 5 127.0.0.1>nul
-echo named him...
-PING -n 3 127.0.0.1>nul
-echo the Browser Slayer.
-PING -n 3 127.0.0.1>nul
-:: here comes something that looks awesome normaly but is disgusting when escaped for batch
-:: credit to http://www.gamers.org/~fpv/doomlogo.html
-echo ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=     ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=     ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=   ^=^=^=^=^=^=^=^=  ^=^=^=^=^=^=^=^=
-echo ^\^\ ^. ^. ^. ^. ^. ^. ^.^\^\   //^. ^. ^. ^. ^. ^. ^.^\^\   //^. ^. ^. ^. ^. ^. ^.^\^\  ^\^\^. ^. ^.^\^\// ^. ^. //
-echo ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^| ^. ^. ^.^\/ ^. ^. ^.^|^|
-echo ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^|^. ^. ^. ^. ^. ^. ^. ^|^|
-echo ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^| ^. ^| ^. ^. ^. ^. ^.^|^|
-echo ^|^| ^. ^.^|^|   ^|^|^. _-^|^| ^|^|-_ ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. _-^|^| ^|^|-_^.^|^\ ^. ^. ^. ^. ^|^|
-echo ^|^|^. ^. ^|^|   ^|^|-^'  ^|^| ^|^|  ^`-^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^|-^'  ^|^| ^|^|  ^`^|^\_ ^. ^.^|^. ^.^|^|
-echo ^|^| ^. _^|^|   ^|^|    ^|^| ^|^|    ^|^|   ^|^|_ ^. ^|^| ^|^| ^. _^|^|   ^|^|    ^|^| ^|^|   ^|^\ ^`-_/^| ^. ^|^|
-echo ^|^|_-^' ^|^|  ^.^|/    ^|^| ^|^|    ^\^|^.  ^|^| ^`-_^|^| ^|^|_-^' ^|^|  ^.^|/    ^|^| ^|^|   ^| ^\  / ^|-_^.^|^|
-echo ^|^|    ^|^|_-^'      ^|^| ^|^|      ^`-_^|^|    ^|^| ^|^|    ^|^|_-^'      ^|^| ^|^|   ^| ^\  / ^|  ^`^|^|
-echo ^|^|    ^`^'         ^|^| ^|^|         ^`^'    ^|^| ^|^|    ^`^'         ^|^| ^|^|   ^| ^\  / ^|   ^|^|
-echo ^|^|            ^.^=^=^=^' ^`^=^=^=^.         ^.^=^=^=^'^.^`^=^=^=^.         ^.^=^=^=^' /^=^=^. ^|  ^\/  ^|   ^|^|
-echo ^|^|         ^.^=^=^'   ^\_^|-_ ^`^=^=^=^. ^.^=^=^=^'   _^|_   ^`^=^=^=^. ^.^=^=^=^' _-^|/   ^`^=^=  ^\/  ^|   ^|^|
-echo ^|^|      ^.^=^=^'    _-^'    ^`-_  ^`^=^'    _-^'   ^`-_    ^`^=^'  _-^'   ^`-_  /^|  ^\/  ^|   ^|^|
-echo ^|^|   ^.^=^=^'    _-^'          ^`-__^\^._-^'         ^`-_^./__-^'         ^`^' ^|^. /^|  ^|   ^|^|
-echo ^|^|^.^=^=^'    _-^'                                                     ^`^' ^|  /^=^=^.^|^|
-echo ^=^=^'    _-^'                                                            ^\/   ^`^=^=
-echo ^\   _-^'                                                                ^`-_   /
-echo  ^`^'^'                                                                      ^`^`^'
-echo:
-color 07
-pause
-cls
-goto wrapperstarted
 
 :devmodeerror
 echo You have to have developer mode on
