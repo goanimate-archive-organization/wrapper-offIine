@@ -41,7 +41,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - Node installer becomes v14.17.0
 ### Fixed
   - > config.bat really???
-## Final
+## Build 72
 ### Added
   - Mediainfo sourcecode becomes 21.03
 ### Changed
