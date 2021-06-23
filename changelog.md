@@ -49,6 +49,17 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - VFProxy batch : localhost instead of 127.0.0.1
 ### Fixed
   - include mediainfo
+## Build 102
+### Changed
+ - Sourcecode no longer zip
+ - http server a new version
+### Fixed
+ - include import
+### Delete
+ - Files that are unusual
+ - old logo
+ - ps1 files
+ - other nah
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
 ## Build 5
