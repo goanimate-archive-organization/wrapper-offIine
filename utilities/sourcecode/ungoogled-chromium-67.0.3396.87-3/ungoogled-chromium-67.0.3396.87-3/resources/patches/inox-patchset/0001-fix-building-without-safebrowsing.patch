@@ -1,0 +1,1343 @@
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -710,30 +710,6 @@ void SetApplicationLocaleOnIOThread(cons
+   g_io_thread_application_locale.Get() = locale;
+ }
+ 
+-// An implementation of the SSLCertReporter interface used by
+-// SSLErrorHandler. Uses CertificateReportingService to send reports. The
+-// service handles queueing and re-sending of failed reports. Each certificate
+-// error creates a new instance of this class.
+-class CertificateReportingServiceCertReporter : public SSLCertReporter {
+- public:
+-  explicit CertificateReportingServiceCertReporter(
+-      content::WebContents* web_contents)
+-      : service_(CertificateReportingServiceFactory::GetForBrowserContext(
+-            web_contents->GetBrowserContext())) {}
+-  ~CertificateReportingServiceCertReporter() override {}
+-
+-  // SSLCertReporter implementation
+-  void ReportInvalidCertificateChain(
+-      const std::string& serialized_report) override {
+-    service_->Send(serialized_report);
+-  }
+-
+- private:
+-  CertificateReportingService* service_;
+-
+-  DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceCertReporter);
+-};
+-
+ #if defined(OS_ANDROID)
+ float GetDeviceScaleAdjustment() {
+   static const float kMinFSM = 1.05f;
+@@ -1890,7 +1866,7 @@ void ChromeContentBrowserClient::AppendE
+       // Disable client-side phishing detection in the renderer if it is
+       // disabled in the Profile preferences or the browser process.
+       if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled) ||
+-          !g_browser_process->safe_browsing_detection_service()) {
++          true) {
+         command_line->AppendSwitch(
+             switches::kDisableClientSidePhishingDetection);
+       }
+@@ -2489,7 +2465,7 @@ void ChromeContentBrowserClient::AllowCe
+   SSLErrorHandler::HandleSSLError(
+       web_contents, cert_error, ssl_info, request_url,
+       expired_previous_decision,
+-      std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
++      nullptr,
+       callback, SSLErrorHandler::BlockingPageReadyCallback());
+ }
+ 
+@@ -2720,8 +2696,6 @@ bool ChromeContentBrowserClient::CanCrea
+ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+ 
+-  safe_browsing_service_ = g_browser_process->safe_browsing_service();
+-
+   for (size_t i = 0; i < extra_parts_.size(); ++i)
+     extra_parts_[i]->ResourceDispatcherHostCreated();
+ 
+@@ -3681,7 +3655,7 @@ ChromeContentBrowserClient::CreateThrott
+           switches::kCommittedInterstitials)) {
+     throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
+         handle,
+-        std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
++        nullptr,
+         base::Bind(&SSLErrorHandler::HandleSSLError)));
+   }
+ 
+--- a/chrome/browser/profiles/profile_impl.cc
++++ b/chrome/browser/profiles/profile_impl.cc
+@@ -491,18 +491,6 @@ ProfileImpl::ProfileImpl(
+                                  create_mode == CREATE_MODE_SYNCHRONOUS);
+ #endif
+ 
+-  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service(
+-      g_browser_process->safe_browsing_service());
+-  prefs::mojom::TrackedPreferenceValidationDelegatePtr pref_validation_delegate;
+-  if (safe_browsing_service.get()) {
+-    auto pref_validation_delegate_impl =
+-        safe_browsing_service->CreatePreferenceValidationDelegate(this);
+-    if (pref_validation_delegate_impl) {
+-      mojo::MakeStrongBinding(std::move(pref_validation_delegate_impl),
+-                              mojo::MakeRequest(&pref_validation_delegate));
+-    }
+-  }
+-
+   content::BrowserContext::Initialize(this, path_);
+ 
+   {
+@@ -511,7 +499,7 @@ ProfileImpl::ProfileImpl(
+             ->CreateDelegate();
+     delegate->InitPrefRegistry(pref_registry_.get());
+     prefs_ = chrome_prefs::CreateProfilePrefs(
+-        path_, std::move(pref_validation_delegate),
++        path_, nullptr,
+         profile_policy_connector_->policy_service(), supervised_user_settings,
+         CreateExtensionPrefStore(this, false), pref_registry_, async_prefs,
+         GetIOTaskRunner(), std::move(delegate));
+--- a/chrome/browser/loader/chrome_resource_dispatcher_host_delegate.cc
++++ b/chrome/browser/loader/chrome_resource_dispatcher_host_delegate.cc
+@@ -347,8 +347,7 @@ void LogCommittedPreviewsDecision(
+ }  // namespace
+ 
+ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
+-    : download_request_limiter_(g_browser_process->download_request_limiter()),
+-      safe_browsing_(g_browser_process->safe_browsing_service())
++    : download_request_limiter_(g_browser_process->download_request_limiter())
+ #if BUILDFLAG(ENABLE_EXTENSIONS)
+       , user_script_listener_(new extensions::UserScriptListener())
+ #endif
+@@ -398,8 +397,6 @@ void ChromeResourceDispatcherHostDelegat
+     content::AppCacheService* appcache_service,
+     ResourceType resource_type,
+     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
+-  if (safe_browsing_.get())
+-    safe_browsing_->OnResourceRequest(request);
+   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+   client_hints::RequestBeginning(request, io_data->GetCookieSettings());
+ 
+@@ -533,7 +530,7 @@ void ChromeResourceDispatcherHostDelegat
+   content::ResourceThrottle* first_throttle = NULL;
+ #if defined(OS_ANDROID)
+   first_throttle = DataReductionProxyResourceThrottle::MaybeCreate(
+-      request, resource_context, resource_type, safe_browsing_.get());
++      request, resource_context, resource_type, nullptr);
+ #endif  // defined(OS_ANDROID)
+ 
+ #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+@@ -546,7 +543,7 @@ void ChromeResourceDispatcherHostDelegat
+ 
+     if (!url_loader_throttle_used) {
+       first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
+-          request, resource_type, safe_browsing_.get(), io_data);
++          request, resource_type, nullptr, io_data);
+     }
+   }
+ #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+--- a/chrome/browser/ui/webui/interstitials/interstitial_ui.cc
++++ b/chrome/browser/ui/webui/interstitials/interstitial_ui.cc
+@@ -250,110 +250,6 @@ BadClockBlockingPage* CreateBadClockBloc
+       base::Callback<void(content::CertificateRequestResultType)>());
+ }
+ 
+-safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
+-    content::WebContents* web_contents) {
+-  safe_browsing::SBThreatType threat_type =
+-      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+-  GURL request_url("http://example.com");
+-  std::string url_param;
+-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
+-                                 "url",
+-                                 &url_param)) {
+-    if (GURL(url_param).is_valid()) {
+-      request_url = GURL(url_param);
+-    }
+-  }
+-  GURL main_frame_url(request_url);
+-  // TODO(mattm): add flag to change main_frame_url or add dedicated flag to
+-  // test subresource interstitials.
+-  std::string type_param;
+-  if (net::GetValueForKeyInQuery(web_contents->GetURL(),
+-                                 "type",
+-                                 &type_param)) {
+-    // TODO(mattm): add param for SB_THREAT_TYPE_URL_UNWANTED.
+-    if (type_param == "malware") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+-    } else if (type_param == "phishing") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+-    } else if (type_param == "clientside_malware") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
+-    } else if (type_param == "clientside_phishing") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
+-    }
+-  }
+-  safe_browsing::SafeBrowsingBlockingPage::UnsafeResource resource;
+-  resource.url = request_url;
+-  resource.is_subresource = request_url != main_frame_url;
+-  resource.is_subframe = false;
+-  resource.threat_type = threat_type;
+-  resource.web_contents_getter =
+-      security_interstitials::UnsafeResource::GetWebContentsGetter(
+-          web_contents->GetMainFrame()->GetProcess()->GetID(),
+-          web_contents->GetMainFrame()->GetRoutingID());
+-  resource.threat_source = g_browser_process->safe_browsing_service()
+-                               ->database_manager()
+-                               ->GetThreatSource();
+-
+-  // Normally safebrowsing interstitial types which block the main page load
+-  // (SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING, and
+-  // SB_THREAT_TYPE_URL_UNWANTED on main-frame loads) would expect there to be a
+-  // pending navigation when the SafeBrowsingBlockingPage is created. This demo
+-  // creates a SafeBrowsingBlockingPage but does not actually show a real
+-  // interstitial. Instead it extracts the html and displays it manually, so the
+-  // parts which depend on the NavigationEntry are not hit.
+-  return safe_browsing::SafeBrowsingBlockingPage::CreateBlockingPage(
+-      g_browser_process->safe_browsing_service()->ui_manager().get(),
+-      web_contents, main_frame_url, resource);
+-}
+-
+-TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
+-    content::WebContents* web_contents) {
+-  safe_browsing::SBThreatType threat_type =
+-      safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+-  GURL request_url("http://example.com");
+-  std::string url_param;
+-  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "url", &url_param)) {
+-    if (GURL(url_param).is_valid())
+-      request_url = GURL(url_param);
+-  }
+-  GURL main_frame_url(request_url);
+-  std::string type_param;
+-  bool is_giant_webview = false;
+-  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "type", &type_param)) {
+-    if (type_param == "malware") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+-    } else if (type_param == "phishing") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+-    } else if (type_param == "giant") {
+-      threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
+-      is_giant_webview = true;
+-    }
+-  }
+-  safe_browsing::SafeBrowsingBlockingPage::UnsafeResource resource;
+-  resource.url = request_url;
+-  resource.is_subresource = request_url != main_frame_url;
+-  resource.is_subframe = false;
+-  resource.threat_type = threat_type;
+-  resource.web_contents_getter =
+-      security_interstitials::UnsafeResource::GetWebContentsGetter(
+-          web_contents->GetMainFrame()->GetProcess()->GetID(),
+-          web_contents->GetMainFrame()->GetRoutingID());
+-  resource.threat_source = g_browser_process->safe_browsing_service()
+-                               ->database_manager()
+-                               ->GetThreatSource();
+-
+-  // Normally safebrowsing interstitial types which block the main page load
+-  // (SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING, and
+-  // SB_THREAT_TYPE_URL_UNWANTED on main-frame loads) would expect there to be a
+-  // pending navigation when the SafeBrowsingBlockingPage is created. This demo
+-  // creates a SafeBrowsingBlockingPage but does not actually show a real
+-  // interstitial. Instead it extracts the html and displays it manually, so the
+-  // parts which depend on the NavigationEntry are not hit.
+-  return TestSafeBrowsingBlockingPageQuiet::CreateBlockingPage(
+-      g_browser_process->safe_browsing_service()->ui_manager().get(),
+-      web_contents, main_frame_url, resource, is_giant_webview);
+-}
+-
+ #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
+     content::WebContents* web_contents) {
+@@ -457,8 +353,6 @@ void InterstitialHTMLSource::StartDataRe
+         CreateSSLBlockingPage(web_contents, true /* is superfish */));
+   } else if (path_without_query == "/mitm-software-ssl") {
+     interstitial_delegate.reset(CreateMITMSoftwareBlockingPage(web_contents));
+-  } else if (path_without_query == "/safebrowsing") {
+-    interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
+   } else if (path_without_query == "/clock") {
+     interstitial_delegate.reset(CreateBadClockBlockingPage(web_contents));
+ #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+@@ -469,11 +363,6 @@ void InterstitialHTMLSource::StartDataRe
+ 
+   if (path_without_query == "/supervised_user") {
+     html = GetSupervisedUserInterstitialHTML(path);
+-  } else if (path_without_query == "/quietsafebrowsing") {
+-    TestSafeBrowsingBlockingPageQuiet* blocking_page =
+-        CreateSafeBrowsingQuietBlockingPage(web_contents);
+-    interstitial_delegate.reset(blocking_page);
+-    html = blocking_page->GetHTML();
+   } else if (interstitial_delegate.get()) {
+     html = interstitial_delegate.get()->GetHTMLContents();
+   } else {
+--- a/chrome/browser/extensions/blacklist_state_fetcher.cc
++++ b/chrome/browser/extensions/blacklist_state_fetcher.cc
+@@ -31,10 +31,10 @@ BlacklistStateFetcher::~BlacklistStateFe
+ void BlacklistStateFetcher::Request(const std::string& id,
+                                     const RequestCallback& callback) {
+   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+-  if (!safe_browsing_config_) {
+-    if (g_browser_process && g_browser_process->safe_browsing_service()) {
+-      SetSafeBrowsingConfig(
+-          g_browser_process->safe_browsing_service()->GetProtocolConfig());
++  if (true) {
++    if (false) {
++      //SetSafeBrowsingConfig(
++      //    g_browser_process->safe_browsing_service()->GetProtocolConfig());
+     } else {
+       base::ThreadTaskRunnerHandle::Get()->PostTask(
+           FROM_HERE, base::BindOnce(callback, BLACKLISTED_UNKNOWN));
+@@ -47,10 +47,10 @@ void BlacklistStateFetcher::Request(cons
+   if (request_already_sent)
+     return;
+ 
+-  if (g_browser_process && g_browser_process->safe_browsing_service()) {
+-    url_loader_factory_ =
+-        g_browser_process->safe_browsing_service()->GetURLLoaderFactory();
+-  }
++  //if (g_browser_process && g_browser_process->safe_browsing_service()) {
++  //  url_loader_factory_ =
++  //      g_browser_process->safe_browsing_service()->GetURLLoaderFactory();
++  //}
+ 
+   SendRequest(id);
+ }
+@@ -110,13 +110,14 @@ void BlacklistStateFetcher::SendRequest(
+                      base::Unretained(this), fetcher));
+ }
+ 
+-void BlacklistStateFetcher::SetSafeBrowsingConfig(
+-    const safe_browsing::SafeBrowsingProtocolConfig& config) {
+-  safe_browsing_config_.reset(
+-      new safe_browsing::SafeBrowsingProtocolConfig(config));
+-}
++//void BlacklistStateFetcher::SetSafeBrowsingConfig(
++//    const safe_browsing::SafeBrowsingProtocolConfig& config) {
++//  safe_browsing_config_.reset(
++//      new safe_browsing::SafeBrowsingProtocolConfig(config));
++//}
+ 
+ GURL BlacklistStateFetcher::RequestUrl() const {
++  /*
+   std::string url = base::StringPrintf(
+       "%s/%s?client=%s&appver=%s&pver=2.2",
+       safe_browsing_config_->url_prefix.c_str(),
+@@ -129,6 +130,8 @@ GURL BlacklistStateFetcher::RequestUrl()
+                         net::EscapeQueryParamValue(api_key, true).c_str());
+   }
+   return GURL(url);
++  */
++  return GURL();
+ }
+ 
+ void BlacklistStateFetcher::OnURLLoaderComplete(
+--- a/chrome/browser/extensions/blacklist_state_fetcher.h
++++ b/chrome/browser/extensions/blacklist_state_fetcher.h
+@@ -34,8 +34,8 @@ class BlacklistStateFetcher {
+ 
+   virtual void Request(const std::string& id, const RequestCallback& callback);
+ 
+-  void SetSafeBrowsingConfig(
+-      const safe_browsing::SafeBrowsingProtocolConfig& config);
++  //void SetSafeBrowsingConfig(
++  //    const safe_browsing::SafeBrowsingProtocolConfig& config);
+ 
+  protected:
+   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+@@ -55,8 +55,8 @@ class BlacklistStateFetcher {
+ 
+   void SendRequest(const std::string& id);
+ 
+-  std::unique_ptr<safe_browsing::SafeBrowsingProtocolConfig>
+-      safe_browsing_config_;
++  //std::unique_ptr<safe_browsing::SafeBrowsingProtocolConfig>
++  //    safe_browsing_config_;
+   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+ 
+   // SimpleURLLoader -> (owned loader, extension id).
+--- a/chrome/browser/download/chrome_download_manager_delegate.cc
++++ b/chrome/browser/download/chrome_download_manager_delegate.cc
+@@ -289,13 +289,6 @@ ChromeDownloadManagerDelegate::~ChromeDo
+ 
+ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
+   download_manager_ = dm;
+-
+-  safe_browsing::SafeBrowsingService* sb_service =
+-      g_browser_process->safe_browsing_service();
+-  if (sb_service && !profile_->IsOffTheRecord()) {
+-    // Include this download manager in the set monitored by safe browsing.
+-    sb_service->AddDownloadManager(dm);
+-  }
+ }
+ 
+ #if defined(OS_ANDROID)
+@@ -579,16 +572,6 @@ download::InProgressCache* ChromeDownloa
+ 
+ void ChromeDownloadManagerDelegate::SanitizeSavePackageResourceName(
+     base::FilePath* filename) {
+-  safe_browsing::FileTypePolicies* file_type_policies =
+-      safe_browsing::FileTypePolicies::GetInstance();
+-
+-  if (file_type_policies->GetFileDangerLevel(*filename) ==
+-      safe_browsing::DownloadFileType::NOT_DANGEROUS)
+-    return;
+-
+-  base::FilePath default_filename = base::FilePath::FromUTF8Unsafe(
+-      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
+-  *filename = filename->AddExtension(default_filename.BaseName().value());
+ }
+ 
+ void ChromeDownloadManagerDelegate::OpenDownloadUsingPlatformHandler(
+--- a/chrome/browser/browser_process_impl.cc
++++ b/chrome/browser/browser_process_impl.cc
+@@ -71,7 +71,6 @@
+ #include "chrome/browser/printing/print_preview_dialog_controller.h"
+ #include "chrome/browser/profiles/profile_manager.h"
+ #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+ #include "chrome/browser/shell_integration.h"
+ #include "chrome/browser/status_icons/status_tray.h"
+ #include "chrome/browser/ui/browser_dialogs.h"
+@@ -350,8 +349,6 @@ void BrowserProcessImpl::StartTearDown()
+   // that URLFetcher operation before going away.)
+   metrics_services_manager_.reset();
+   intranet_redirect_detector_.reset();
+-  if (safe_browsing_service_.get())
+-    safe_browsing_service()->ShutDown();
+   network_time_tracker_.reset();
+ #if BUILDFLAG(ENABLE_PLUGINS)
+   plugins_resource_service_.reset();
+@@ -964,22 +961,6 @@ StatusTray* BrowserProcessImpl::status_t
+   return status_tray_.get();
+ }
+ 
+-safe_browsing::SafeBrowsingService*
+-BrowserProcessImpl::safe_browsing_service() {
+-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+-  if (!created_safe_browsing_service_)
+-    CreateSafeBrowsingService();
+-  return safe_browsing_service_.get();
+-}
+-
+-safe_browsing::ClientSideDetectionService*
+-    BrowserProcessImpl::safe_browsing_detection_service() {
+-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+-  if (safe_browsing_service())
+-    return safe_browsing_service()->safe_browsing_detection_service();
+-  return NULL;
+-}
+-
+ subresource_filter::ContentRulesetService*
+ BrowserProcessImpl::subresource_filter_ruleset_service() {
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+@@ -1247,16 +1228,6 @@ void BrowserProcessImpl::CreateBackgroun
+ #endif
+ }
+ 
+-void BrowserProcessImpl::CreateSafeBrowsingService() {
+-  DCHECK(!safe_browsing_service_);
+-  // Set this flag to true so that we don't retry indefinitely to
+-  // create the service class if there was an error.
+-  created_safe_browsing_service_ = true;
+-  safe_browsing_service_ =
+-      safe_browsing::SafeBrowsingService::CreateSafeBrowsingService();
+-  safe_browsing_service_->Initialize();
+-}
+-
+ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
+   DCHECK(!subresource_filter_ruleset_service_);
+   created_subresource_filter_ruleset_service_ = true;
+--- a/chrome/browser/browser_process_impl.h
++++ b/chrome/browser/browser_process_impl.h
+@@ -143,9 +143,6 @@ class BrowserProcessImpl : public Browse
+   void set_background_mode_manager_for_test(
+       std::unique_ptr<BackgroundModeManager> manager) override;
+   StatusTray* status_tray() override;
+-  safe_browsing::SafeBrowsingService* safe_browsing_service() override;
+-  safe_browsing::ClientSideDetectionService* safe_browsing_detection_service()
+-      override;
+   subresource_filter::ContentRulesetService*
+   subresource_filter_ruleset_service() override;
+   optimization_guide::OptimizationGuideService* optimization_guide_service()
+@@ -280,9 +277,6 @@ class BrowserProcessImpl : public Browse
+   std::unique_ptr<BackgroundModeManager> background_mode_manager_;
+ #endif
+ 
+-  bool created_safe_browsing_service_ = false;
+-  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
+-
+   bool created_subresource_filter_ruleset_service_ = false;
+   std::unique_ptr<subresource_filter::ContentRulesetService>
+       subresource_filter_ruleset_service_;
+--- a/chrome/browser/browser_process.h
++++ b/chrome/browser/browser_process.h
+@@ -45,10 +45,6 @@ namespace content {
+ class NetworkConnectionTracker;
+ }
+ 
+-namespace safe_browsing {
+-class SafeBrowsingService;
+-}
+-
+ namespace subresource_filter {
+ class ContentRulesetService;
+ }
+@@ -121,10 +117,6 @@ namespace resource_coordinator {
+ class TabManager;
+ }
+ 
+-namespace safe_browsing {
+-class ClientSideDetectionService;
+-}
+-
+ // NOT THREAD SAFE, call only from the main thread.
+ // These functions shouldn't return NULL unless otherwise noted.
+ class BrowserProcess {
+@@ -237,14 +229,6 @@ class BrowserProcess {
+   // on this platform (or this is a unit test).
+   virtual StatusTray* status_tray() = 0;
+ 
+-  // Returns the SafeBrowsing service.
+-  virtual safe_browsing::SafeBrowsingService* safe_browsing_service() = 0;
+-
+-  // Returns an object which handles communication with the SafeBrowsing
+-  // client-side detection servers.
+-  virtual safe_browsing::ClientSideDetectionService*
+-      safe_browsing_detection_service() = 0;
+-
+   // Returns the service providing versioned storage for rules used by the Safe
+   // Browsing subresource filter.
+   virtual subresource_filter::ContentRulesetService*
+--- a/chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h
++++ b/chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h
+@@ -12,7 +12,6 @@
+ 
+ #include "base/macros.h"
+ #include "base/memory/weak_ptr.h"
+-#include "chrome/browser/download/download_danger_prompt.h"
+ #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
+ #include "content/public/browser/web_contents_observer.h"
+ #include "content/public/browser/web_ui_message_handler.h"
+@@ -116,18 +115,6 @@ class MdDownloadsDOMHandler : public con
+   // null-checking |original_notifier_|.
+   content::DownloadManager* GetOriginalNotifierManager() const;
+ 
+-  // Displays a native prompt asking the user for confirmation after accepting
+-  // the dangerous download specified by |dangerous|. The function returns
+-  // immediately, and will invoke DangerPromptAccepted() asynchronously if the
+-  // user accepts the dangerous download. The native prompt will observe
+-  // |dangerous| until either the dialog is dismissed or |dangerous| is no
+-  // longer an in-progress dangerous download.
+-  virtual void ShowDangerPrompt(download::DownloadItem* dangerous);
+-
+-  // Conveys danger acceptance from the DownloadDangerPrompt to the
+-  // DownloadItem.
+-  void DangerPromptDone(int download_id, DownloadDangerPrompt::Action action);
+-
+   // Returns true if the records of any downloaded items are allowed (and able)
+   // to be deleted.
+   bool IsDeletingHistoryAllowed();
+--- a/chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.cc
++++ b/chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.cc
+@@ -20,7 +20,6 @@
+ #include "base/threading/thread.h"
+ #include "base/values.h"
+ #include "chrome/browser/browser_process.h"
+-#include "chrome/browser/download/download_danger_prompt.h"
+ #include "chrome/browser/download/download_history.h"
+ #include "chrome/browser/download/download_item_model.h"
+ #include "chrome/browser/download/download_prefs.h"
+@@ -197,9 +196,6 @@ void MdDownloadsDOMHandler::HandleDrag(c
+ 
+ void MdDownloadsDOMHandler::HandleSaveDangerous(const base::ListValue* args) {
+   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
+-  download::DownloadItem* file = GetDownloadByValue(args);
+-  if (file)
+-    ShowDangerPrompt(file);
+ }
+ 
+ void MdDownloadsDOMHandler::HandleDiscardDangerous(
+@@ -301,12 +297,6 @@ void MdDownloadsDOMHandler::RemoveDownlo
+   IdSet ids;
+ 
+   for (auto* download : to_remove) {
+-    if (download->IsDangerous()) {
+-      // Don't allow users to revive dangerous downloads; just nuke 'em.
+-      download->Remove();
+-      continue;
+-    }
+-
+     DownloadItemModel item_model(download);
+     if (!item_model.ShouldShowInShelf() ||
+         download->GetState() == download::DownloadItem::IN_PROGRESS) {
+@@ -359,33 +349,6 @@ void MdDownloadsDOMHandler::FinalizeRemo
+   }
+ }
+ 
+-void MdDownloadsDOMHandler::ShowDangerPrompt(
+-    download::DownloadItem* dangerous_item) {
+-  DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
+-      dangerous_item,
+-      GetWebUIWebContents(),
+-      false,
+-      base::Bind(&MdDownloadsDOMHandler::DangerPromptDone,
+-                 weak_ptr_factory_.GetWeakPtr(), dangerous_item->GetId()));
+-  // danger_prompt will delete itself.
+-  DCHECK(danger_prompt);
+-}
+-
+-void MdDownloadsDOMHandler::DangerPromptDone(
+-    int download_id, DownloadDangerPrompt::Action action) {
+-  if (action != DownloadDangerPrompt::ACCEPT)
+-    return;
+-  download::DownloadItem* item = NULL;
+-  if (GetMainNotifierManager())
+-    item = GetMainNotifierManager()->GetDownload(download_id);
+-  if (!item && GetOriginalNotifierManager())
+-    item = GetOriginalNotifierManager()->GetDownload(download_id);
+-  if (!item || item->IsDone())
+-    return;
+-  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
+-  item->ValidateDangerousDownload();
+-}
+-
+ bool MdDownloadsDOMHandler::IsDeletingHistoryAllowed() {
+   content::DownloadManager* manager = GetMainNotifierManager();
+   return manager &&
+--- a/chrome/browser/extensions/api/downloads/downloads_api.cc
++++ b/chrome/browser/extensions/api/downloads/downloads_api.cc
+@@ -39,7 +39,6 @@
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/download/download_core_service.h"
+ #include "chrome/browser/download/download_core_service_factory.h"
+-#include "chrome/browser/download/download_danger_prompt.h"
+ #include "chrome/browser/download/download_file_icon_extractor.h"
+ #include "chrome/browser/download/download_prefs.h"
+ #include "chrome/browser/download/download_query.h"
+@@ -1301,9 +1300,6 @@ DownloadsAcceptDangerFunction::Downloads
+ 
+ DownloadsAcceptDangerFunction::~DownloadsAcceptDangerFunction() {}
+ 
+-DownloadsAcceptDangerFunction::OnPromptCreatedCallback*
+-    DownloadsAcceptDangerFunction::on_prompt_created_ = NULL;
+-
+ bool DownloadsAcceptDangerFunction::RunAsync() {
+   std::unique_ptr<downloads::AcceptDanger::Params> params(
+       downloads::AcceptDanger::Params::Create(*args_));
+@@ -1339,40 +1335,7 @@ void DownloadsAcceptDangerFunction::Prom
+     return;
+   }
+   RecordApiFunctions(DOWNLOADS_FUNCTION_ACCEPT_DANGER);
+-  // DownloadDangerPrompt displays a modal dialog using native widgets that the
+-  // user must either accept or cancel. It cannot be scripted.
+-  DownloadDangerPrompt* prompt = DownloadDangerPrompt::Create(
+-      download_item,
+-      web_contents,
+-      true,
+-      base::Bind(&DownloadsAcceptDangerFunction::DangerPromptCallback,
+-                 this, download_id));
+-  // DownloadDangerPrompt deletes itself
+-  if (on_prompt_created_ && !on_prompt_created_->is_null())
+-    on_prompt_created_->Run(prompt);
+-  // Function finishes in DangerPromptCallback().
+-}
+-
+-void DownloadsAcceptDangerFunction::DangerPromptCallback(
+-    int download_id, DownloadDangerPrompt::Action action) {
+-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+-  DownloadItem* download_item =
+-      GetDownload(browser_context(), include_incognito(), download_id);
+-  if (InvalidId(download_item, &error_) ||
+-      Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
+-            errors::kNotInProgress, &error_))
+-    return;
+-  switch (action) {
+-    case DownloadDangerPrompt::ACCEPT:
+-      download_item->ValidateDangerousDownload();
+-      break;
+-    case DownloadDangerPrompt::CANCEL:
+-      download_item->Remove();
+-      break;
+-    case DownloadDangerPrompt::DISMISS:
+-      break;
+-  }
+-  SendResponse(error_.empty());
++  download_item->ValidateDangerousDownload();
+ }
+ 
+ DownloadsShowFunction::DownloadsShowFunction() {}
+--- a/chrome/browser/extensions/api/downloads/downloads_api.h
++++ b/chrome/browser/extensions/api/downloads/downloads_api.h
+@@ -13,7 +13,6 @@
+ #include "base/macros.h"
+ #include "base/scoped_observer.h"
+ #include "base/time/time.h"
+-#include "chrome/browser/download/download_danger_prompt.h"
+ #include "chrome/browser/download/download_path_reservation_tracker.h"
+ #include "chrome/browser/extensions/chrome_extension_function.h"
+ #include "chrome/common/extensions/api/downloads.h"
+@@ -188,25 +187,16 @@ class DownloadsRemoveFileFunction : publ
+ 
+ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
+  public:
+-  typedef base::Callback<void(DownloadDangerPrompt*)> OnPromptCreatedCallback;
+-  static void OnPromptCreatedForTesting(
+-      OnPromptCreatedCallback* callback) {
+-    on_prompt_created_ = callback;
+-  }
+-
+   DECLARE_EXTENSION_FUNCTION("downloads.acceptDanger", DOWNLOADS_ACCEPTDANGER)
+   DownloadsAcceptDangerFunction();
+   bool RunAsync() override;
+ 
+  protected:
+   ~DownloadsAcceptDangerFunction() override;
+-  void DangerPromptCallback(int download_id,
+-                            DownloadDangerPrompt::Action action);
+ 
+  private:
+   void PromptOrWait(int download_id, int retries);
+ 
+-  static OnPromptCreatedCallback* on_prompt_created_;
+   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
+ };
+ 
+--- a/chrome/browser/download/download_prefs.cc
++++ b/chrome/browser/download/download_prefs.cc
+@@ -195,14 +195,7 @@ DownloadPrefs::DownloadPrefs(Profile* pr
+         base::FilePath::StringType(1, base::FilePath::kExtensionSeparator) +
+         extension);
+ 
+-    // Note that the list of file types that are not allowed to open
+-    // automatically can change in the future. When the list is tightened, it is
+-    // expected that some entries in the users' auto open list will get dropped
+-    // permanently as a result.
+-    if (FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
+-            filename_with_extension)) {
+-      auto_open_.insert(extension);
+-    }
++    auto_open_.insert(extension);
+   }
+ }
+ 
+@@ -360,10 +353,6 @@ bool DownloadPrefs::IsAutoOpenEnabledBas
+ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
+     const base::FilePath& file_name) {
+   base::FilePath::StringType extension = file_name.Extension();
+-  if (!FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
+-          file_name)) {
+-    return false;
+-  }
+ 
+   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
+   extension.erase(0, 1);
+--- a/chrome/browser/component_updater/file_type_policies_component_installer.cc
++++ b/chrome/browser/component_updater/file_type_policies_component_installer.cc
+@@ -38,20 +38,6 @@ const uint8_t kFileTypePoliciesPublicKey
+ const char kFileTypePoliciesManifestName[] = "File Type Policies";
+ 
+ void LoadFileTypesFromDisk(const base::FilePath& pb_path) {
+-  if (pb_path.empty())
+-    return;
+-
+-  VLOG(1) << "Reading Download File Types from file: " << pb_path.value();
+-  std::string binary_pb;
+-  if (!base::ReadFileToString(pb_path, &binary_pb)) {
+-    // The file won't exist on new installations, so this is not always an
+-    // error.
+-    VLOG(1) << "Failed reading from " << pb_path.value();
+-    return;
+-  }
+-
+-  safe_browsing::FileTypePolicies::GetInstance()->PopulateFromDynamicUpdate(
+-      binary_pb);
+ }
+ 
+ }  // namespace
+--- a/chrome/browser/download/download_target_determiner.cc
++++ b/chrome/browser/download/download_target_determiner.cc
+@@ -985,29 +985,7 @@ DownloadFileType::DangerLevel DownloadTa
+       download_->HasUserGesture())
+     return DownloadFileType::NOT_DANGEROUS;
+ 
+-  DownloadFileType::DangerLevel danger_level =
+-      safe_browsing::FileTypePolicies::GetInstance()->GetFileDangerLevel(
+-          virtual_path_.BaseName());
+-
+-  // A danger level of ALLOW_ON_USER_GESTURE is used to label potentially
+-  // dangerous file types that have a high frequency of legitimate use. We would
+-  // like to avoid prompting for the legitimate cases as much as possible. To
+-  // that end, we consider a download to be legitimate if one of the following
+-  // is true, and avoid prompting:
+-  //
+-  // * The user navigated to the download URL via the omnibox (either by typing
+-  //   the URL, pasting it, or using search).
+-  //
+-  // * The navigation that initiated the download has a user gesture associated
+-  //   with it AND the user the user is familiar with the referring origin. A
+-  //   user is considered familiar with a referring origin if a visit for a page
+-  //   from the same origin was recorded on the previous day or earlier.
+-  if (danger_level == DownloadFileType::ALLOW_ON_USER_GESTURE &&
+-      ((download_->GetTransitionType() &
+-        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) != 0 ||
+-       (download_->HasUserGesture() && visits == VISITED_REFERRER)))
+-    return DownloadFileType::NOT_DANGEROUS;
+-  return danger_level;
++  return DownloadFileType::NOT_DANGEROUS;
+ }
+ 
+ void DownloadTargetDeterminer::OnDownloadDestroyed(
+--- a/chrome/browser/download/download_commands.cc
++++ b/chrome/browser/download/download_commands.cc
+@@ -213,9 +213,6 @@ bool DownloadCommands::IsCommandEnabled(
+       // filename. Don't base an "Always open" decision based on it. Also
+       // exclude extensions.
+       return download_item_->CanOpenDownload() &&
+-             safe_browsing::FileTypePolicies::GetInstance()
+-                 ->IsAllowedToOpenAutomatically(
+-                     download_item_->GetTargetFilePath()) &&
+              !download_crx_util::IsExtensionDownload(*download_item_);
+     case CANCEL:
+       return !download_item_->IsDone();
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -2402,8 +2402,6 @@ jumbo_split_static_library("browser") {
+       "download/download_commands.h",
+       "download/download_crx_util.cc",
+       "download/download_crx_util.h",
+-      "download/download_danger_prompt.cc",
+-      "download/download_danger_prompt.h",
+       "download/download_dir_policy_handler.cc",
+       "download/download_dir_policy_handler.h",
+       "download/download_dir_util.cc",
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -2525,7 +2525,6 @@ split_static_library("ui") {
+         "cocoa/content_settings/cookie_tree_node.mm",
+         "cocoa/content_settings/cookies_tree_controller_bridge.h",
+         "cocoa/content_settings/cookies_tree_controller_bridge.mm",
+-        "cocoa/download/download_danger_prompt_impl.cc",
+         "cocoa/extensions/chooser_dialog_cocoa.h",
+         "cocoa/extensions/chooser_dialog_cocoa.mm",
+         "cocoa/extensions/chooser_dialog_cocoa_controller.h",
+@@ -2833,7 +2832,6 @@ split_static_library("ui") {
+       "views/cookie_info_view.h",
+       "views/device_chooser_content_view.cc",
+       "views/device_chooser_content_view.h",
+-      "views/download/download_danger_prompt_views.cc",
+       "views/elevation_icon_setter.cc",
+       "views/elevation_icon_setter.h",
+       "views/exclusive_access_bubble_views.cc",
+--- a/chrome/browser/ssl/security_state_tab_helper.cc
++++ b/chrome/browser/ssl/security_state_tab_helper.cc
+@@ -246,62 +246,6 @@ bool SecurityStateTabHelper::UsedPolicyI
+ 
+ security_state::MaliciousContentStatus
+ SecurityStateTabHelper::GetMaliciousContentStatus() const {
+-  content::NavigationEntry* entry =
+-      web_contents()->GetController().GetVisibleEntry();
+-  if (!entry)
+-    return security_state::MALICIOUS_CONTENT_STATUS_NONE;
+-  safe_browsing::SafeBrowsingService* sb_service =
+-      g_browser_process->safe_browsing_service();
+-  if (!sb_service)
+-    return security_state::MALICIOUS_CONTENT_STATUS_NONE;
+-  scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
+-  safe_browsing::SBThreatType threat_type;
+-  if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
+-          entry->GetURL(), false, entry, web_contents(), false, &threat_type)) {
+-    switch (threat_type) {
+-      case safe_browsing::SB_THREAT_TYPE_UNUSED:
+-      case safe_browsing::SB_THREAT_TYPE_SAFE:
+-        break;
+-      case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
+-      case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
+-        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+-      case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:
+-      case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
+-        return security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
+-      case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
+-        return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
+-      case safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE:
+-#if defined(SAFE_BROWSING_DB_LOCAL)
+-        if (base::FeatureList::IsEnabled(
+-                safe_browsing::kGoogleBrandedPhishingWarning)) {
+-          if (safe_browsing::ChromePasswordProtectionService::
+-                  ShouldShowChangePasswordSettingUI(Profile::FromBrowserContext(
+-                      web_contents()->GetBrowserContext()))) {
+-            return security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
+-          }
+-          // If user has already changed Gaia password, returns the regular
+-          // social engineering content status.
+-          return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+-        }
+-        break;
+-#endif
+-      case safe_browsing::
+-          DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+-      case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
+-      case safe_browsing::SB_THREAT_TYPE_EXTENSION:
+-      case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
+-      case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
+-      case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
+-      case safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST:
+-      case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+-      case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
+-        // These threat types are not currently associated with
+-        // interstitials, and thus resources with these threat types are
+-        // not ever whitelisted or pending whitelisting.
+-        NOTREACHED();
+-        break;
+-    }
+-  }
+   return security_state::MALICIOUS_CONTENT_STATUS_NONE;
+ }
+ 
+--- a/chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.cc
++++ b/chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.cc
+@@ -706,42 +706,6 @@ void ChromeBrowsingDataRemoverDelegate::
+         CONTENT_SETTINGS_TYPE_CLIENT_HINTS, base::Time(), base::Time::Max(),
+         base::BindRepeating(&WebsiteSettingsFilterAdapter, filter));
+ 
+-    // Clear the safebrowsing cookies only if time period is for "all time".  It
+-    // doesn't make sense to apply the time period of deleting in the last X
+-    // hours/days to the safebrowsing cookies since they aren't the result of
+-    // any user action.
+-    if (delete_begin_ == base::Time()) {
+-      safe_browsing::SafeBrowsingService* sb_service =
+-          g_browser_process->safe_browsing_service();
+-      if (sb_service) {
+-        scoped_refptr<net::URLRequestContextGetter> sb_context =
+-            sb_service->url_request_context();
+-
+-        if (filter_builder.IsEmptyBlacklist()) {
+-          BrowserThread::PostTask(
+-              BrowserThread::IO, FROM_HERE,
+-              base::BindOnce(
+-                  &ClearCookiesOnIOThread, delete_begin_, delete_end_,
+-                  base::RetainedRef(std::move(sb_context)),
+-                  UIThreadTrampoline(base::BindOnce(
+-                      &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
+-                      weak_ptr_factory_.GetWeakPtr(),
+-                      CreatePendingTaskCompletionClosure()))));
+-        } else {
+-          BrowserThread::PostTask(
+-              BrowserThread::IO, FROM_HERE,
+-              base::BindOnce(
+-                  &ClearCookiesWithPredicateOnIOThread, delete_begin_,
+-                  delete_end_, filter_builder.BuildCookieFilter(),
+-                  base::RetainedRef(std::move(sb_context)),
+-                  UIThreadTrampoline(base::BindOnce(
+-                      &ChromeBrowsingDataRemoverDelegate::OnClearedCookies,
+-                      weak_ptr_factory_.GetWeakPtr(),
+-                      CreatePendingTaskCompletionClosure()))));
+-        }
+-      }
+-    }
+-
+     MediaDeviceIDSalt::Reset(profile_->GetPrefs());
+   }
+ 
+--- a/chrome/browser/notifications/platform_notification_service_impl.cc
++++ b/chrome/browser/notifications/platform_notification_service_impl.cc
+@@ -28,8 +28,6 @@
+ #include "chrome/browser/profiles/profile_attributes_storage.h"
+ #include "chrome/browser/profiles/profile_io_data.h"
+ #include "chrome/browser/profiles/profile_manager.h"
+-#include "chrome/browser/safe_browsing/ping_manager.h"
+-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+ #include "chrome/browser/ui/browser.h"
+ #include "chrome/browser/ui/browser_list.h"
+ #include "chrome/browser/ui/browser_window.h"
+@@ -500,16 +498,6 @@ PlatformNotificationServiceImpl::CreateN
+     notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);
+     notification.set_image(
+         gfx::Image::CreateFrom1xBitmap(notification_resources.image));
+-    // n.b. this should only be posted once per notification.
+-    if (g_browser_process->safe_browsing_service() &&
+-        g_browser_process->safe_browsing_service()->enabled_by_prefs()) {
+-      g_browser_process->safe_browsing_service()
+-          ->ping_manager()
+-          ->ReportNotificationImage(
+-              profile,
+-              g_browser_process->safe_browsing_service()->database_manager(),
+-              origin, notification_resources.image);
+-    }
+   }
+ 
+   // Badges are only supported on Android, primarily because it's the only
+--- a/chrome/browser/metrics/chrome_metrics_service_client.cc
++++ b/chrome/browser/metrics/chrome_metrics_service_client.cc
+@@ -45,7 +45,6 @@
+ #include "chrome/browser/metrics/sampling_metrics_provider.h"
+ #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+ #include "chrome/browser/profiles/profile_manager.h"
+-#include "chrome/browser/safe_browsing/certificate_reporting_metrics_provider.h"
+ #include "chrome/browser/sync/chrome_sync_client.h"
+ #include "chrome/browser/sync/profile_sync_service_factory.h"
+ #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
+@@ -718,9 +717,6 @@ void ChromeMetricsServiceClient::Registe
+   metrics_service_->RegisterMetricsProvider(
+       std::make_unique<HttpsEngagementMetricsProvider>());
+ 
+-  metrics_service_->RegisterMetricsProvider(
+-      std::make_unique<CertificateReportingMetricsProvider>());
+-
+ #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+   metrics_service_->RegisterMetricsProvider(
+       std::make_unique<UpgradeMetricsProvider>());
+--- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
++++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
+@@ -223,7 +223,6 @@ EnsureBrowserContextKeyedServiceFactorie
+ #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+   CaptivePortalServiceFactory::GetInstance();
+ #endif
+-  CertificateReportingServiceFactory::GetInstance();
+ #if defined(OS_ANDROID)
+   android::DataUseUITabModelFactory::GetInstance();
+ #endif
+--- a/chrome/browser/ssl/captive_portal_blocking_page.cc
++++ b/chrome/browser/ssl/captive_portal_blocking_page.cc
+@@ -206,10 +206,7 @@ void CaptivePortalBlockingPage::Populate
+   load_time_data->SetString("explanationParagraph", base::string16());
+   load_time_data->SetString("finalParagraph", base::string16());
+ 
+-  if (cert_report_helper())
+-    cert_report_helper()->PopulateExtendedReportingOption(load_time_data);
+-  else
+-    load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, false);
++  load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox, false);
+ }
+ 
+ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
+@@ -224,8 +221,6 @@ void CaptivePortalBlockingPage::CommandR
+   security_interstitials::SecurityInterstitialCommand cmd =
+       static_cast<security_interstitials::SecurityInterstitialCommand>(
+           command_num);
+-  cert_report_helper()->HandleReportingCommands(cmd,
+-                                                controller()->GetPrefService());
+   switch (cmd) {
+     case security_interstitials::CMD_OPEN_LOGIN:
+       captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
+--- a/chrome/browser/ssl/cert_report_helper.cc
++++ b/chrome/browser/ssl/cert_report_helper.cc
+@@ -182,8 +182,6 @@ void CertReportHelper::FinishCertCollect
+     LOG(ERROR) << "Failed to serialize certificate report.";
+     return;
+   }
+-
+-  ssl_cert_reporter_->ReportInvalidCertificateChain(serialized_report);
+ }
+ 
+ bool CertReportHelper::ShouldShowCertificateReporterCheckbox() {
+--- a/chrome/browser/ui/tab_helpers.cc
++++ b/chrome/browser/ui/tab_helpers.cc
+@@ -237,8 +237,6 @@ void TabHelpers::AttachTabHelpers(WebCon
+   PrefsTabHelper::CreateForWebContents(web_contents);
+   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
+   PreviewsInfoBarTabHelper::CreateForWebContents(web_contents);
+-  safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
+-      profile, web_contents);
+   SearchEngineTabHelper::CreateForWebContents(web_contents);
+   SecurityStateTabHelper::CreateForWebContents(web_contents);
+   if (SiteEngagementService::IsEnabled())
+@@ -287,9 +285,6 @@ void TabHelpers::AttachTabHelpers(WebCon
+                         new ChromePDFWebContentsHelperClient()));
+   PluginObserver::CreateForWebContents(web_contents);
+   SadTabHelper::CreateForWebContents(web_contents);
+-  safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
+-  safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
+-      web_contents);
+   SearchTabHelper::CreateForWebContents(web_contents);
+   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents);
+   TabDialogs::CreateForWebContents(web_contents);
+--- a/chrome/browser/subresource_filter/chrome_subresource_filter_client.cc
++++ b/chrome/browser/subresource_filter/chrome_subresource_filter_client.cc
+@@ -43,14 +43,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(Chrome
+ namespace {
+ 
+ scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> GetDatabaseManager() {
+-  safe_browsing::SafeBrowsingService* safe_browsing_service =
+-      g_browser_process->safe_browsing_service();
+-  bool has_supported_manager =
+-      safe_browsing_service &&
+-      safe_browsing_service->database_manager()->IsSupported() &&
+-      safe_browsing_service->database_manager()->CanCheckSubresourceFilter();
+-  return has_supported_manager ? safe_browsing_service->database_manager()
+-                               : nullptr;
++  return nullptr;
+ }
+ 
+ }  // namespace
+@@ -72,21 +65,6 @@ ChromeSubresourceFilterClient::~ChromeSu
+ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
+     content::NavigationHandle* navigation_handle,
+     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
+-  if (navigation_handle->IsInMainFrame()) {
+-    throttles->push_back(
+-        std::make_unique<subresource_filter::
+-                             SubresourceFilterSafeBrowsingActivationThrottle>(
+-            navigation_handle, this,
+-            content::BrowserThread::GetTaskRunnerForThread(
+-                content::BrowserThread::IO),
+-            GetDatabaseManager()));
+-  }
+-
+-  auto* driver_factory =
+-      subresource_filter::ContentSubresourceFilterDriverFactory::
+-          FromWebContents(navigation_handle->GetWebContents());
+-  driver_factory->throttle_manager()->MaybeAppendNavigationThrottles(
+-      navigation_handle, throttles);
+ }
+ 
+ void ChromeSubresourceFilterClient::OnReloadRequested() {
+--- a/chrome/browser/extensions/webstore_inline_installer.cc
++++ b/chrome/browser/extensions/webstore_inline_installer.cc
+@@ -116,7 +116,7 @@ bool WebstoreInlineInstaller::IsRequesto
+ }
+ 
+ bool WebstoreInlineInstaller::SafeBrowsingNavigationEventsEnabled() const {
+-  return SafeBrowsingNavigationObserverManager::IsEnabledAndReady(profile());
++  return false;
+ }
+ 
+ std::string WebstoreInlineInstaller::GetPostData(
+@@ -248,88 +248,11 @@ void WebstoreInlineInstaller::WebContent
+ }
+ 
+ std::string WebstoreInlineInstaller::GetJsonPostData() {
+-  auto redirect_chain = std::make_unique<base::ListValue>();
+-
+-  if (SafeBrowsingNavigationEventsEnabled()) {
+-    scoped_refptr<SafeBrowsingNavigationObserverManager>
+-        navigation_observer_manager = g_browser_process->safe_browsing_service()
+-                                          ->navigation_observer_manager();
+-
+-    ReferrerChain referrer_chain;
+-    SafeBrowsingNavigationObserverManager::AttributionResult result =
+-        navigation_observer_manager->IdentifyReferrerChainByWebContents(
+-            web_contents(), kExtensionReferrerUserGestureLimit,
+-            &referrer_chain);
+-    if (result !=
+-        SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND) {
+-      for (const auto& referrer_chain_entry : referrer_chain) {
+-        // Referrer chain entries are a list of URLs in reverse chronological
+-        // order, so the final URL is the last thing in the list and the initial
+-        // landing page is the first thing in the list.
+-        // Furthermore each entry may contain a series of server redirects
+-        // stored in the same order.
+-        redirect_chain->AppendString(referrer_chain_entry.url());
+-        for (const auto& server_side_redirect :
+-             referrer_chain_entry.server_redirect_chain()) {
+-          redirect_chain->AppendString(server_side_redirect.url());
+-        }
+-      }
+-    }
+-  } else {
+-    content::NavigationController& navigation_controller =
+-        web_contents()->GetController();
+-    content::NavigationEntry* navigation_entry =
+-        navigation_controller.GetLastCommittedEntry();
+-    if (navigation_entry) {
+-      const std::vector<GURL>& redirect_urls =
+-          navigation_entry->GetRedirectChain();
+-      for (const GURL& url : redirect_urls) {
+-        redirect_chain->AppendString(url.spec());
+-      }
+-    }
+-  }
+-
+-  if (!redirect_chain->empty()) {
+-    base::DictionaryValue dictionary;
+-    dictionary.SetString("id", id());
+-    dictionary.SetString("referrer", requestor_url_.spec());
+-    dictionary.Set("redirect_chain", std::move(redirect_chain));
+-
+-    std::string json;
+-    base::JSONWriter::Write(dictionary, &json);
+-    return json;
+-  }
+-
+   return std::string();
+ }
+ 
+ std::string WebstoreInlineInstaller::GetProtoPostData() {
+-  if (!SafeBrowsingNavigationEventsEnabled())
+-    return std::string();
+-
+-  scoped_refptr<SafeBrowsingNavigationObserverManager>
+-      navigation_observer_manager = g_browser_process->safe_browsing_service()
+-                                        ->navigation_observer_manager();
+-
+-  ReferrerChain referrer_chain;
+-  SafeBrowsingNavigationObserverManager::AttributionResult result =
+-      navigation_observer_manager->IdentifyReferrerChainByWebContents(
+-          web_contents(), kExtensionReferrerUserGestureLimit, &referrer_chain);
+-
+-  // If the referrer chain is incomplete we'll append most recent navigations
+-  // to referrer chain for diagnose purpose. This only happens if user is not
+-  // in incognito mode and has opted into extended reporting to Scout reporting.
+-  int recent_navigations_to_collect =
+-      SafeBrowsingNavigationObserverManager::CountOfRecentNavigationsToAppend(
+-          *profile(), result);
+-  navigation_observer_manager->AppendRecentNavigations(
+-      recent_navigations_to_collect, &referrer_chain);
+-  safe_browsing::ExtensionWebStoreInstallRequest request;
+-  request.mutable_referrer_chain()->Swap(&referrer_chain);
+-  request.mutable_referrer_chain_options()->set_recent_navigations_to_collect(
+-      recent_navigations_to_collect);
+-
+-  return request.SerializeAsString();
++  return std::string();
+ }
+ 
+ // static
+--- a/chrome/browser/safe_browsing/BUILD.gn
++++ b/chrome/browser/safe_browsing/BUILD.gn
+@@ -12,6 +12,11 @@ proto_library("chunk_proto") {
+ }
+ 
+ static_library("safe_browsing") {
++  deps = [
++    "//components/safe_browsing:csd_proto",
++  ]
++
++  if (false) {
+   sources = [
+     "chrome_cleaner/chrome_cleaner_controller_impl_win.cc",
+     "chrome_cleaner/chrome_cleaner_controller_impl_win.h",
+@@ -73,6 +78,7 @@ static_library("safe_browsing") {
+     ]
+     deps += [ "//components/keep_alive_registry" ]
+   }
++  }
+ 
+   if (safe_browsing_mode != 0) {
+     # "Safe Browsing Basic" files used for safe browsing in full mode
+--- a/chrome/browser/net/system_network_context_manager.cc
++++ b/chrome/browser/net/system_network_context_manager.cc
+@@ -33,18 +33,12 @@ namespace {
+ // Called on IOThread to disable QUIC for HttpNetworkSessions not using the
+ // network service. Note that re-enabling QUIC dynamically is not supported for
+ // simpliciy and requires a browser restart.
+-void DisableQuicOnIOThread(
+-    IOThread* io_thread,
+-    safe_browsing::SafeBrowsingService* safe_browsing_service) {
++void DisableQuicOnIOThread(IOThread* io_thread) {
+   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+ 
+   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+     content::GetNetworkServiceImpl()->DisableQuic();
+   io_thread->DisableQuic();
+-
+-  // Safebrowsing isn't yet using the IOThread's NetworkService, so must be
+-  // handled separately.
+-  safe_browsing_service->DisableQuicOnIOThread();
+ }
+ 
+ }  // namespace
+@@ -123,13 +117,9 @@ void SystemNetworkContextManager::Disabl
+   if (!io_thread)
+     return;
+ 
+-  safe_browsing::SafeBrowsingService* safe_browsing_service =
+-      g_browser_process->safe_browsing_service();
+-
+   content::BrowserThread::PostTask(
+       content::BrowserThread::IO, FROM_HERE,
+-      base::BindOnce(&DisableQuicOnIOThread, io_thread,
+-                     base::Unretained(safe_browsing_service)));
++      base::BindOnce(&DisableQuicOnIOThread, io_thread));
+ }
+ 
+ void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {
+--- a/chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.cc
+@@ -462,9 +462,8 @@ void AddBluetoothStrings(content::WebUID
+ #endif
+ 
+ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
+-#if defined(SAFE_BROWSING_DB_LOCAL)
+-  bool show_softer_warning =
+-      safe_browsing::PasswordProtectionService::ShouldShowSofterWarning();
++#if 1
++  bool show_softer_warning = true;
+ 
+   auto title_string_id = show_softer_warning
+                              ? IDS_SETTINGS_CHANGE_PASSWORD_TITLE_SOFTER
+--- a/chrome/renderer/chrome_content_renderer_client.cc
++++ b/chrome/renderer/chrome_content_renderer_client.cc
+@@ -77,7 +77,6 @@
+ #include "components/error_page/common/localized_error.h"
+ #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
+ #include "components/pdf/renderer/pepper_pdf_host.h"
+-#include "components/safe_browsing/renderer/threat_dom_details.h"
+ #include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
+ #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
+ #include "components/spellcheck/spellcheck_buildflags.h"
+@@ -1393,9 +1392,7 @@ void ChromeContentRendererClient::InitSp
+ 
+ std::unique_ptr<blink::WebSocketHandshakeThrottle>
+ ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
+-  InitSafeBrowsingIfNecessary();
+-  return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
+-      safe_browsing_.get());
++  return std::unique_ptr<blink::WebSocketHandshakeThrottle>(nullptr);
+ }
+ 
+ std::unique_ptr<blink::WebSpeechSynthesizer>
+@@ -1678,13 +1675,6 @@ ChromeContentRendererClient::GetTaskSche
+   return task_scheduler_util::GetTaskSchedulerInitParamsForRenderer();
+ }
+ 
+-void ChromeContentRendererClient::InitSafeBrowsingIfNecessary() {
+-  if (safe_browsing_)
+-    return;
+-  RenderThread::Get()->GetConnector()->BindInterface(
+-      content::mojom::kBrowserServiceName, &safe_browsing_);
+-}
+-
+ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
+     const GURL& url,
+     std::string* console_message) {
+--- a/chrome/renderer/chrome_content_renderer_client.h
++++ b/chrome/renderer/chrome_content_renderer_client.h
+@@ -20,7 +20,6 @@
+ #include "chrome/renderer/media/chrome_key_systems_provider.h"
+ #include "components/nacl/common/buildflags.h"
+ #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+-#include "components/safe_browsing/common/safe_browsing.mojom.h"
+ #include "components/spellcheck/spellcheck_buildflags.h"
+ #include "content/public/renderer/content_renderer_client.h"
+ #include "content/public/renderer/render_thread.h"
+@@ -275,9 +274,6 @@ class ChromeContentRendererClient
+   void GetInterface(const std::string& name,
+                     mojo::ScopedMessagePipeHandle request_handle) override;
+ 
+-  // Initialises |safe_browsing_| if it is not already initialised.
+-  void InitSafeBrowsingIfNecessary();
+-
+   void PrepareErrorPageInternal(content::RenderFrame* render_frame,
+                                 const blink::WebURLRequest& failed_request,
+                                 const error_page::Error& error,
+@@ -317,8 +313,6 @@ class ChromeContentRendererClient
+ 
+   ChromeKeySystemsProvider key_systems_provider_;
+ 
+-  safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
+-
+ #if BUILDFLAG(ENABLE_SPELLCHECK)
+   std::unique_ptr<SpellCheck> spellcheck_;
+ #endif
+--- a/chrome/browser/net/trial_comparison_cert_verifier.cc
++++ b/chrome/browser/net/trial_comparison_cert_verifier.cc
+@@ -93,9 +93,6 @@ void SendTrialVerificationReport(void* p
+   std::string serialized_report;
+   if (!report.Serialize(&serialized_report))
+     return;
+-
+-  CertificateReportingServiceFactory::GetForBrowserContext(profile)->Send(
+-      serialized_report);
+ }
+ 
+ std::unique_ptr<base::Value> TrialVerificationJobResultCallback(

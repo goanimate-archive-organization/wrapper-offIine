@@ -1,0 +1,25 @@
+%{
+#include "stdio.h"
+#include "ADM_jsAvidemux.h"
+#include "ADM_jsDebug.h"
+%}
+
+/*
+###############################################################
+       return JS function     CM Function  params
+###############################################################
+*/
+function void admPopupError : jsPopupError   (cstring  ) <static>;
+function void admpPopupInfo : jsPopupInfo    (cstring  ) <static>;
+function void admPrint      : jsPrint        (cstring  ) <static>;
+function void print         : jsPrint2       (cstring  ) <static>;
+function void help          : jsHelp         (cstring  ) <static>;
+function void setSuccess    : jsSetSuccess   (int  )   <static>;
+
+%<
+JSFunctionSpec  *jsGetIfFunctions(void)
+{
+        return jj_static_fs;
+}
+
+%>

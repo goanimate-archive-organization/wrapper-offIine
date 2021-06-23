@@ -1,0 +1,2 @@
+set(FFMPEG_VERSION "4.2.4")
+

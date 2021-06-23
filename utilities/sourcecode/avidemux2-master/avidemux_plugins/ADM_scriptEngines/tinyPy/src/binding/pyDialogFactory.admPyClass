@@ -1,0 +1,8 @@
+#           name    cookie id
+/* CLASS */ pyDialogFactory : ADM_scriptDialogFactoryHelper : ADM_PYID_DIALOGF
+#              cname:pyname
+/* CTOR */   (str) 
+#
+/* METHOD */ int run:show(void) 
+/* METHOD */ void addControl:addControl(ptr@ADM_scriptDFBaseHelper) 
+#

@@ -1,0 +1,23 @@
+MACRO(checkAomDec)
+    OPTION(AOMDEC "" ON)
+
+    MESSAGE(STATUS "Checking for libaom")
+    MESSAGE(STATUS "*****************")
+
+    IF (AOMDEC)
+        PKG_CHECK_MODULES(AOM aom)
+        IF (${AOM_FOUND})
+            PRINT_LIBRARY_INFO("AOM" AOM_FOUND "${AOM_INCLUDEDIR}" "${AOM_LDFLAGS}")
+            ADM_CHECK_FUNCTION_EXISTS(aom_codec_dec_init_ver "${AOM_LDFLAGS}" AOM_DEC_INIT_FOUND "" "-I${AOM_INCLUDEDIR}")
+        ENDIF (${AOM_FOUND})
+        IF (${AOM_FOUND} AND ${AOM_DEC_INIT_FOUND})
+            SET(USE_AOM 1)
+            MESSAGE(STATUS "Linking to AOM decoder library")
+        ELSE (${AOM_FOUND} AND ${AOM_DEC_INIT_FOUND})
+            MESSAGE("${MSG_DISABLE_OPTION}")
+        ENDIF (${AOM_FOUND} AND ${AOM_DEC_INIT_FOUND})
+    ENDIF (AOMDEC)
+    MESSAGE("")
+
+    APPEND_SUMMARY_LIST("Video Decoder" "libaom" "${USE_AOM}")
+ENDMACRO(checkAomDec)

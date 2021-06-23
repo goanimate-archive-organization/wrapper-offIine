@@ -1,0 +1,173 @@
+--- libavcodec/hevc_parser.c.orig	2019-12-31 22:35:23.000000000 +0100
++++ libavcodec/hevc_parser.c	2020-04-16 23:51:04.726124182 +0200
+@@ -31,6 +31,13 @@
+ #include "internal.h"
+ #include "parser.h"
+ 
++/* MEANX */
++const HEVCSPS *ff_hevc_parser_get_sps(AVCodecParserContext *s);
++const HEVCPPS *ff_hevc_parser_get_pps(AVCodecParserContext *s);
++const HEVCVPS *ff_hevc_parser_get_vps(AVCodecParserContext *s);
++/* /MEANX */
++
++
+ #define START_CODE 0x000001 ///< start_code_prefix_one_3bytes
+ 
+ #define IS_IRAP_NAL(nal) (nal->type >= 16 && nal->type <= 23)
+@@ -171,6 +178,156 @@
+ }
+ 
+ /**
++ \fn ff_hevc_parser_get_sps
++\brief meanx : extract sps from context
++*/
++const HEVCSPS *ff_hevc_parser_get_sps(AVCodecParserContext *s)
++{
++    HEVCParserContext *ctx;
++    HEVCParamSets *ps;
++    const HEVCPPS *pps;
++    const HEVCSPS *sps;
++    AVBufferRef *ref;
++    unsigned int i, sps_id;
++
++    ctx = s->priv_data;
++    if (!ctx)
++        return NULL;
++
++    ps = &ctx->ps;
++    if (!ps)
++        return NULL;
++
++    // Do we have an active SPS?
++    if (ps->sps)
++        return ps->sps;
++
++    // Nope, probably no slice header decoded yet. Pick the first PPS from the list and keep fingers crossed.
++    for (i = 0; i < HEVC_MAX_PPS_COUNT; i++)
++    {
++        ref = ps->pps_list[i];
++        if (!ref || !ref->data)
++            continue;
++        break;
++    }
++
++    if (!ref || !ref->data)
++        return NULL;
++
++    // From now on, follow the chain.
++    pps = (HEVCPPS *)ref->data;
++    sps_id = pps->sps_id;
++    if (sps_id >= HEVC_MAX_SPS_COUNT)
++        return NULL;
++
++    ref = ps->sps_list[sps_id];
++    if (!ref || !ref->data)
++        return NULL;
++
++    sps = (HEVCSPS *)ref->data;
++    return sps;
++}
++/**
++ \fn ff_hevc_parser_get_pps
++\brief meanx : extract pps from context
++*/
++const HEVCPPS *ff_hevc_parser_get_pps(AVCodecParserContext *s)
++{
++    HEVCParserContext *ctx;
++    HEVCParamSets *ps;
++    const HEVCPPS *pps;
++    AVBufferRef *ref;
++    unsigned int i;
++
++    ctx = s->priv_data;
++    if (!ctx)
++        return NULL;
++
++    ps = &ctx->ps;
++    if (!ps)
++        return NULL;
++
++    // Do we have an active PPS?
++    if (ps->pps)
++        return ps->pps;
++
++    // Nope, pick the first one from the list.
++    for (i = 0; i < HEVC_MAX_PPS_COUNT; i++)
++    {
++        ref = ps->pps_list[i];
++        if (!ref || !ref->data)
++            continue;
++        break;
++    }
++
++    if (!ref || !ref->data)
++        return NULL;
++
++    pps = (HEVCPPS *)ref->data;
++    return pps;
++}
++/**
++ \fn ff_hevc_parser_get_vps
++\brief meanx : extract vps from context
++*/
++const HEVCVPS *ff_hevc_parser_get_vps(AVCodecParserContext *s)
++{
++    HEVCParserContext *ctx;
++    HEVCParamSets *ps;
++    const HEVCPPS *pps;
++    const HEVCSPS *sps;
++    const HEVCVPS *vps;
++    AVBufferRef *ref;
++    unsigned int i, sps_id, vps_id;
++
++    ctx = s->priv_data;
++    if (!ctx)
++        return NULL;
++
++    ps = &ctx->ps;
++    if (!ps)
++        return NULL;
++
++    // Do we have a VPS set as active?
++    if (ps->vps)
++        return ps->vps;
++
++    // Nope, take the first PPS from the list and follow the chain.
++    for (i = 0; i < HEVC_MAX_PPS_COUNT; i++)
++    {
++        ref = ps->pps_list[i];
++        if (!ref || !ref->data)
++            continue;
++        break;
++    }
++
++    if (!ref || !ref->data)
++        return NULL;
++
++    pps = (HEVCPPS *)ref->data;
++    sps_id = pps->sps_id;
++    if (sps_id >= HEVC_MAX_SPS_COUNT)
++        return NULL;
++
++    ref = ps->sps_list[sps_id];
++    if (!ref || !ref->data)
++        return NULL;
++
++    sps = (HEVCSPS *)ref->data;
++    vps_id = sps->vps_id;
++    if (vps_id >= HEVC_MAX_VPS_COUNT)
++        return NULL;
++
++    ref = ps->vps_list[vps_id];
++    if (!ref || !ref->data)
++        return NULL;
++
++    vps = (HEVCVPS *)ref->data;
++    return vps;
++}
++// /MEANX
++
++/**
+  * Parse NAL units of found picture and decode some basic information.
+  *
+  * @param s parser context.

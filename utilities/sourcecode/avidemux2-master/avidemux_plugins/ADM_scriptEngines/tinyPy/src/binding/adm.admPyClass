@@ -1,0 +1,72 @@
+#           name    cookie id
+/* CLASS */ pyAdm : void : ADM_PYID_AVIDEMUX
+#              cname:pyname
+# Basic action load, handle seg, getInfo
+/* METHOD */ int editor->openFile:loadVideo          (str)
+/* METHOD */ int editor->clearSegment:clearSegments  (void)
+/* METHOD */ int editor->appendFile:appendVideo      (str)
+/* METHOD */ int editor->addSegment:addSegment        (int, double, double)
+/* METHOD */ int editor->setPostProc:setPostProc      (int, int, int)
+/* METHOD */ int pyGetWidth:getWidth            (void)
+/* METHOD */ int pyGetHeight:getHeight          (void)
+/* METHOD */ int editor->getPARWidth:getPARWidth      (void)
+/* METHOD */ int editor->getPARHeight:getPARHeight    (void)
+/* METHOD */ int pyGetFps1000:getFps1000        (void)
+/* METHOD */ str editor->getVideoCodec:getVideoCodec(void)
+/* METHOD */ void editor->clearFilters:clearVideoFilters(void) 
+#
+# Audio filter and encoding 
+#
+/* METHOD */ void editor->resetAudioFilter:audioResetFilter        (int)
+/* METHOD */ int  editor->setAudioMixer:audioSetMixer        (int,str)
+/* METHOD */ int  pySetResample:audioSetResample             (int,int)
+/* METHOD */ int  pyGetResample:audioGetResample             (int)
+/* METHOD */ int  pyAddAudioTrack:audioAddTrack  (int)
+/* METHOD */ int  pyAddExternal:audioAddExternal (str)
+/* METHOD */ int  editor->audioSetAudioPoolLanguage:setSourceTrackLanguage(int,str)
+/* METHOD */ int  pyClearAudioTracks:audioClearTracks(void) 
+/* METHOD */ int  pySetPal2Film:audioSetPal2Film(int,int)
+/* METHOD */ int  pySetFilm2Pal:audioSetFilm2Pal(int,int)
+/* METHOD */ int  pySetNormalize:audioSetNormalize(int,int,int)
+/* METHOD */ int  pySetNormalize:audioSetNormalize2(int,int,int,int)
+/* METHOD */ int  pySetDrc:audioSetDrc(int,int)
+/* METHOD */ int  pySetAudioShift:audioSetShift(int,int,int)
+#
+#  Audio info...
+#
+/* METHOD */ int pyGetNumberOfAudioTracks:audioTracksCount(void) 
+/* METHOD */ int pyGetNumberOfAvailableAudioTracks:audioTotalTracksCount(void)
+/* METHOD */ int pyGetAudioFrequency:audioFrequency( int) 
+/* METHOD */ int pyGetAudioChannels:audioChannels( int) 
+/* METHOD */ int pyGetAudioEncoding:audioEncoding( int) 
+/* METHOD */ int pyGetAudioBitrate:audioBitrate( int) 
+#
+#
+#              cname:pyname
+#  Codec, container
+/* METHOD */ int editor->setVideoCodec:videoCodec(str, couples) 
+#/* METHOD */ int editor->videoCodecGui:videoCodecGui(str,couples)  # couples is OUT !
+/* METHOD */ int editor->changeVideoParam:videoCodecChangeParam(str, couples) 
+/* METHOD */ int editor->setVideoCodecProfile:videoCodecSetProfile(str, str) 
+/* METHOD */ int editor->setAudioCodec:audioCodec(int,str,  couples) 
+/* METHOD */ int editor->setContainer:setContainer(str, couples) 
+/* METHOD */ int editor->addVideoFilter:addVideoFilter(str, couples) 
+#
+#  Save audio, video, images
+#
+/* METHOD */ int editor->saveAudio:saveAudio(int,str) 
+/* METHOD */ int editor->saveFile:save(str) 
+/* METHOD */ int editor->saveImageJpg:saveJpeg(str) 
+/* METHOD */ int editor->saveImageBmp:saveBmp(str) 
+/* METHOD */ int editor->saveImagePng:savePng(str)
+#
+#
+# Seek
+/* METHOD */ void editor->seekKeyFrame:seekKeyFrame(int)
+#
+#       Variables
+#
+/* ATTRIBUTES */ double markerA:editor->setMarkerAPts,editor->getMarkerAPts
+/* ATTRIBUTES */ double markerB:editor->setMarkerBPts,editor->getMarkerBPts
+# TODO /* ATTRIBUTES */ int    audioNormalizeMode:pySetNormalizeMode,pyGetNormalizeMode(int)
+# TODO /* ATTRIBUTES */ int    audioNormalizeGain:pySetNormalizeValue,pyGetNormalizeValue(int)

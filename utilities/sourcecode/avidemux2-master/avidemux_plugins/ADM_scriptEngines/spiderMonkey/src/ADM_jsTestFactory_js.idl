@@ -1,0 +1,41 @@
+%{
+#include "stdio.h"
+#include "ADM_jsAvidemux.h"
+#include "ADM_scriptTestFactory.h"
+#include "ADM_scriptUtils.h"
+%}
+/*
+###############################################################
+       return JS function     C Function  params
+###############################################################
+*/
+function int admTestFacInt     :  jsTestFacInt     (void  ) <static>;
+function int admTestFacFloat   :  jsTestFacFloat   (void  ) <static>;
+function int admTestFacToggle  :  jsTestFacToggle  (void  ) <static>;
+function int admTestFacMenu    :  jsTestFacMenu    (void  ) <static>;
+function int admTestFacFile    :  jsTestFacFile    (void  ) <static>;
+function int admTestFacBitrate :  jsTestFacBitrate (void  ) <static>;
+function int admTestFacBar     :  jsTestFacBar     (void  ) <static>;
+function int admTestFacRoText  :  jsTestFacRoText  (void  ) <static>;
+function int admTestFacText    :  jsTestFacText    (void  ) <static>;
+function int admTestFacTab     :  jsTestFacTab     (void  ) <static>;
+function int admTestFacFrame   :  jsTestFacFrame   (void  ) <static>;
+function int admTestFacHex     :  jsTestFacHex     (void  ) <static>;
+function int admTestFacDirSel  :  jsTestFacDirSel  (void  ) <static>;
+function int admTestFacButton  :  jsTestFacButton  (void  ) <static>;
+function int admTestFacMatrix  :  jsTestFacMatrix  (void  ) <static>;
+function int admTestFacNotch   :  jsTestFacNotch   (void  ) <static>;
+function int admTestFacThreadCount:  jsTestFacThreadCount   (void  ) <static>;
+function int admTestFacSlider  :  jsTestFacSlider  (void  ) <static>;
+function int admTestEncoding   :  jsTestFacEncoding  (void  ) <static>;
+function void admTestCrash     :  scriptTestCrash      (void  ) <static>;
+function void admTestAssert    :  scriptTestAssert     (void  ) <static>;
+
+%<
+JSFunctionSpec  *jsGetTestFunctions(void)
+{
+        return jj_fs;
+}
+
+%>
+

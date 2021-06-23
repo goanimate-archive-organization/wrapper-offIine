@@ -1,0 +1,9 @@
+.vs
+bin
+obj
+Debug
+Release
+*.DotSettings
+*.user
+*.suo
+packages

@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+export PKG_CONFIG_PATH=$wXSDK/lib/pkgconfig
+export PKG_CONFIG_LIBDIR=$XSDK/lib/pkgconfig
+export CXXFLAGS="-arch i386"
+export CFLAGS="$CXXFLAGS"
+export CPPFLAGS="$CXXFLAGS"
+export LDFLAGS="-L$XSDK/lib"
+export PATH=$PATH:$XSDK/bin:$TOOLCHAIN_DIR
+pkg-config --list-all
+pkg-config --list-all
+#export DEBUG="-DVERBOSE=1   -DCMAKE_BUILD_TYPE=Debug -G \"CodeBlocks - Unix Makefiles\"   "
+echo "<<<<<<<<<<<<Cross compiling plugins>>>>>>>>>>>>>>>"
+cmake   -DCROSS=$XSDK \
+        -DCMAKE_INSTALL_PREFIX=/Release \
+	-DFAKEROOT=$DST/ \
+        -DCMAKE_C_COMPILER:STRING=$CROSS_PREFIX-gcc \
+        -DCMAKE_CXX_COMPILER:STRING=$CROSS_PREFIX-g++ \
+        -DCMAKE_LINKER:STRING=$CROSS_PREFIX-ld \
+        -DCMAKE_AR:STRING=$CROSS_PREFIX-ar \
+        -DCMAKE_SYSTEM_NAME:STRING=Darwin \
+        -DQT_HOME:STRING=$QT_HOME \
+        -G "Unix Makefiles" \
+        -DAVIDEMUX_SOURCE_DIR="$TOP"  \
+        $@ \
+        $TOP/avidemux_plugins

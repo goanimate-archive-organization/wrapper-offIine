@@ -1,0 +1,42 @@
+--- libavutil/log.c.orig	2018-04-20 12:02:58.000000000 +0200
++++ libavutil/log.c	2018-07-16 20:28:17.928746112 +0200
+@@ -39,6 +39,7 @@
+ #include "common.h"
+ #include "internal.h"
+ #include "log.h"
++#include "avassert.h" // MEANX
+ #include "thread.h"
+ 
+ static AVMutex mutex = AV_MUTEX_INITIALIZER;
+@@ -119,7 +120,7 @@
+ 
+ #endif
+ static int use_color = -1;
+-
++static AV_FATAL_HANDLER *fatalHandler=NULL; // MEANX
+ static void check_color_terminal(void)
+ {
+ #if defined(_WIN32) && HAVE_SETCONSOLETEXTATTRIBUTE
+@@ -433,3 +434,22 @@
+     missing_feature_sample(0, avc, msg, argument_list);
+     va_end(argument_list);
+ }
++// MEANX
++
++void av_fatalHandler(const char *why,const char *filez, int lineno)
++{
++char *cleartext[2048];
++        if(!fatalHandler)
++                printf("[CRASH] %s, file %s, lineno=%d\n",cleartext,filez,lineno);
++        else
++                (fatalHandler)(cleartext,lineno,filez);
++}
++void av_setFatalHandler(AV_FATAL_HANDLER *func)
++{
++        fatalHandler=func;
++}
++//
++
++
++
++
