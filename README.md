@@ -21,7 +21,6 @@ This includes:
   - http-server
   - SilentCMD
   - Chromium Web Store
-  - FlashPatch
   - Runasti
   - Php
   - NCH Software
@@ -82,7 +81,6 @@ These are unaffiliated people that they haven't directly done anything for the p
 | vocatus            | Some of TronScript's batch code  |
 | ss64.com           | Incredible CMD info resource     |
 | robvanderwoude.com | Also amazing CMD info resource   |
-| darktohka          | Creator of FlashPatch            |
 | Peter Lupton       | Owner of NCH Software            |
 
 ## *Footnotes*
