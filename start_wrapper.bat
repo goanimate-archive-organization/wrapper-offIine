@@ -1069,8 +1069,8 @@ echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> util
 echo endlocal>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 echo :: Version number and build number>> utilities\metadata.bat
-echo set WRAPPER_VER=1.3.1>> utilities\metadata.bat
-echo set WRAPPER_BLD=10>> utilities\metadata.bat
+echo set WRAPPER_VER=1.3.3>> utilities\metadata.bat
+echo set WRAPPER_BLD=102>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 set NOMETA=n
 goto returnfrommetacopy
