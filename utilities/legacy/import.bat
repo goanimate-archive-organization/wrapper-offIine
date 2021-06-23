@@ -14,14 +14,14 @@ pushd "%~dp0.."
 if !errorlevel! NEQ 0 goto error_location
 pushd ..
 if !errorlevel! NEQ 0 goto error_location
-if not exist utilities\import.bat ( goto error_location )
+if not exist utilities\legacy\import.bat ( goto error_location )
 if not exist wrapper ( goto error_location )
 if not exist server ( goto error_location )
 popd utilities
 if !errorlevel! NEQ 0 goto error_location
 goto noerror_location
 :error_location
-echo Doesn't seem like this script is in Wrapper: Offline's utilities folder.
+echo 
 goto end
 :noerror_location
 
@@ -76,7 +76,7 @@ if !folderfilled!==n (
 	set /p CFDIR= File:
 	if /i "!CFDIR!"=="gotodir" start "" "!themefolder!" & goto end
 	if /i "!CFDIR!"=="0" goto end
-	if not exist "!CFDIR!" echo That doesn't seem to exist. & goto reaskforfile
+	if not exist "!CFDIR!" & goto reaskforfile
 	echo:
 	for %%i in ("!cfdir!") do ( set CFID=%%~nxi )
 	pushd import_these
