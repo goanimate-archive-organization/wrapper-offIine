@@ -33,6 +33,8 @@ ini_set('user_agent', 'Mozilla/5.0 (Linux; Android 7.0; SM-G930VC Build/NRD90M; 
 	   playFile($file);
    }
    unlink($mp3name);
+   $killcommand = 'taskkill /IM "lame.exe" /F';
+   shell_exec($killcommand);
 
 function downloadFile($file){
 	header('Content-Description: File Transfer');
