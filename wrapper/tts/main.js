@@ -247,7 +247,8 @@ module.exports = (voiceName, text) => {
                         method: "POST",
                         headers: {
 							"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-							"Cookie": "AcaBoxLogged=logged; AcaBoxUsername=acaboxuserkeeg; acabox=5v8gucusuhq022ffn4gb9rops5; AcaBoxFirstname=d",							"Origin": "https://acapela-box.com",
+							"Cookie": "AcaBoxLogged=logged; AcaBoxUsername=acaboxuserkeeg; acabox=5v8gucusuhq022ffn4gb9rops5; AcaBoxFirstname=d",
+							"Origin": "https://acapela-box.com",
 							"Referer": "https://acapela-box.com/AcaBox/index.php",
 							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 							"X-Requested-With": "XMLHttpRequest",
@@ -378,16 +379,13 @@ module.exports = (voiceName, text) => {
 				const req = https.request(
 					{
 						host: "readloud.net",
+						port: 443,
 						path: voice.arg,
 						method: "POST",
-						port: "443",
 						headers: {
 							"Content-Type": "application/x-www-form-urlencoded",
-							"Cookie": "PHPSESSID=95a5b6935c7e7a94b4c668b9b4d6122e",
-							"Host": "readloud.net",
-							"Origin": "https://readloud.net",
-							"Referer": `https://readloud.net{$voice.arg}`,
-							"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
+							"User-Agent":
+								"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
 						},
 					},
 					(r) => {
@@ -395,19 +393,34 @@ module.exports = (voiceName, text) => {
 						r.on("data", (d) => buffers.push(d));
 						r.on("end", () => {
 							const html = Buffer.concat(buffers);
-							const beg = html.indexOf("<source src='") + 13;
-							const end = html.indexOf("'>", beg);
+							const beg = html.indexOf("/tmp/");
+							const end = html.indexOf(".mp3", beg) + 4;
 							const sub = html.subarray(beg, end).toString();
 							const loc = `https://readloud.net${sub}`;
-							console.log(loc);
-							get(loc).then(res).catch(rej);
+
+							https.get(
+								{
+									host: "readloud.net",
+									path: sub,
+									headers: {
+										"Content-Type": "application/x-www-form-urlencoded",
+										"User-Agent":
+											"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.101 Safari/537.36",
+									},
+								},
+								(r) => {
+									buffers = [];
+									r.on("data", (d) => buffers.push(d));
+									r.on("end", () => res(Buffer.concat(buffers)));
+								}
+							);
 						});
 						r.on("error", rej);
 					}
 				);
 				req.end(
 					qs.encode({
-						but1: text.replace(" ", "+"),
+						but1: text,
 						butS: 0,
 						butP: 0,
 						butPauses: 0,
