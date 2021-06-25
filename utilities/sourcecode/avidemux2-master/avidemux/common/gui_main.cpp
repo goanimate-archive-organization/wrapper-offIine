@@ -337,11 +337,10 @@ void HandleAction (Action action)
           }
         ADM_info("Closing ui\n");
         UI_closeGui();
-        if(video_body && video_body->canUndo())
-        {
+        if(video_body && avifileinfo)
             A_saveSession();
+        if(video_body && video_body->canUndo())
             video_body->clearUndoQueue();
-        }
         return;
     case ACT_RESTORE_SESSION:
         if(playing) break;
@@ -489,23 +488,32 @@ void HandleAction (Action action)
     case ACT_MarkA:
     case ACT_MarkB:
     {
-      bool swapit=0;
-      uint64_t markA,markB;
-      uint64_t pts=admPreview::getCurrentPts();
-      if( prefs->get(FEATURES_SWAP_IF_A_GREATER_THAN_B, &swapit) != RC_OK )     swapit = 1;
+        bool swapit = false;
+        uint64_t pts,markA,markB;
+        pts = admPreview::getCurrentPts();
+        if(!prefs->get(FEATURES_SWAP_IF_A_GREATER_THAN_B, &swapit))
+            swapit = true;
 
-      markA=video_body->getMarkerAPts();
-      markB=video_body->getMarkerBPts();
-      if (action == ACT_MarkA)
+        markA = video_body->getMarkerAPts();
+        markB = video_body->getMarkerBPts();
+        if(action == ACT_MarkA)
             markA=pts;
-      else
+        else
             markB=pts;
-      if (markA>markB && swapit )    // auto swap
+        if(markA > markB)
         {
-          uint64_t y;
-          y = markA;
-          markA=markB;
-          markB=y;
+            if(swapit) // auto swap
+            {
+                uint64_t y = markA;
+                markA = markB;
+                markB = y;
+            }else
+            {
+                if(action == ACT_MarkA)
+                    markB = video_body->getVideoDuration(); // reset B
+                else
+                    markA = 0; // reset A
+            }
         }
         video_body->addToUndoQueue();
         video_body->setMarkerAPts(markA);
@@ -622,7 +630,19 @@ void HandleAction (Action action)
               video_body->setMarkerAPts(markA);
               video_body->setMarkerBPts(markB);
               A_Resync();
-              GUI_GoToTime(currentPts);
+              if(!lastFrame)
+                  currentPts+=d;
+              if(!video_body->goToTimeVideo(currentPts))
+              {
+                  // If seek fails, we may crash in admPreview::samePicture()
+                  // due to _currentSegment and _currentPts going out of sync.
+                  // Rewind to get on firm ground again.
+                  A_Rewind();
+              }else
+              {
+                  admPreview::samePicture();
+                  GUI_setCurrentFrameAndTime();
+              }
             }
             break;
 
@@ -646,7 +666,14 @@ void HandleAction (Action action)
                 A_Resync();
                 A_Rewind();
 
-                if(currentPts<=video_body->getVideoDuration()) GUI_GoToTime(currentPts);
+                if(currentPts<=video_body->getVideoDuration())
+                    r = GUI_GoToTime(currentPts);
+                else
+                    r = false;
+
+                EditableAudioTrack *ed=video_body->getDefaultEditableAudioTrack();
+                if(ed && ed->edTrack)
+                    ed->edTrack->goToTime(r? currentPts : 0); // update audio segment
             }
         }
         break;
@@ -802,6 +829,16 @@ void HandleAction (Action action)
                 }else // current is after the removed chunk, adjust
                 {
                         current-=b-a+c;
+                }
+            }
+            if(current>=after) // the current frame is gone
+            {
+                // Can we go to the last keyframe before the cut?
+                current=after;
+                if(!video_body->getPKFramePTS(&current))
+                { // nope
+                    A_Rewind();
+                    break;
                 }
             }
             if(!video_body->goToTimeVideo(current))
@@ -1704,8 +1741,7 @@ uint8_t GUI_close(void)
       UI_setNeedsResizingFlag(false);
       uint32_t zero[8]={0};
       UI_setVUMeter(zero);
-      if(video_body->canUndo())
-        A_saveSession();
+      A_saveSession();
       delete avifileinfo;
       //delete wavinfo;
       avifileinfo = NULL;

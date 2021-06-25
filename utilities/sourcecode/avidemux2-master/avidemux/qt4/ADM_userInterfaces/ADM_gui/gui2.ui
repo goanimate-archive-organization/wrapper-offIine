@@ -1134,19 +1134,19 @@
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButtonPreviousBlackFrame">
+          <widget class="QToolButton" name="toolButtonPreviousCutPoint">
            <property name="enabled">
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>Search previous black frame</string>
+            <string>Go to previous cut point [SHIFT+DOWN]</string>
            </property>
            <property name="text">
             <string>...</string>
            </property>
            <property name="icon">
             <iconset resource="avidemux.qrc">
-             <normaloff>:/new/prefix1/pics/prev_black.png</normaloff>:/new/prefix1/pics/prev_black.png</iconset>
+             <normaloff>:/new/prefix1/pics/prev_cut.png</normaloff>:/new/prefix1/pics/prev_cut.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -1160,16 +1160,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButtonNextBlackFrame">
+          <widget class="QToolButton" name="toolButtonNextCutPoint">
            <property name="toolTip">
-            <string>Search next black frame</string>
+            <string>Go to next cut point [SHIFT+UP]</string>
            </property>
            <property name="text">
             <string>...</string>
            </property>
            <property name="icon">
             <iconset resource="avidemux.qrc">
-             <normaloff>:/new/prefix1/pics/next_black.png</normaloff>:/new/prefix1/pics/next_black.png</iconset>
+             <normaloff>:/new/prefix1/pics/next_cut.png</normaloff>:/new/prefix1/pics/next_cut.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -1993,8 +1993,8 @@
   <tabstop>toolButtonNextIntraFrame</tabstop>
   <tabstop>toolButtonSetMarkerA</tabstop>
   <tabstop>toolButtonSetMarkerB</tabstop>
-  <tabstop>toolButtonPreviousBlackFrame</tabstop>
-  <tabstop>toolButtonNextBlackFrame</tabstop>
+  <tabstop>toolButtonPreviousCutPoint</tabstop>
+  <tabstop>toolButtonNextCutPoint</tabstop>
   <tabstop>toolButtonFirstFrame</tabstop>
   <tabstop>toolButtonLastFrame</tabstop>
   <tabstop>pushButtonTime</tabstop>

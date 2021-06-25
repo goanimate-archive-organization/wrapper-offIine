@@ -45,13 +45,8 @@
 #include "ADM_coreVideoFilterFunc.h"
 #include "ADM_coreVideoFilterFunc.h"
 
-extern uint8_t GUI_close(void);
-extern bool GUI_GoToTime(uint64_t time);
-extern void GUI_GoToKFrameTime(uint64_t time);
-extern void GUI_NextFrame(uint32_t frameCount);
-extern void GUI_PrevFrame(uint32_t frameCount);
-extern void GUI_PrevBlackFrame(void);
-extern void GUI_NextBlackFrame(void);;
+#include "gtkgui.h"
+#include "prototype.h"
 
 #if 0
 /**
@@ -178,7 +173,9 @@ char *ADM_Composer::getVideoCodec(void)
 
 int ADM_Composer::appendFile(const char *name)
 {
-	return A_appendVideo(name);
+    if(!_segments.getNbRefVideos())
+        return A_openVideo(name);
+    return A_appendVideo(name);
 }
 /**
     \fn saveAudio
@@ -455,21 +452,53 @@ bool ADM_Composer::isFileOpen(void)
     return avifileinfo != NULL;
 }
 
+/**
+ * \fn      nextPicture
+ * \brief   Preview or only decode the next picture
+ */
+bool ADM_Composer::nextPicture(ADMImage *image)
+{
+    if(!image)
+        return GUI_NextFrame();
+    return nextPicture(image,0);
+}
+/**
+ * \fn      getCurrentFramePts
+ * \brief   Get PTS from preview
+ */
+uint64_t ADM_Composer::getCurrentFramePts(void)
+{
+    return admPreview::getCurrentPts();
+}
+/**
+ * \fn     setCurrentFramePts
+ * \brief  Try to display the picture with the given PTS,
+ *         else seek to the closest earlier keyframe
+ */
 bool ADM_Composer::setCurrentFramePts(uint64_t pts)
 {
-    if (video_body->getPKFramePTS(&pts))
+    if(admPreview::seekToTime(pts))
     {
-        return GUI_GoToTime(pts);
+        GUI_setCurrentFrameAndTime();
+        UI_purge();
+        return true;
     }
-    else
-    {
+    // pts is not exact, can we seek to the previous keyframe?
+    if(!getPKFramePTS(&pts)) // nope
         return false;
-    }
+    return GUI_GoToKFrameTime(pts);
 }
-
-void ADM_Composer::getCurrentFrameFlags(uint32_t *flags, uint32_t *quantiser)
+/**
+ * \fn      getCurrentFrameFlags
+ * \brief   Get flags from preview
+ */
+bool ADM_Composer::getCurrentFrameFlags(uint32_t *flags, uint32_t *quantizer)
 {
-    admPreview::getFrameFlags(flags, quantiser);
+    *flags = 0;
+    if(!admPreview::getBuffer())
+        return false;
+    admPreview::getFrameFlags(flags, quantizer);
+    return true;
 }
 
 _VIDEOS* ADM_Composer::getRefVideo(int videoIndex)
@@ -477,51 +506,87 @@ _VIDEOS* ADM_Composer::getRefVideo(int videoIndex)
 	return _segments.getRefVideo(videoIndex);
 }
 
-void ADM_Composer::seekFrame(int count)
+bool ADM_Composer::seekFrame(int count)
 {
-	if (count >= 0)
-	{
-		for (int i = 0; i < count; i++)
-		{
-			GUI_NextFrame(1);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < -count; i++)
-		{
-			GUI_PrevFrame(1);
-		}
-	}
+    if (!count)
+        return admPreview::samePicture();
+
+    bool r = true;
+    admPreview::deferDisplay(true);
+    if (count > 0)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (!admPreview::nextPicture())
+            {
+                r = false;
+                break;
+            }
+        }
+    } else
+    {
+        for (int i = 0; i < -count; i++)
+        {
+            if (!admPreview::previousPicture())
+            {
+                r = false;
+                break;
+            }
+        }
+    }
+    admPreview::deferDisplay(false);
+    if (!admPreview::samePicture())
+        return false;
+    GUI_setCurrentFrameAndTime();
+    UI_purge();
+    return r;
 }
 
-void ADM_Composer::seekKeyFrame(int count)
+bool ADM_Composer::seekKeyFrame(int count)
 {
-    uint64_t pts = video_body->getCurrentFramePts();
-    if(pts == ADM_NO_PTS)
-        return;
+    uint64_t pts = admPreview::getCurrentPts();
+    if(!pts && count < 0) // at the start of the video if any, nowhere to go
+        return false;
+    if(count < 1)
+    {
+        uint32_t flags,quant;
+        admPreview::getFrameFlags(&flags,&quant);
+        if(flags & AVI_KEY_FRAME)
+        {
+            if(!count) // already there, nothing to do
+                return true;
+        }else
+        { // seek back -count keyframes starting with the closest earlier keyframe
+            count--;
+        }
+    }
 
-    if(count >= 0)
+    int found = 0;
+    if(count > 0)
     {
         for(int i = 0; i < count; i++)
         {
             uint64_t tmp = pts;
-            if(false == video_body->getNKFramePTS(&tmp))
+            if(!getNKFramePTS(&tmp))
                 break;
             pts = tmp;
+            found++;
         }
     }else
     {
         for(int i = 0; i < -count; i++)
         {
             uint64_t tmp = pts;
-            if(false == video_body->getPKFramePTS(&tmp))
+            if(!getPKFramePTS(&tmp))
                 break;
             pts = tmp;
+            found--;
         }
     }
 
-    GUI_GoToKFrameTime(pts);
+    if(found && false == GUI_GoToKFrameTime(pts))
+        return false;
+    return found == count;
 }
 
 void ADM_Composer::seekBlackFrame(int count)

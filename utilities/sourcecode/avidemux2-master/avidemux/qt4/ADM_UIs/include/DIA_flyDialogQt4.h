@@ -30,6 +30,9 @@
 #include <QDialog>
 #include <QLabel>
 #include <QRubberBand>
+#include <QMouseEvent>
+#include <QPoint>
+#include <QRect>
 
 #include "ADM_default.h"
 #include "ADM_rgb.h"
@@ -37,6 +40,7 @@
 #include "ADM_coreVideoFilter.h"
 #include "ADM_imageResizer.h"
 #define ADM_FLY_SLIDER_MAX 1000
+#define ADM_FLYRGB_ALGO_CHANGE_THRESHOLD_RESOLUTION 720
 
 enum ResizeMethod 
 {
@@ -64,6 +68,7 @@ public:
         ~ADM_QCanvas();
         void paintEvent(QPaintEvent *ev);
         void changeSize(uint32_t w, uint32_t h);
+        void getDisplaySize(uint32_t *w, uint32_t *h);
 };
 
 class flyControl;
@@ -93,8 +98,9 @@ class ADM_UIQT46_EXPORT ADM_flyDialog : public QObject
           ADM_byteBuffer _rgbByteBufferDisplay;
 
           flyControl  *_control;
-          
+          std::vector<QWidget *> buttonList; // useful for manipulating tab order
           QDialog     *_parent;
+          bool         _bypassFilter;
 
 
 
@@ -113,7 +119,7 @@ class ADM_UIQT46_EXPORT ADM_flyDialog : public QObject
           virtual bool       sameImage(void);
                   uint64_t   getCurrentPts();
           ADM_coreVideoFilter *getUnderlyingFilter() {return _in;}
-                  bool        addControl(QHBoxLayout *layout);
+                  bool        addControl(QHBoxLayout *layout, bool addPeekOriginalButton = false);
 protected:
   virtual ADM_colorspace     toRgbColor(void);
           void               updateZoom(void);
@@ -133,6 +139,7 @@ public:
 
   virtual bool       setCurrentPts(uint64_t pts) {return true;};
   virtual bool       bandResized(int x, int y, int w, int h) { return true; }
+  virtual bool       bandMoved(int x, int y, int w, int h) { return true; }
 
 
 // UI dependant part : They are implemented in ADM_flyDialogGtk/Qt/...
@@ -157,6 +164,8 @@ public slots:
         virtual void backOneMinute(void);
         virtual void fwdOneMinute(void);
         virtual void play(bool status);
+        virtual void peekOriginalPressed(void);
+        virtual void peekOriginalReleased(void);
         virtual void timeout(void);
         virtual void adjustCanvasPosition(void);
         virtual void fitCanvasIntoView(uint32_t width, uint32_t height);
@@ -188,6 +197,9 @@ public:
 class ADM_UIQT46_EXPORT ADM_flyDialogRgb: public  ADM_flyDialog
 {
   Q_OBJECT
+protected:
+                    ADMColorScaler_algo _algo;
+                    uint64_t           _scaledPts;
 public:
                     ADM_byteBuffer     _rgbByteBuffer;
                     ADM_byteBuffer     _rgbByteBufferOut;
@@ -225,9 +237,18 @@ protected:
 class ADM_UIQT46_EXPORT ADM_QRubberBand : public QRubberBand
 {
 public:
+        typedef enum {
+             ADM_RUBBER_BAND_GRIPS_NONE=0,
+             ADM_RUBBER_BAND_GRIPS_FIRST=1,
+             ADM_RUBBER_BAND_GRIPS_SECOND=2,
+             ADM_RUBBER_BAND_GRIPS_MASK=3
+        } ADM_rubberBandFlags;
+
         ADM_QRubberBand(QWidget *parent);
         ~ADM_QRubberBand();
+        void drawGrips(int flags) { mode = (ADM_rubberBandFlags)(flags & ADM_RUBBER_BAND_GRIPS_MASK); }
 private:
+        ADM_rubberBandFlags mode;
         void paintEvent(QPaintEvent *event);
 };
 
@@ -248,8 +269,20 @@ public:
         {
             rubberband->blockSignals(block);
         }
+        void sizeGripEnable(bool topLeftEnabled, bool bottomRightEnabled);
 private:
+        QWidget * rubberControlParent;
+        void *grip1ptr;
+        void *grip2ptr;
+        bool drag;
+        QPoint dragOffset;
+        QRect dragGeometry;
         void resizeEvent(QResizeEvent *);
+        void enterEvent(QEvent *);
+        void leaveEvent(QEvent *);
+        void mousePressEvent(QMouseEvent *);
+        void mouseReleaseEvent(QMouseEvent *);
+        void mouseMoveEvent(QMouseEvent *);
 };
 
 //EOF

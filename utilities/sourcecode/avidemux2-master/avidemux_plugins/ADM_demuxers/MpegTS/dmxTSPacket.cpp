@@ -184,7 +184,7 @@ again:
     }
     if(_file->end()==true) 
     {
-        //printf("[Mpeg Ts] End of file reached\n");
+        printf("[tsPacket::getSinglePacket] End of file reached\n");
         return false;
     }
     _file->read32(TS_PACKET_LEN-1,buffer); // 184-1
@@ -192,10 +192,7 @@ again:
     uint8_t r=_file->peek8i();
     if(r!=TS_MARKER)
     {
-
-        printf("[tsPacket] Sync lost (0x%x)\n",r);
-#ifdef TS_DEBUG1
-#endif
+        printf("[tsPacket::getSinglePacket] Sync lost at 0x%" PRIx64" (value: 0x%x)\n",getPos(),r);
         goto again;
     }
     return true;
@@ -833,19 +830,10 @@ bool    tsPacketLinear::seek(uint64_t packetStart, uint32_t offset)
     return true;
 }
 /**
-    \fn getConsumed
-    \brief returns the # of bytes consumed since the last call
-*/
-uint32_t tsPacketLinear::getConsumed(void)
-{
-    uint32_t c=consumed;
-    return c;
-}
-/**
     \fn setConsumed
     \brief set consumed bytes
 */
-bool tsPacketLinear::setConsumed(uint32_t v)
+bool tsPacketLinear::setConsumed(uint64_t v)
 {
     consumed=v;
     return true;
@@ -1159,7 +1147,7 @@ bool tsPacketLinearTracker::collectStats(void)
     bool success=false;
     uint32_t i,found=0,count=0;
     const uint32_t max=1<<24; // 16 MiB, should be enough
-    const uint32_t remember=consumed;
+    const uint64_t remember=consumed;
     dmxPacketInfo info;
     getInfo(&info);
 

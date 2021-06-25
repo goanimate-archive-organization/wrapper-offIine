@@ -9,108 +9,41 @@
 
     http://mxe.cc/#requirements
 
-for your respective Linux distribution then clone the git repository as
-described in
+for your respective Linux distribution, then run the script mxe-setup.sh from
+a directory *outside of Avidemux top source directory*. This script will
 
-    http://mxe.cc/#download
+  a) clone MXE git repository;
 
-to /opt:
+  b) create a source tarball of the latest x264 off the stable branch from
+  the videolan.org x264 git mirror, generate and apply a patch for MXE;
 
-    cd /opt
-    git clone https://github.com/mxe/mxe.git
+  c) create a source tarball for v3.4 of x265 from the videolan.org x265
+  mercurial mirror and patch MXE to use it;
 
-(make /opt temporarily writable by the user or clone as root / using sudo).
-Change the owner and the group of /opt/mxe to those of the user. In the
-exemplary setup the 'mxe' folder has been subsequently moved elsewhere and
-then bind-mounted to /opt/mxe to save write cycles of an SSD where /opt
-resides. This has been done purely for convenience and is not required.
+  d) build both 32-bit and 64-bit MXE targets;
 
-##############################################################################
+  e) clone libaom git repository from googlesource.com, build and install
+  the library in both MXE targets;
 
-2. Create /opt/mxe/settings.mk with
+  d) install the latest nv-codec-headers from the FFmpeg mirror at GiHub
+  in the 64-bit MXE target only.
 
-MXE_TARGETS :=  i686-w64-mingw32.shared x86_64-w64-mingw32.shared
+The absolute path to the "mxe" directory created during this step is referenced
+below as ${MXE_ROOT}.
 
-as content to build both 32 bit and 64 bit environments. Optionally, you can
-set the variable MXE_TMP which determines where intermediate files are created
-(e.g. to /tmp) by adding
+An example for the case that Avidemux source was cloned as ~/avidemux2:
 
-MXE_TMP := /tmp
-
-to the settings.mk file.
+    cd ~ && mkdir cross-build && cd cross-build && bash ../avidemux2/mxe/mxe-setup.sh
 
 ##############################################################################
 
-3. Build required MXE packages for the targets specified above with
+2. Enter the Avidemux top source directory and run
 
-    cd /opt/mxe
-    make qttools qtwinextras sdl2 ogg vorbis lame a52dec faad2 fdk-aac libmad opus fribidi libass xvidcore x264 x265 libvpx
-
-This pulls in all the dependencies and can take a couple of hours. The final
-total size of the /opt/mxe folder may be about 2.2G. Please note that twolame
-is not available as a shared library.
-
-NB: To build version 3.4 of x265 instead of 2.4 provided by MXE as of this
-writing, apply the "x265.patch" patch from the "mxe-patches" subdirectory of
-Avidemux source tree prior to running make: in the MXE root directory, run
-
-    patch -p1 < /path/to/avidemux2/mxe-patches/x265.patch
-
-and on success proceed with the make command as shown above.
-
-##############################################################################
-
-4. To enable hardware-accelerated encoding provided by NVIDIA graphics cards of
-the Kepler generation and later, clone the nv-codec-headers repository
-
-    git clone https://github.com/FFmpeg/nv-codec-headers.git
-
-change directory to the created nv-codec-headers subdirectory
-
-    cd nv-codec-headers
-
-delete the first line of the Makefile to remove a hardcoded PREFIX value
-
-    sed -i 1d Makefile
-
-and run
-
-    PREFIX="/opt/mxe/usr/i686-w64-mingw32.shared" make install
-
-for the 32 bit environment or
-
-    PREFIX="/opt/mxe/usr/x86_64-w64-mingw32.shared" make install
-
-for the 64 bit environment within /opt/mxe as MXE root correspondingly. Adjust
-the path specified as value of the PREFIX variable if MXE is installed
-elsewhere.
-
-##############################################################################
-
-5. In order to enable the AV1 decoder plugin in Avidemux, libaom, not provided
-by MXE, needs to be installed. Run script "install-libaom.bash" from the
-"mxe-patches" subdirectory of Avidemux source tree with the path to the MXE
-root directory passed as argument to automatically build and install version
-2.0.0 of libaom in the 64 bit environment.
-
-The script will use the present working directory for all intermediate steps.
-
-Build for the 32 bit environment has not been tested yet.
-
-##############################################################################
-
-6. Create a user-writable directory 'out' in '/opt/mxe/usr/x86_64-w64-mingw32.shared'
-and in '/opt/mxe/usr/i686-w64-mingw32.shared' respectively.
-
-##############################################################################
-
-7. Enter the Avidemux top source directory and run
-
-    bash bootStrapCrossMingwQt5_mxe.sh
+    bash bootStrapCrossMingwQt5_mxe.sh --mxe-root=${MXE_ROOT} --32
 
 to cross-compile a 32 bit Avidemux version or
 
-    bash bootStrapCrossMingwQt5_mxe.sh --64
+    bash bootStrapCrossMingwQt5_mxe.sh --mxe-root=${MXE_ROOT} --64
 
 to cross-compile a 64 bit version. Run
 
@@ -123,8 +56,8 @@ partition, extract it on Windows and run 'avidemux.exe' from there.
 
 ##############################################################################
 
-8. Issues:
+3. Issues:
 
 As of this writing, twolame, aften, vapoursynth and avsproxy are not available.
 
-2020-06-06 UTC 22:04
+2021-02-23

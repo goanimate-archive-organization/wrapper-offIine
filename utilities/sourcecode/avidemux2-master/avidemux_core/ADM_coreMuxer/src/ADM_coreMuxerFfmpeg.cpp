@@ -183,10 +183,21 @@ bool muxerFFmpeg::initVideo(ADM_videoStream *stream)
         par->sample_aspect_ratio.num=1;
         par->sample_aspect_ratio.den=1;
         video_st->sample_aspect_ratio=par->sample_aspect_ratio;
-        par->bit_rate=9000*1000;
+        //par->bit_rate=9000*1000;
         par->codec_type = AVMEDIA_TYPE_VIDEO;
         par->width = stream->getWidth();
         par->height =stream->getHeight();
+
+        {
+        uint32_t r,p,t,m;
+        if(stream->getColorInfo(&r,&p,&t,&m))
+        {
+            par->color_range = (AVColorRange)r;
+            par->color_primaries = (AVColorPrimaries)p;
+            par->color_trc = (AVColorTransferCharacteristic)t;
+            par->color_space = (AVColorSpace)m;
+        }
+        }
 
         uint32_t videoExtraDataSize=0;
         uint8_t  *videoExtraData;
@@ -344,6 +355,8 @@ bool muxerFFmpeg::initAudio(uint32_t nbAudioTrack,ADM_audioStream **audio)
           par->frame_size=1024; //For AAC mainly, sample per frame
           printf("[FF] Bitrate %u\n",(audioheader->byterate*8)/1000);
           par->sample_rate = audioheader->frequency;
+          par->channel_layout = av_get_default_channel_layout(audioheader->channels);
+          ADM_info("Using default channel layout 0x%lx for %u channels\n",par->channel_layout,audioheader->channels);
           switch(audioheader->encoding)
           {
                   case WAV_OGG_VORBIS:
@@ -386,7 +399,9 @@ bool muxerFFmpeg::initAudio(uint32_t nbAudioTrack,ADM_audioStream **audio)
                               break;
                   case WAV_LPCM:
                   case WAV_PCM:
-                                par->frame_size=4; // One chunk is 10 ms (1/100 of fq)
+                                //par->frame_size=4; // One chunk is 10 ms (1/100 of fq)
+                                par->frame_size = 0; // so does ffmpeg
+                                par->block_align = audioheader->blockalign;
                                 {
                                     bool bigEndian = audioheader->encoding == WAV_LPCM;
                                     switch(audioheader->bitspersample)

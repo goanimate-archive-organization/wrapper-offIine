@@ -13,6 +13,7 @@
 /* METHOD */ int editor->getPARHeight:getPARHeight    (void)
 /* METHOD */ int pyGetFps1000:getFps1000        (void)
 /* METHOD */ str editor->getVideoCodec:getVideoCodec(void)
+/* METHOD */ str pyGetContainerEx:getOutputExtension(void)
 /* METHOD */ void editor->clearFilters:clearVideoFilters(void) 
 #
 # Audio filter and encoding 
@@ -28,7 +29,7 @@
 /* METHOD */ int  pySetPal2Film:audioSetPal2Film(int,int)
 /* METHOD */ int  pySetFilm2Pal:audioSetFilm2Pal(int,int)
 /* METHOD */ int  pySetNormalize:audioSetNormalize(int,int,int)
-/* METHOD */ int  pySetNormalize:audioSetNormalize2(int,int,int,int)
+/* METHOD */ int  pySetNormalize2:audioSetNormalize2(int,int,int,int)
 /* METHOD */ int  pySetDrc:audioSetDrc(int,int)
 /* METHOD */ int  pySetAudioShift:audioSetShift(int,int,int)
 #
@@ -62,7 +63,9 @@
 #
 #
 # Seek
-/* METHOD */ void editor->seekKeyFrame:seekKeyFrame(int)
+/* METHOD */ int editor->seekKeyFrame:seekKeyFrame(int)
+/* METHOD */ int editor->seekFrame:seekFrame(int)
+/* METHOD */ int editor->setCurrentFramePts:setCurrentPts(double)
 #
 #       Variables
 #

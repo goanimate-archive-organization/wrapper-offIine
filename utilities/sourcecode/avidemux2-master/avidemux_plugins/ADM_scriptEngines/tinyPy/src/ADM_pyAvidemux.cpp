@@ -56,8 +56,7 @@ int pyGetHeight(IEditor *editor)
 /**
     \fn pyHexDumpFrame
 */
-
-bool pyHexDumpFrame(IEditor *editor, int framenumber)
+int pyHexDumpFrame(IEditor *editor, int framenumber)
 {
     ADMCompressedImage img;
     notStackAllocator buf(ADM_COMPRESSED_MAX_DATA_LENGTH);
@@ -67,30 +66,27 @@ bool pyHexDumpFrame(IEditor *editor, int framenumber)
     if (!editor->getDirectImageForDebug(framenumber, &img))
     {
         ADM_error("Cannot get picture %d\n", framenumber);
-        return false;
+        return 0;
     }
 
     mixDump(img.data, img.dataLength);
 
-    return true;
+    return 1;
 }
 
 /**
- * 
- * @param editor
- * @param framenumber
- * @return 
+ * \fn      pyNextFrame
+ * \brief   decode next frame but do not update preview
+ * @param   editor
+ * @return  1 on success, else 0
  */
-bool pyNextFrame(IEditor *editor)
+int pyNextFrame(IEditor *editor)
 {
     aviInfo info;
     if(!editor->getVideoInfo(&info))
-        return false;
-    
+        return 0;
     ADMImageDefault img(info.width,info.height);
-    if(!editor->nextPicture(&img,false))
-       return false;
-    return true;
+    return editor->nextPicture(&img);
 }
 
 /**
@@ -192,13 +188,27 @@ double pyGetDts(IEditor *editor, int frameNum)
 
 	return (double)dts;
 }
+/**
+    \fn pyGetCurrentFrameFlags
+*/
+int pyGetCurrentFrameFlags(IEditor *editor)
+{
+    uint32_t flags,qz;
+    if(false == editor->getCurrentFrameFlags(&flags,&qz))
+        return -1;
+    return flags;
+}
 
 /**
     \fn pyGetPrevKFramePts
 */
-double pyGetPrevKFramePts(IEditor *editor)
+double pyGetPrevKFramePts(IEditor *editor, double time)
 {
-    uint64_t pts = editor->getCurrentFramePts();
+    uint64_t pts = ADM_NO_PTS;
+    if(time < 0.)
+        pts = editor->getCurrentFramePts();
+    else
+        pts = time;
     if(pts == ADM_NO_PTS)
         return -1;
 
@@ -211,9 +221,13 @@ double pyGetPrevKFramePts(IEditor *editor)
 /**
     \fn pyGetNextKFramePts
 */
-double pyGetNextKFramePts(IEditor *editor)
+double pyGetNextKFramePts(IEditor *editor, double time)
 {
-    uint64_t pts = editor->getCurrentFramePts();
+    uint64_t pts = ADM_NO_PTS;
+    if(time < 0.)
+        pts = editor->getCurrentFramePts();
+    else
+        pts = time;
     if(pts == ADM_NO_PTS)
         return -1;
 
@@ -221,6 +235,79 @@ double pyGetNextKFramePts(IEditor *editor)
         return -1;
 
     return (double)pts;
+}
+
+/**
+    \fn pySegmentGetRefIdx
+*/
+int pySegmentGetRefIdx(IEditor *editor, int segment)
+{
+    if(segment >= editor->getNbSegment())
+        return -1;
+    _SEGMENT* seg = editor->getSegment(segment);
+    if(!seg)
+        return -1;
+    return seg->_reference;
+}
+
+/**
+    \fn pySegmentGetTimeOffset
+*/
+double pySegmentGetTimeOffset(IEditor *editor, int segment)
+{
+    if(segment >= editor->getNbSegment())
+        return -1;
+    _SEGMENT *seg = editor->getSegment(segment);
+    if(!seg)
+        return -1;
+    return seg->_refStartTimeUs;
+}
+
+/**
+    \fn pySegmentGetDuration
+*/
+double pySegmentGetDuration(IEditor *editor, int segment)
+{
+    if(segment >= editor->getNbSegment())
+        return -1;
+    _SEGMENT *seg = editor->getSegment(segment);
+    if(!seg)
+        return -1;
+    return seg->_durationUs;
+}
+
+/**
+    \fn pyGetRefVideoDuration
+*/
+double pyGetRefVideoDuration(IEditor *editor, int idx)
+{
+    if(idx >= editor->getVideoCount())
+        return -1;
+    _VIDEOS *vid = editor->getRefVideo(idx);
+    if(!vid)
+        return -1;
+    vidHeader *demuxer = vid->_aviheader;
+    if(!demuxer)
+        return -1;
+    return demuxer->getVideoDuration();
+}
+
+/**
+    \fn pyGetRefVideoName
+*/
+char *pyGetRefVideoName(IEditor *editor, int idx)
+{
+    if(idx >= editor->getVideoCount())
+        return NULL;
+    _VIDEOS *vid = editor->getRefVideo(idx);
+    if(!vid)
+        return NULL;
+    vidHeader *demuxer = vid->_aviheader;
+    if(!demuxer)
+        return NULL;
+    if(!demuxer->getMyName())
+        return NULL;
+    return ADM_strdup(demuxer->getMyName());
 }
 
 /**
@@ -235,6 +322,7 @@ char *pyFileSelWrite(IEditor *editor, const char *title)
 
 	return me;
 }
+
 /**
     \fn pyFileSelRead
 */
@@ -247,20 +335,51 @@ char *pyFileSelRead(IEditor *editor, const char *title)
 
 	return me;
 }
+
+#if defined(__APPLE__)
+ #define MAX_LEN 1024
+#else
+ #define MAX_LEN 4096
+#endif
+
+/**
+    \fn pyFileSelWriteEx
+*/
+char *pyFileSelWriteEx(IEditor *editor, const char *title, const char *ext)
+{
+    char me[MAX_LEN] = {0};
+    const char *txt = QT_TRANSLATE_NOOP("tinypy","Save File");
+    if(!FileSel_SelectWrite((title && strlen(title)) ? title : txt, me, MAX_LEN, NULL, ext))
+        return NULL;
+
+    return ADM_strdup(me);
+}
+
+/**
+    \fn pyFileSelReadEx
+*/
+char *pyFileSelReadEx(IEditor *editor, const char *title, const char *ext)
+{
+    char me[MAX_LEN] = {0};
+    const char *txt = QT_TRANSLATE_NOOP("tinypy","Open File");
+    if(!FileSel_SelectRead((title && strlen(title)) ? title : txt, me, MAX_LEN, NULL, ext))
+        return NULL;
+
+    return ADM_strdup(me);
+}
+
 /**
     \fn pyDirSelect
 */
 
 char *pyDirSelect(IEditor *editor, const char *title)
 {
-	char me[1024] = {0};
+    char me[MAX_LEN] = {0};
+    const char *txt = QT_TRANSLATE_NOOP("tinypy","Select Directory");
+    if (!FileSel_SelectDir((title && strlen(title)) ? title : txt, me, MAX_LEN, NULL))
+        return NULL;
 
-	if (!FileSel_SelectDir((title && strlen(title)) ? title : QT_TR_NOOP("Select a directory"), me, 1023, NULL))
-	{
-		return NULL;
-	}
-
-	return ADM_strdup(me);
+    return ADM_strdup(me);
 }
 /**
     \fn pyDisplayError
@@ -299,4 +418,17 @@ char *pyGetEnv(IEditor *editor,const char *key)
     return strdup(src);
 }
 
+/**
+ * \fn pyGetContainerEx
+ * \brief Get the default filename extension for the current muxer
+ */
+char *pyGetContainerEx(IEditor *editor)
+{
+    ADM_dynMuxer *container = editor->getCurrentMuxer();
+    if(!container)
+        return NULL;
+    if(!container->defaultExtension)
+        return NULL;
+    return ADM_strdup(container->defaultExtension);
+}
 // EOF

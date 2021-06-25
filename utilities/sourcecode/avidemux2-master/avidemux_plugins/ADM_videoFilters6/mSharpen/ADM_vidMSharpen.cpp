@@ -56,17 +56,13 @@ Msharpen::Msharpen(ADM_coreVideoFilter *in,CONFcouple *couples)
     : ADM_coreVideoFilterCached(5,in,couples)
 {
     if(!couples || !ADM_paramLoad(couples,msharpen_param,&_param))
-    {
-        _param.mask=0;       // Show mask
-        _param.highq=1;
-        _param.strength=100;	
-        _param.threshold=15;	
-    }
-                
-    invstrength=255-_param.strength;	
+        reset(&_param);
+    if(_param.strength > 255) _param.strength=255;
+    if(_param.threshold > 255) _param.threshold=255;
+    invstrength=255-_param.strength;
     blurrImg=new ADMImageDefault(info.width,info.height);
     work=new ADMImageDefault(info.width,info.height);
-    
+    ADM_info("%s\n",getConfiguration());
 }
 /**
     \fn getCoupledConf
@@ -96,12 +92,26 @@ Msharpen::~Msharpen(void)
 */
 const char *Msharpen::getConfiguration(void)
 {
-   static char conf[80];
+   static char conf[160];
     conf[0]=0;
-    snprintf(conf,80," Msharpen Strength:%d Threshold:%d",_param.strength,_param.threshold);
+    snprintf(conf,160,"Strength: %d, Threshold: %d, HQ: %s, Process chroma: %s, Mask: %s\n",
+                _param.strength,_param.threshold,
+                _param.highq ? "true" : "false",
+                _param.chroma ? "true":"false",
+                _param.mask ? "true":"false");
     return conf;
 }
-	
+/**
+    \fn reset
+*/
+void Msharpen::reset(msharpen *cfg)
+{
+    cfg->mask = 0; // don't show mask
+    cfg->highq = 1;
+    cfg->chroma = 0;
+    cfg->strength = 100;
+    cfg->threshold = 15;
+}
 /**
     \fn getNextFrame
 */
@@ -118,7 +128,7 @@ ADMImage *src,*blur,*dst;
 
     dst->Pts=src->Pts;
 	
-    for (int i=0;i<3;i++)
+    for (int i=0;i<(_param.chroma ? 3:1);i++)
     {
             
             blur_plane(src, blur, i,work);
@@ -127,6 +137,11 @@ ADMImage *src,*blur,*dst;
                 detect_edges_HiQ(blur, dst,  i,_param);
             if (!_param.mask) 
                 apply_filter(src, blur, dst,  i,_param,invstrength);
+    }
+    if (!_param.chroma)
+    {
+        dst->copyPlane(src,dst,PLANAR_U);
+        dst->copyPlane(src,dst,PLANAR_V);
     }
 
     *fn=nextFrame;
@@ -535,6 +550,10 @@ uint8_t r=0;
     if(DIA_msharpen(copy,this->previousFilter))
     {
         _param=copy;
+        if(_param.threshold > 255) _param.threshold=255;
+        if(_param.strength > 255) _param.strength=255;
+        invstrength=255-_param.strength;
+        ADM_info("MSharpen %s\n",getConfiguration());
         return true;
     }
     return false;

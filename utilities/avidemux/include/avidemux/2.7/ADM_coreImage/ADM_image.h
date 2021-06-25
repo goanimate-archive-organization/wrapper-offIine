@@ -41,12 +41,13 @@ typedef enum
 //#define vi.num_frames _info.nb_frames
 //#define vi.IsYV12()   1
 #define GetRowSize GetPitch
+#define ADM_IMAGE_ALIGN(x) ((x+63)&(~63))
 
 typedef enum
 {
         PLANAR_Y=0,
-        PLANAR_U=1,
-        PLANAR_V=2,
+        PLANAR_V=1,
+        PLANAR_U=2,
         PLANAR_ALPHA=3,
         PLANAR_LAST=3 // Alpha is not a real channel
 
@@ -108,6 +109,7 @@ public:
         uint64_t        Pts;        /// Presentation time in us
         ADM_IMAGE_TYPE  _imageType;     /// Plain image or reference or vdpau wrapper
         ADM_colorspace  _colorspace;    /// Colorspace we are moving, default is YV12
+        ADM_colorRange  _range;     /// MPEG or JPEG
         uint8_t         _noPicture;     /// No picture to display
         ADM_ASPECT	    _aspect;	/// Aspect ratio
         //
@@ -144,7 +146,7 @@ public:
         virtual      bool           isWrittable(void)=0;
         virtual      ADMImageRef    *castToRef(void) {return NULL;};
 
-        virtual      bool           duplicateMacro(ADMImage *src,bool swap);       /// copy an image to ourself, including info
+        virtual      bool           duplicateMacro(ADMImage *src,bool swap); /// copy an image to ourselves, excluding info
 
                      uint8_t        getWidthHeight(uint32_t *w,uint32_t *h)
                                     {
@@ -158,6 +160,8 @@ public:
         bool    copyQuantInfo(ADMImage *src);	/// copy quant table if any
         bool    isRef(void) { if(_imageType==ADM_IMAGE_REF) return true;return false;};
         bool    blacken(void);
+        bool    shrinkColorRange(void);
+        bool    expandColorRange(void);
         bool    copyTo(ADMImage *target, uint32_t x, uint32_t y);
         bool    copyToAlpha(ADMImage *target, uint32_t x, uint32_t y,uint32_t alpha);
         bool    copyWithAlphaChannel(ADMImage *target, uint32_t x, uint32_t y, uint32_t opacity=255);

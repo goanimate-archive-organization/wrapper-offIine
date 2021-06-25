@@ -43,6 +43,15 @@ ADM_coreVideoFilter     *ADM_vf_getInstance(int index)
     return ADM_VideoFilters[index].instance;
 }
 /**
+    \fn ADM_vf_getEnabled
+    \brief Return filter enabled status  of rank index
+*/
+bool ADM_vf_getEnabled(int index)
+{
+    ADM_assert(index<ADM_vf_getSize());
+    return ADM_VideoFilters[index].enabled;
+}
+/**
     \fn ADM_vf_getTag
     \brief Return tag of index active filter
 */
@@ -59,12 +68,13 @@ bool ADM_vf_configureFilterAtIndex(int index)
 {
     ADM_info("Configuring filter at index %d\n",index);
     //
-    ADM_assert(index<ADM_vf_getSize());
+    int nb=ADM_VideoFilters.size();
+    ADM_assert(index < nb);
     ADM_VideoFilterElement *e=&(ADM_VideoFilters[index]);
     ADM_coreVideoFilter *instance=e->instance;
     ADM_assert(instance);
 
-    if(instance->configure())
+    if(instance->configure() && index < nb-1) // not the last one
     {
         return ADM_vf_recreateChain();
     }
@@ -130,6 +140,7 @@ bool ADM_vf_partialize(int index)
 
     //--
     ADM_VideoFilterElement scratch2;
+    scratch2.enabled = scratch.enabled;
     scratch2.instance=partialized;
     scratch2.tag=VF_PARTIAL_FILTER;
     scratch2.objectId=0;
@@ -156,6 +167,7 @@ ADM_videoFilterChain *createVideoFilterChain(uint64_t startAt,uint64_t endAt)
     bool openGl=false;
     for(int i=0;i<nb;i++)
     {
+            if (!(ADM_VideoFilters[i].enabled)) continue;
             // Get configuration
             CONFcouple *c;
             ADM_coreVideoFilter *old=ADM_VideoFilters[i].instance;

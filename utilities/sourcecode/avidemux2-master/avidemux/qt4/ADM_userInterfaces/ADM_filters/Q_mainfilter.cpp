@@ -191,12 +191,18 @@ void FilterItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &op
         fg = pal.color(QPalette::Text);
         bg = pal.color(QPalette::Base);
     }
+
+    bool disabled = index.data(DisabledRole).toBool();
+    if (disabled)
+        fg = pal.color(QPalette::Disabled, QPalette::WindowText);
+
     painter->fillRect(option.rect, bg);
     pen.setColor(fg);
     painter->setPen(pen);
 
     QString filterNameText = index.data(FilterNameRole).toString();
     QString descText = index.data(DescriptionRole).toString();
+
 
     QFont filterNameFont = QApplication::font();
     QFont descFont = QApplication::font();
@@ -268,12 +274,23 @@ void filtermainWindow::preview(bool b)
      ADM_info("Rank : %d\n",itag);
      ADM_coreVideoFilter     *filter=ADM_vf_getInstance(itag);
      ADM_assert(filter);
+    bool                      enabled = ADM_vf_getEnabled(itag);
+    uint32_t                  instanceTag=ADM_vf_getTag(itag);
+    const char               *name= ADM_vf_getDisplayNameFromTag(instanceTag);
     if (previewDialog)
     {
             delete previewDialog;
             previewDialog=NULL;
     }
-    previewDialog = new Ui_seekablePreviewWindow(this, filter, 0);
+
+    QString title = QT_TRANSLATE_NOOP("qmainfilter","Preview");
+    title += QString(" / ");
+    if (!enabled)
+        title += QT_TRANSLATE_NOOP("qmainfilter","DISABLED ");
+    title += QString::fromUtf8(name);
+
+    previewDialog = new Ui_seekablePreviewWindow(this, filter);
+    previewDialog->setWindowTitle(title);
     previewDialog->setModal(true);
     connect(previewDialog, SIGNAL(accepted()), this, SLOT(closePreview()));
     connect(previewDialog, SIGNAL(rejected()), this, SLOT(closePreview()));
@@ -288,7 +305,14 @@ void filtermainWindow::preview(bool b)
 void filtermainWindow::closePreview()
 {
     if (previewDialog)
+    {
+        if(previewDialog->seekablePreview)
+        {
+            previewDialog->seekablePreview->play(false);
+            previewDialog->seekablePreview->goToTime(0);
+        }
         qtUnregisterDialog(previewDialog);
+    }
 }
 
 /**
@@ -361,7 +385,10 @@ void filtermainWindow::remove( bool b)
     buildActiveFilterList ();
     if(nb_active_filter)
     {
-          setSelected(nb_active_filter-1);
+        if (itag < nb_active_filter)
+            setSelected(itag);
+        else
+            setSelected(nb_active_filter-1);
     }
 }
 /**
@@ -413,6 +440,8 @@ void filtermainWindow::moveUp( )
     int itag=getTagForActiveSelection();
     if(-1==itag)
         return;
+    if(0==itag) // already at the top
+        return;
     ADM_vf_moveFilterUp(itag);
     buildActiveFilterList ();
     setSelected(itag-1);
@@ -445,7 +474,18 @@ void filtermainWindow::makePartial()
         ADM_info("CANCEL \n");
       }
 }
-
+/**
+ * 
+ */
+void filtermainWindow::toggleEnabled()
+{
+    int filterIndex=getTagForActiveSelection();
+    if(-1==filterIndex)
+        return;
+    ADM_vf_toggleFilterEnabledAtIndex(filterIndex);
+    buildActiveFilterList ();
+    setSelected(filterIndex);
+}
 /**
         \fn     down( bool b)
         \brief  Move selected filter one place down
@@ -553,6 +593,7 @@ void filtermainWindow::buildActiveFilterList(void)
     {
         uint32_t                instanceTag=ADM_vf_getTag(i);
         ADM_coreVideoFilter     *instance=ADM_vf_getInstance(i);
+        bool                    enabled = ADM_vf_getEnabled(i);
         const char *name= ADM_vf_getDisplayNameFromTag(instanceTag);
         const char *conf=instance->getConfiguration();
         printf("%d %s\n",i,name);
@@ -563,6 +604,7 @@ void filtermainWindow::buildActiveFilterList(void)
         QListWidgetItem *item=new QListWidgetItem(NULL,activeList,ACTIVE_FILTER_BASE+i);
         item->setData(FilterItemDelegate::FilterNameRole, s1);
         item->setData(FilterItemDelegate::DescriptionRole, s2);
+        item->setData(FilterItemDelegate::DisabledRole, !enabled);
         printf("Active item :%p\n",item);
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled);
         activeList->addItem(item);
@@ -574,6 +616,11 @@ void filtermainWindow::buildActiveFilterList(void)
 */
 void filtermainWindow::activeListContextMenu(const QPoint &pos)
 {
+    if(!nb_active_filter)
+        return;
+    if(!activeList->currentItem())
+        return;
+
     QMenu *cm=new QMenu();
 
     QAction *up = new QAction(QString(QT_TRANSLATE_NOOP("qmainfilter","Move up")),cm);
@@ -581,18 +628,37 @@ void filtermainWindow::activeListContextMenu(const QPoint &pos)
     QAction *configure = new QAction(QString(QT_TRANSLATE_NOOP("qmainfilter","Configure")),cm);
     QAction *remove = new QAction(QString(QT_TRANSLATE_NOOP("qmainfilter","Remove")),cm);
     QAction *partial = new QAction(QString(QT_TRANSLATE_NOOP("qmainfilter","Make partial")),cm);
+    QAction *enabled = new QAction(QString(QT_TRANSLATE_NOOP("qmainfilter","Enable/Disable")),cm);
+
+    up->setShortcut(shortcutMoveUp);
+    down->setShortcut(shortcutMoveDown);
+    configure->setShortcut(shortcutConfigure);
+    remove->setShortcut(shortcutRemove);
+    partial->setShortcut(shortcutMakePartial);
+    enabled->setShortcut(shortcutToggleEnabled);
+
+#if defined(__APPLE__) && QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    up->setShortcutVisibleInContextMenu(true);
+    down->setShortcutVisibleInContextMenu(true);
+    configure->setShortcutVisibleInContextMenu(true);
+    remove->setShortcutVisibleInContextMenu(true);
+    partial->setShortcutVisibleInContextMenu(true);
+    enabled->setShortcutVisibleInContextMenu(true);
+#endif
 
     cm->addAction(up);
     cm->addAction(down);
     cm->addAction(configure);
     cm->addAction(remove);
     cm->addAction(partial);
+    cm->addAction(enabled);
 
     connect(up,SIGNAL(triggered()),this,SLOT(moveUp()));
     connect(down,SIGNAL(triggered()),this,SLOT(moveDown()));
     connect(configure,SIGNAL(triggered()),this,SLOT(configureAction()));
     connect(remove,SIGNAL(triggered()),this,SLOT(removeAction()));
     connect(partial,SIGNAL(triggered()),this,SLOT(makePartial()));
+    connect(enabled,SIGNAL(triggered()),this,SLOT(toggleEnabled()));
 
     updateContextMenu(cm);
     cm->exec(activeList->viewport()->mapToGlobal(pos));
@@ -629,9 +695,21 @@ void filtermainWindow::updateContextMenu(QMenu *contextMenu)
     if(row==nb_active_filter-1)
         canMoveDown=false;
 
-    contextMenu->actions().at(0)->setEnabled(canMoveUp);
-    contextMenu->actions().at(1)->setEnabled(canMoveDown);
-    contextMenu->actions().at(4)->setEnabled(canPartialize);
+    const char *textEnable = ADM_vf_getEnabled(itag) ?
+        QT_TRANSLATE_NOOP("qmainfilter","Disable") :
+        QT_TRANSLATE_NOOP("qmainfilter","Enable");
+
+    for(int i = 0; i < contextMenu->actions().size(); i++)
+    {
+        QAction *a = contextMenu->actions().at(i);
+#define MATCHME(x,y) if(a->shortcut() == shortcut##x) { a->setEnabled(y); continue; }
+        MATCHME(MoveUp,canMoveUp)
+        MATCHME(MoveDown,canMoveDown)
+        MATCHME(MakePartial,canPartialize)
+
+        if(a->shortcut() == shortcutToggleEnabled)
+            a->setText(QString::fromUtf8(textEnable));
+    }
 }
 
 /**
@@ -670,6 +748,7 @@ filtermainWindow::filtermainWindow(QWidget* parent) : QDialog(parent)
     connect(ui.buttonClose, SIGNAL(clicked(bool)), this, SLOT(accept()));
     connect(ui.pushButtonPreview, SIGNAL(clicked(bool)), this, SLOT(preview(bool)));
 
+    ADM_vf_rebuildBridge(video_body);
     displayFamily(0);
     buildActiveFilterList();
     setSelected(nb_active_filter - 1);
@@ -692,7 +771,7 @@ filtermainWindow::filtermainWindow(QWidget* parent) : QDialog(parent)
 #else
     keycode = Qt::Key_Delete;
 #endif
-    QKeySequence seq(keycode);
+    shortcutRemove = QKeySequence(keycode);
     bool alt = false;
     prefs->get(KEYBOARD_SHORTCUTS_USE_ALTERNATE_KBD_SHORTCUTS,&alt);
     if(alt)
@@ -702,25 +781,57 @@ filtermainWindow::filtermainWindow(QWidget* parent) : QDialog(parent)
         if(sc.size())
         {
             QString qs = QString::fromUtf8(sc.c_str());
-            seq = QKeySequence::fromString(qs);
+            shortcutRemove = QKeySequence::fromString(qs);
         }
     }
-    rem->setShortcut(seq);
+    rem->setShortcut(shortcutRemove);
     addAction(rem);
     connect(rem,SIGNAL(triggered(bool)),this,SLOT(remove(bool)));
+
+    // TODO make configurable
+    shortcutMoveUp = QKeySequence(Qt::ShiftModifier | Qt::Key_Up);
+    shortcutMoveDown = QKeySequence(Qt::ShiftModifier | Qt::Key_Down);
+    shortcutConfigure = QKeySequence(Qt::Key_Return);
+    shortcutMakePartial = QKeySequence(Qt::ShiftModifier | Qt::Key_P);
+    shortcutToggleEnabled = QKeySequence(Qt::ShiftModifier | Qt::Key_D);
+
+    QAction *movup = new QAction(this);
+    movup->setShortcut(shortcutMoveUp);
+    addAction(movup);
+    connect(movup,SIGNAL(triggered()),this,SLOT(moveUp()));
+
+    QAction *movdw = new QAction(this);
+    movdw->setShortcut(shortcutMoveDown);
+    addAction(movdw);
+    connect(movdw,SIGNAL(triggered()),this,SLOT(moveDown()));
+
+    QAction *mkpartl = new QAction(this);
+    mkpartl->setShortcut(shortcutMakePartial);
+    addAction(mkpartl);
+    connect(mkpartl,SIGNAL(triggered()),this,SLOT(makePartial()));
+
+    QAction *tglenbl = new QAction(this);
+    tglenbl->setShortcut(shortcutToggleEnabled);
+    addAction(tglenbl);
+    connect(tglenbl,SIGNAL(triggered()),this,SLOT(toggleEnabled()));
+
 
     activeList->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(activeList,SIGNAL(customContextMenuRequested(const QPoint &)),this,SLOT(activeListContextMenu(const QPoint &)));
 
     this->installEventFilter(this);
+    ui.pushButtonPreview->installEventFilter(this);
     originalTime = admPreview::getCurrentPts();
 
 #if 1
 #define HINT_LENGTH 256
     char hint[HINT_LENGTH];
     hint[0] = '\0';
-    QKeySequence acc(Qt::ControlModifier + Qt::Key_Return);
-    snprintf(hint,HINT_LENGTH,QT_TRANSLATE_NOOP("qmainfilter","Press %s to accept the dialog"),acc.toString().toUtf8().constData());
+    QKeySequence acc(Qt::ControlModifier | Qt::Key_Return);
+    snprintf(hint,
+        HINT_LENGTH,
+        QT_TRANSLATE_NOOP("qmainfilter","Press %s to accept the dialog"),
+        acc.toString(QKeySequence::NativeText).toUtf8().constData());
     hint[HINT_LENGTH-1] = '\0';
     ui.labelAcceptHint->setText(QString::fromUtf8(hint));
 #undef HINT_LENGTH
@@ -757,7 +868,9 @@ bool filtermainWindow::eventFilter(QObject* watched, QEvent* event)
                 accept();
                 return true;
             }
-            if(ui.listFilterCategory->hasFocus())
+            if(watched == ui.pushButtonPreview)
+                preview(true);
+            else if(ui.listFilterCategory->hasFocus())
                 filterFamilyClick(ui.listFilterCategory->currentRow());
             else if(availableList->hasFocus())
                 add(true);

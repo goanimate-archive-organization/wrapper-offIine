@@ -27,6 +27,7 @@
 #include "ADM_videoInfoExtractor.h"
 #include "ADM_mp4Tree.h"
 #include "ADM_vidMisc.h"
+#include "ADM_iso639.h"
 #include "ADM_aacinfo.h"
 
 #if 1
@@ -47,6 +48,179 @@ typedef enum
     Tag_DecConfigDesc     =0x04,
     Tag_DecSpecificInfo   =0x05
 }MP4_Tag;
+
+/**
+    \fn langCodeToIso639
+    \brief Stolen from libavcodec/isom.c, original code by François Revol and quink-black.
+*/
+static std::string langCodeToIso639(uint16_t code)
+{
+    int i;
+    const char macLangTab[][4] =
+    {
+        "eng",    /*   0 English */
+        "fra",    /*   1 French */
+        "ger",    /*   2 German */
+        "ita",    /*   3 Italian */
+        "dut",    /*   4 Dutch */
+        "sve",    /*   5 Swedish */
+        "spa",    /*   6 Spanish */
+        "dan",    /*   7 Danish */
+        "por",    /*   8 Portuguese */
+        "nor",    /*   9 Norwegian */
+        "heb",    /*  10 Hebrew */
+        "jpn",    /*  11 Japanese */
+        "ara",    /*  12 Arabic */
+        "fin",    /*  13 Finnish */
+        "gre",    /*  14 Greek */
+        "ice",    /*  15 Icelandic */
+        "mlt",    /*  16 Maltese */
+        "tur",    /*  17 Turkish */
+        "hr ",    /*  18 Croatian */
+        "chi",    /*  19 Traditional Chinese */
+        "urd",    /*  20 Urdu */
+        "hin",    /*  21 Hindi */
+        "tha",    /*  22 Thai */
+        "kor",    /*  23 Korean */
+        "lit",    /*  24 Lithuanian */
+        "pol",    /*  25 Polish */
+        "hun",    /*  26 Hungarian */
+        "est",    /*  27 Estonian */
+        "lav",    /*  28 Latvian */
+           "",    /*  29 Sami */
+        "fo ",    /*  30 Faroese */
+           "",    /*  31 Farsi */
+        "rus",    /*  32 Russian */
+        "chi",    /*  33 Simplified Chinese */
+           "",    /*  34 Flemish */
+        "iri",    /*  35 Irish */
+        "alb",    /*  36 Albanian */
+        "ron",    /*  37 Romanian */
+        "ces",    /*  38 Czech */
+        "slk",    /*  39 Slovak */
+        "slv",    /*  40 Slovenian */
+        "yid",    /*  41 Yiddish */
+        "sr ",    /*  42 Serbian */
+        "mac",    /*  43 Macedonian */
+        "bul",    /*  44 Bulgarian */
+        "ukr",    /*  45 Ukrainian */
+        "bel",    /*  46 Belarusian */
+        "uzb",    /*  47 Uzbek */
+        "kaz",    /*  48 Kazakh */
+        "aze",    /*  49 Azerbaijani */
+        "aze",    /*  50 AzerbaijanAr */
+        "arm",    /*  51 Armenian */
+        "geo",    /*  52 Georgian */
+        "mol",    /*  53 Moldavian */
+        "kir",    /*  54 Kirghiz */
+        "tgk",    /*  55 Tajiki */
+        "tuk",    /*  56 Turkmen */
+        "mon",    /*  57 Mongolian */
+           "",    /*  58 MongolianCyr */
+        "pus",    /*  59 Pashto */
+        "kur",    /*  60 Kurdish */
+        "kas",    /*  61 Kashmiri */
+        "snd",    /*  62 Sindhi */
+        "tib",    /*  63 Tibetan */
+        "nep",    /*  64 Nepali */
+        "san",    /*  65 Sanskrit */
+        "mar",    /*  66 Marathi */
+        "ben",    /*  67 Bengali */
+        "asm",    /*  68 Assamese */
+        "guj",    /*  69 Gujarati */
+        "pa ",    /*  70 Punjabi */
+        "ori",    /*  71 Oriya */
+        "mal",    /*  72 Malayalam */
+        "kan",    /*  73 Kannada */
+        "tam",    /*  74 Tamil */
+        "tel",    /*  75 Telugu */
+           "",    /*  76 Sinhala */
+        "bur",    /*  77 Burmese */
+        "khm",    /*  78 Khmer */
+        "lao",    /*  79 Lao */
+        "vie",    /*  80 Vietnamese */
+        "ind",    /*  81 Indonesian */
+        "tgl",    /*  82 Tagalog */
+        "may",    /*  83 MalayRoman */
+        "may",    /*  84 MalayArabic */
+        "amh",    /*  85 Amharic */
+        "tir",    /*  86 Galla */
+        "orm",    /*  87 Oromo */
+        "som",    /*  88 Somali */
+        "swa",    /*  89 Swahili */
+           "",    /*  90 Kinyarwanda */
+        "run",    /*  91 Rundi */
+           "",    /*  92 Nyanja */
+        "mlg",    /*  93 Malagasy */
+        "epo",    /*  94 Esperanto */
+           "",    /*  95  */
+           "",    /*  96  */
+           "",    /*  97  */
+           "",    /*  98  */
+           "",    /*  99  */
+           "",    /* 100  */
+           "",    /* 101  */
+           "",    /* 102  */
+           "",    /* 103  */
+           "",    /* 104  */
+           "",    /* 105  */
+           "",    /* 106  */
+           "",    /* 107  */
+           "",    /* 108  */
+           "",    /* 109  */
+           "",    /* 110  */
+           "",    /* 111  */
+           "",    /* 112  */
+           "",    /* 113  */
+           "",    /* 114  */
+           "",    /* 115  */
+           "",    /* 116  */
+           "",    /* 117  */
+           "",    /* 118  */
+           "",    /* 119  */
+           "",    /* 120  */
+           "",    /* 121  */
+           "",    /* 122  */
+           "",    /* 123  */
+           "",    /* 124  */
+           "",    /* 125  */
+           "",    /* 126  */
+           "",    /* 127  */
+        "wel",    /* 128 Welsh */
+        "baq",    /* 129 Basque */
+        "cat",    /* 130 Catalan */
+        "lat",    /* 131 Latin */
+        "que",    /* 132 Quechua */
+        "grn",    /* 133 Guarani */
+        "aym",    /* 134 Aymara */
+        "tat",    /* 135 Tatar */
+        "uig",    /* 136 Uighur */
+        "dzo",    /* 137 Dzongkha */
+        "jav",    /* 138 JavaneseRom */
+    };
+
+    char out[4] = {0};
+    if(code >= 0x400 && code != 0x7fff) // packed ISO
+    {
+        for(i = 2; i >= 0; i--)
+        {
+            out[i] = 0x60 + (code & 0x1f);
+            code >>= 5;
+        }
+        return std::string(out);
+    }
+    // else Macintosh Language Codes are used
+    uint32_t nb = sizeof(macLangTab) / sizeof(macLangTab[0]);
+    if(code >= nb)
+        return ADM_UNKNOWN_LANGUAGE;
+    const char *lang = macLangTab[code];
+    if(!lang[0]) return ADM_UNKNOWN_LANGUAGE;
+    int ix = ADM_getIndexForIso639(lang);
+    if(ix < 0) return ADM_UNKNOWN_LANGUAGE;
+    const ADM_iso639_t *list = ADM_getLanguageList();
+    lang = list[ix].iso639_2;
+    return std::string(lang);
+}
 
 //extern char* ms2timedisplay(uint32_t ms);
 
@@ -345,6 +519,7 @@ uint8_t MP4Header::parseMdia(void *ztom,uint32_t *trackType,uint32_t *trackId)
     uint32_t trackScale=_videoScale;
     uint64_t trackDuration=0;
     *trackType=TRACK_OTHER;
+    std::string language = ADM_UNKNOWN_LANGUAGE;
     uint8_t r=0;
 
     ADM_info("<<Parsing Mdia>>\n");
@@ -385,6 +560,9 @@ uint8_t MP4Header::parseMdia(void *ztom,uint32_t *trackType,uint32_t *trackId)
                 aprintf( "MDHD, duration in mdhd: %u (scaled ms)\n", duration);
                 trackDuration = duration;
                 //printf("MDHD, Track duration: %s, trackScale: %u\n", ms2timedisplay((1000 * duration) / trackScale), trackScale);
+                uint16_t langcode = son.read16();
+                language = langCodeToIso639(langcode);
+                printf("[mdhd] Language: %s (code: %d)\n",language.c_str(),langcode);
 
                 break;
             }
@@ -417,10 +595,12 @@ uint8_t MP4Header::parseMdia(void *ztom,uint32_t *trackType,uint32_t *trackId)
                         _videoScale=trackScale;
                         _tracks[0].scale=_videoScale;
                         _tracks[0].id=*trackId;
+                        _tracks[0].language = language;
                         break;
                     case MKFCCR('s','o','u','n'): // 'soun'
                         _tracks[1+nbAudioTrack].delay=_currentDelay;
                         _tracks[1+nbAudioTrack].startOffset=_currentStartOffset;
+                        _tracks[1+nbAudioTrack].language = language;
                         _tracks[1+nbAudioTrack].id=*trackId;
                         if(!*trackId)
                             ADM_warning("Invalid track ID for audio track %d\n",1+nbAudioTrack);
@@ -754,7 +934,7 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                 son.read32(); // flags & version
                 int nbEntries=son.read32();
                 int left;
-                aprintf("[STSD]Found %d entries\n",nbEntries);
+                ADM_info("[STSD] Number of entries: %d\n",nbEntries);
                 for(int i=0;i<nbEntries;i++)
                 {
                     int entrySize=son.read32();
@@ -809,7 +989,7 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                             {
                                 son.read32();
                                 left-=4; // Depth & color Id
-                            }else left=0;
+                            }
 
                             printf("LEFT:%d\n",left);
 
@@ -963,6 +1143,7 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                                 }
 //
                                 case MKFCCR('a','v','c','1'): // avc1
+                                case MKFCCR('a','v','c','3'): // avc3
                                 {
                                     commonPart(H264);
                                     // There is a avcC atom just after
@@ -1084,13 +1265,14 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                                     }
                                     break;
                             } // entryName
-
+                            son.skipBytes(left);
                             break;
                         } // trackType
 
                         case TRACK_AUDIO:
                         {
                             uint32_t channels,bpp,encoding,fq,packSize;
+                            uint32_t lpcmFlags = 0;
 
                             // Put some defaults
                             ADIO.encoding=WAV_UNKNOWN;
@@ -1105,6 +1287,11 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
 
                             int atomVersion=son.read16(); // version
                             left-=2;
+                            if(atomVersion > 2)
+                            {
+                                ADM_warning("[stsd] Unsupported audio sample description version %d, skipping track.\n",atomVersion);
+                                break;
+                            }
                             printf("[STSD]Revision       :%d\n",atomVersion);
                             son.skipBytes(2); // Revision level
                             left-=2;
@@ -1112,25 +1299,41 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                             printf("[STSD]Vendor         : %s\n",fourCC::tostringBE(son.read32()));
                             left-=4;
 
-                            ADIO.channels=channels=son.read16(); // Number of channels
+                            channels = son.read16(); // Number of channels when version < 2
                             left-=2;
-                            printf("[STSD]Channels       :%d\n",ADIO.channels);
-                            ADIO.bitspersample=bpp=son.read16(); // Sample Size
+                            if(atomVersion < 2)
+                            {
+                                printf("[STSD]Channels       :%d\n",channels);
+                                ADIO.channels = channels;
+                            }else if(channels != 3)
+                                ADM_warning("[stsd] Audio sample description version 2, but always3 = %u\n",channels);
+
+                            bpp = son.read16(); // Sample Size
                             left-=2;
                             printf("[STSD]Bit per sample :%d\n",bpp);
+                            if(atomVersion < 2)
+                                ADIO.bitspersample = bpp;
 
-                            encoding=son.read16(); // Compression ID
+                            son.read16(); // Compression ID
                             left-=2;
-                            printf("[STSD]Encoding       :%d\n",encoding);
 
-                            packSize=son.read16(); // Packet Size
+                            son.read16(); // Packet Size
                             left-=2;
-                            printf("[STSD]Packet size    :%d\n",packSize);
 
-                            fq=ADIO.frequency=son.read16();
-                            printf("[STSD]Fq:%u\n",fq);
-                            if(ADIO.frequency<6000) ADIO.frequency=48000;
-                            printf("[STSD]Fq       :%d\n",ADIO.frequency); // Sample rate
+                            fq = son.read16();
+                            if(atomVersion < 2)
+                            {
+                                printf("[STSD]Fq:%u\n",fq);
+                                if(fq != trackScale)
+                                    ADM_warning("[stsd] Sampling rate in audio sample description doesn't match track scale!\n");
+                                if(fq < MIN_SAMPLING_RATE)
+                                {
+                                    ADM_warning("[stsd] Sampling rate below minimum supported, making something up.\n");
+                                    fq = 48000;
+                                }
+                                ADIO.frequency = fq;
+                                printf("[STSD]Fq       :%d\n",ADIO.frequency); // Sample rate
+                            }
                             son.skipBytes(2); // Fixed point
                             left-=4;
                             printf("Bytes left : %d\n",left);
@@ -1161,16 +1364,19 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                                 }
                                 case 2:
                                 {
-                                    printf("v2.0 = %d\n",son.read32());
-                                    printf("v2.1 = %d\n",son.read32());
-                                    printf("v2.2 = %d\n",son.read32());
-#define MARK(x) {uint32_t v=son.read32(); printf(#x " => %d\n",v);x=v;}                                          
+                                    printf("v2.0 sizeOfStructOnly = %u\n",son.read32());
+                                    union { uint64_t i; double d; } freq64;
+                                    freq64.i = son.read64();
+                                    ADIO.frequency = fq = (((uint64_t)freq64.d) & 0xFFFFFFFF);
+#define MARK(x) {uint32_t v=son.read32(); printf(#x " => %d\n",v);x=v;}
                                     MARK(channels);
                                     printf("0x7f000 = 0x%x\n",son.read32());
                                     MARK(bpp);
-                                    printf("LPCM flags= %d\n",son.read32());
+                                    lpcmFlags = son.read32();
+                                    printf("LPCM flags= %d\n",lpcmFlags);
                                     printf("byte per frame = %d\n",son.read32());
                                     printf("sample per frame = %d\n",son.read32());
+                                    ADIO.bitspersample=bpp;
                                     ADIO.channels=channels;
                                     info.bytePerPacket=bpp/8;
                                     info.bytePerFrame=info.bytePerPacket*ADIO.channels;
@@ -1194,7 +1400,7 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                                     break;
                                 case MKFCCR('l','p','c','m'):
                                     ADIO.byterate=ADIO.frequency*ADIO.bitspersample*ADIO.channels/8;
-                                    audioCodec(PCM);
+                                    ADIO.encoding = (lpcmFlags & 2)? WAV_LPCM : WAV_PCM;
 
                                     break;
                                 case MKFCCR('t','w','o','s'):
@@ -1251,9 +1457,16 @@ uint8_t MP4Header::parseStbl(void *ztom,uint32_t trackType,uint32_t trackScale)
                                     break;
                                 }
                                 case MKFCCR('Q','D','M','2'):
+                                case MKFCCR('O','p','u','s'):
                                 {
                                     int64_t sz;
-                                    audioCodec(QDM2);
+                                    if(MKFCCR('Q','D','M','2') == entryName)
+                                    {
+                                        audioCodec(QDM2)
+                                    }else
+                                    {
+                                        audioCodec(OPUS)
+                                    }
                                     sz=son.getRemainingSize();
                                     _tracks[1+nbAudioTrack].extraDataSize=sz;
                                     _tracks[1+nbAudioTrack].extraData=new uint8_t[sz];

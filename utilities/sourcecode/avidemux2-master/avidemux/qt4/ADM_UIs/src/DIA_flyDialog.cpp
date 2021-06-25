@@ -12,29 +12,30 @@
 *                                                                         *
 ***************************************************************************///
 
-#include "ADM_default.h"
-#include "ADM_coreVideoFilter.h"
-#define ADM_FLY_INTERNAL
-#include "DIA_flyDialogQt4.h"
-#include "ADM_assert.h"
-#include <QtCore/QEvent>
-#include <QtCore/QCoreApplication>
+#include <QEvent>
 #include <QGraphicsView>
 #include <QPushButton>
-#include <QRadioButton>
 #include <QHBoxLayout>
 #include <QApplication>
+#include <QLineEdit>
+#include <QFontMetrics>
+#include <QRect>
+
+#include <cmath>
+
+#include "ADM_default.h"
+#include "ADM_coreVideoFilter.h"
+#include "DIA_flyDialogQt4.h"
+
 #include "ADM_toolkitQt.h"
 #include "ADM_vidMisc.h"
-extern "C" {
-#include "libavcodec/avcodec.h"
-}
+
 /**
  */
 class flyControl
 {
 public:
-        flyControl(QHBoxLayout *horizontalLayout_4)
+        flyControl(QHBoxLayout *horizontalLayout_4, bool addPeekOriginalButton)
         {
             
             pushButton_back1mn = new QPushButton();
@@ -64,12 +65,37 @@ public:
 
             horizontalLayout_4->addWidget(pushButton_fwd1mn);
             //
-            labelTime=new QLabel();
-            labelTime->setText("00:00:00.000 / 00:00:00.000");
-            horizontalLayout_4->addWidget(labelTime);
+            QString zeros = "00:00:00.000";
+            currentTime = new QLineEdit(zeros);
+            currentTime->setReadOnly(true);
+            currentTime->setAlignment(Qt::AlignCenter);
+#ifdef USE_CUSTOM_TIME_DISPLAY_FONT
+            currentTime->setFont(QFont("ADM7SEG"));
+#endif
+            int ctWidth = 1.15 * currentTime->fontMetrics().boundingRect(zeros).width();
+            currentTime->setMaximumWidth(ctWidth);
+            currentTime->setMinimumWidth(ctWidth);
+            currentTime->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+
+            labelDuration = new QLabel();
+            labelDuration->setText(QString("/ ") + zeros);
+
+            horizontalLayout_4->addWidget(currentTime);
+            horizontalLayout_4->addWidget(labelDuration);
             //
             QSpacerItem  *horizontalSpacer_4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
             horizontalLayout_4->addItem(horizontalSpacer_4);
+
+            if (addPeekOriginalButton)
+            {
+                pushButton_peekOriginal = new QPushButton();
+                pushButton_peekOriginal->setObjectName(QString("pushButton_peekOriginal"));
+                pushButton_peekOriginal->setAutoRepeat(false);
+                pushButton_peekOriginal->setText(QApplication::translate("seekablePreviewDialog", "Peek Original", 0));
+                pushButton_peekOriginal->setToolTip(QApplication::translate("seekablePreviewDialog", "Show unprocessed input", 0));
+
+                horizontalLayout_4->addWidget(pushButton_peekOriginal);
+            }
 
             pushButton_back1mn->setToolTip(QApplication::translate("seekablePreviewDialog", "Back one minute", 0));
             pushButton_back1mn->setText(QApplication::translate("seekablePreviewDialog", "<<", 0));
@@ -96,7 +122,9 @@ public:
         QPushButton *pushButton_play;
         QPushButton *pushButton_next;
         QPushButton *pushButton_fwd1mn;
-        QLabel       *labelTime;
+        QLineEdit   *currentTime;
+        QLabel      *labelDuration;
+        QPushButton *pushButton_peekOriginal;
 };
 
 /**
@@ -104,9 +132,11 @@ public:
 */
 void ADM_flyDialog::updateZoom(void)
 {
-        _rgbByteBufferDisplay.clean();
-        _rgbByteBufferDisplay.setSize(ADM_IMAGE_ALIGN(_zoomW * 4) * _zoomH);
-        resetScaler();
+    uint32_t displayW, displayH;
+    _canvas->getDisplaySize(&displayW, &displayH);
+    _rgbByteBufferDisplay.clean();
+    _rgbByteBufferDisplay.setSize(ADM_IMAGE_ALIGN(displayW * 4) * displayH);
+    resetScaler();
 }
 /**
  * 
@@ -136,8 +166,8 @@ void ADM_flyDialog::recomputeSize(void)
         _zoom = 1;
         _zoomW = _w;
         _zoomH = _h;
-        updateZoom();
         postInit (true);
+        updateZoom();
         sliderChanged();
         return;
     }
@@ -166,8 +196,8 @@ void ADM_flyDialog::recomputeSize(void)
     _zoom = new_zoom;
     _zoomW = new_zoomW;
     _zoomH = new_zoomH;
-    updateZoom();
     postInit (true);
+    updateZoom();
     sliderChanged();
 }
 
@@ -179,14 +209,14 @@ uint8_t ADM_flyDialog::cleanup(void)
 {
 #define DEL1(x)    if(x) {delete [] x;x=NULL;}
 #define DEL2(x)    if(x) {delete  x;x=NULL;}
-	DEL2(_yuvBuffer);
-	_rgbByteBufferDisplay.clean();
-        if(_control)
-        {
-            delete _control;
-            _control=NULL;
-        }
-	return 1;
+    DEL2(_yuvBuffer);
+    _rgbByteBufferDisplay.clean();
+    if(_control)
+    {
+        delete _control;
+        _control=NULL;
+    }
+    return 1;
 }
 /**
     \fn ~ADM_flyDialog
@@ -194,7 +224,7 @@ uint8_t ADM_flyDialog::cleanup(void)
 */
 ADM_flyDialog::~ADM_flyDialog(void)
 {
-  cleanup(); 
+    cleanup(); 
 }
 
 /**
@@ -202,8 +232,8 @@ ADM_flyDialog::~ADM_flyDialog(void)
 */
 bool    ADM_flyDialog::goToTime(uint64_t tme)
 {
-     _in->goToTime(tme);
-     return nextImageInternal();
+    _in->goToTime(tme);
+    return nextImageInternal();
 }
 
 /**
@@ -212,10 +242,10 @@ bool    ADM_flyDialog::goToTime(uint64_t tme)
 */
 uint8_t    ADM_flyDialog::sliderChanged(void)
 {
-  uint32_t fn= sliderGet();
-  uint32_t frameNumber;
-  uint32_t len,flags;
-  
+    uint32_t fn= sliderGet();
+    uint32_t frameNumber;
+    uint32_t len,flags;
+
     ADM_assert(_yuvBuffer);
     ADM_assert(_in);
 
@@ -240,16 +270,35 @@ ADM_colorspace ADM_flyDialog::toRgbColor(void)
  * @param frame
  * @return 
  */
-bool        ADM_flyDialog::addControl(QHBoxLayout *horizontalLayout_4)
+bool        ADM_flyDialog::addControl(QHBoxLayout *horizontalLayout_4, bool addPeekOriginalButton)
 {
-        _parent->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
-        _control=new flyControl(horizontalLayout_4);
-        QObject::connect(_control->pushButton_next ,SIGNAL(clicked()),this,SLOT(nextImage()));
-        QObject::connect(_control->pushButton_back1mn ,SIGNAL(clicked()),this,SLOT(backOneMinute()));
-        QObject::connect(_control->pushButton_fwd1mn ,SIGNAL(clicked()),this,SLOT(fwdOneMinute()));
-        QObject::connect(_control->pushButton_play ,SIGNAL(toggled(bool )),this,SLOT(play(bool)));
+    _parent->setSizePolicy(QSizePolicy(QSizePolicy::Minimum,QSizePolicy::Minimum));
+    _control=new flyControl(horizontalLayout_4, addPeekOriginalButton);
+    _parent->adjustSize(); // force currentTime size calculation
+    _control->currentTime->setTextMargins(0,0,0,0); // counteract Adwaita messing with text margins
 
-        return true;
+    QObject::connect(_control->pushButton_next ,SIGNAL(clicked()),this,SLOT(nextImage()));
+    QObject::connect(_control->pushButton_back1mn ,SIGNAL(clicked()),this,SLOT(backOneMinute()));
+    QObject::connect(_control->pushButton_fwd1mn ,SIGNAL(clicked()),this,SLOT(fwdOneMinute()));
+    QObject::connect(_control->pushButton_play ,SIGNAL(toggled(bool )),this,SLOT(play(bool)));
+    if (addPeekOriginalButton)
+    {
+        QObject::connect(_control->pushButton_peekOriginal ,SIGNAL(pressed()),this,SLOT(peekOriginalPressed()));
+        QObject::connect(_control->pushButton_peekOriginal ,SIGNAL(released()),this,SLOT(peekOriginalReleased()));
+    }
+
+
+    buttonList.push_back(_control->pushButton_back1mn);
+    buttonList.push_back(_control->pushButton_play);
+    buttonList.push_back(_control->pushButton_next);
+    buttonList.push_back(_control->pushButton_fwd1mn);
+    buttonList.push_back(_control->currentTime);
+    if (addPeekOriginalButton)
+    {
+        buttonList.push_back(_control->pushButton_peekOriginal);
+    }
+
+    return true;
 }
 
 /**
@@ -272,15 +321,27 @@ bool ADM_flyDialog::nextImageInternal(void)
     uint32_t frameNumber;
     if(!_in->getNextFrame(&frameNumber,_yuvBuffer))
     {
-      ADM_warning("[FlyDialog] Cannot get frame %u\n",frameNumber); 
-      return 0;
+        ADM_warning("[FlyDialog] Cannot get frame %u\n",frameNumber); 
+        return 0;
     }
     lastPts=_yuvBuffer->Pts;
     setCurrentPts(lastPts);
     uint64_t duration=_in->getInfo()->totalDuration;
-    QString time=QString(ADM_us2plain(lastPts)) + QString(" / ") + QString(ADM_us2plain(duration));
     if(_control)
-        _control->labelTime->setText(time);
+    {
+        char text[80];
+        uint32_t mm,hh,ss,ms;
+        uint32_t milly = lastPts/1000;
+
+        ms2time(milly,&hh,&mm,&ss,&ms);
+        sprintf(text, "%02d:%02d:%02d.%03d", hh, mm, ss, ms);
+        _control->currentTime->setText(text);
+
+        milly = duration/1000;
+        ms2time(milly,&hh,&mm,&ss,&ms);
+        sprintf(text, "/ %02d:%02d:%02d.%03d", hh, mm, ss, ms);
+        _control->labelDuration->setText(text);
+    }
     // Process...   
     process();
     return display(_rgbByteBufferDisplay.at(0));
@@ -344,26 +405,24 @@ bool ADM_flyDialog::initializeSize()
  */
 float ADM_flyDialog::calcZoomToBeDisplayable( uint32_t imageWidth, uint32_t imageHeight)
 {
-        uint32_t screenWidth, screenHeight;
-        QWidget *topWindow=_canvas->parentWidget()->parentWidget();
-        UI_getPhysicalScreenSize(topWindow, &screenWidth, &screenHeight);
-        
-        // Usable width/height
-        int usableWidth =(int)screenWidth -_usedWidth;
-        int usableHeight=(int)screenHeight-_usedHeight;
-        
-        if(usableWidth<160) usableWidth=160;
-        if(usableHeight<160) usableHeight=160;
-        
+    uint32_t screenWidth, screenHeight;
+    QWidget *topWindow=_canvas->parentWidget()->parentWidget();
+    UI_getPhysicalScreenSize(topWindow, &screenWidth, &screenHeight);
 
-        float widthRatio  = (float)usableWidth / (float)imageWidth;
-        float heightRatio = (float)usableHeight / (float)imageHeight;
+    // Usable width/height
+    int usableWidth =(int)screenWidth -_usedWidth;
+    int usableHeight=(int)screenHeight-_usedHeight;
 
-        ADM_info("autoZoom : Raw w=%f h=%f\n",widthRatio,heightRatio);
-        
-        float r= (widthRatio < heightRatio ? widthRatio : heightRatio);
-        return r;
-		
+    if(usableWidth<160) usableWidth=160;
+    if(usableHeight<160) usableHeight=160;
+
+    float widthRatio  = (float)usableWidth / (float)imageWidth;
+    float heightRatio = (float)usableHeight / (float)imageHeight;
+
+    ADM_info("autoZoom : Raw w=%f h=%f\n",widthRatio,heightRatio);
+
+    float r= (widthRatio < heightRatio ? widthRatio : heightRatio);
+    return r;
 }
 
 //************************************
@@ -374,13 +433,13 @@ float ADM_flyDialog::calcZoomToBeDisplayable( uint32_t imageWidth, uint32_t imag
                                 ADM_QCanvas *canvas, ADM_QSlider *slider,
                                 ResizeMethod resizeMethod) : ADM_flyDialog(parent,width,height,in,canvas,slider,resizeMethod)
 {
-       _control=NULL;
-        _yuvBufferOut=new ADMImageDefault(_w,_h);
-        yuvToRgb=NULL;  
-        initializeSize();
-        updateZoom();
-        postInit(false);
-        _nextRdv=0;
+    _control=NULL;
+    _yuvBufferOut=new ADMImageDefault(_w,_h);
+    yuvToRgb=NULL;  
+    initializeSize();
+    postInit(false);
+    updateZoom();
+    _nextRdv=0;
 }
 void ADM_flyDialogYuv::resetScaler(void)
 {
@@ -390,11 +449,14 @@ void ADM_flyDialogYuv::resetScaler(void)
         yuvToRgb=NULL;
     }
     
+    uint32_t displayW, displayH;
+    _canvas->getDisplaySize(&displayW, &displayH);
+    
     yuvToRgb=new ADMColorScalerFull(ADM_CS_BICUBIC, 
                             _w,
                             _h,
-                            _zoomW,
-                            _zoomH,
+                            displayW,
+                            displayH,
                             ADM_COLOR_YV12,toRgbColor());
 }
 /**
@@ -411,15 +473,21 @@ ADM_flyDialogYuv::~ADM_flyDialogYuv()
     _yuvBufferOut=NULL;
     if(_control)
     {
+        buttonList.clear();
         delete _control;
         _control=NULL;
     }
 }
 bool ADM_flyDialogYuv::process(void)
 {
-         processYuv(_yuvBuffer,_yuvBufferOut);
+    if (_bypassFilter)
+    {
+        yuvToRgb->convertImage(_yuvBuffer,_rgbByteBufferDisplay.at(0));
+    } else {
+        processYuv(_yuvBuffer,_yuvBufferOut);
         yuvToRgb->convertImage(_yuvBufferOut,_rgbByteBufferDisplay.at(0));
-        return true;
+    }
+    return true;
 }
 //*****************************************
 ADM_flyDialogRgb::ADM_flyDialogRgb(QDialog *parent,uint32_t width, uint32_t height, ADM_coreVideoFilter *in,
@@ -428,24 +496,34 @@ ADM_flyDialogRgb::ADM_flyDialogRgb(QDialog *parent,uint32_t width, uint32_t heig
 {
     uint32_t size = ADM_IMAGE_ALIGN(_w*4);
     size*=_h;
+    _scaledPts = ADM_NO_PTS;
     _rgbByteBuffer.setSize(size);
     _rgbByteBufferOut.setSize(size);
-     yuv2rgb =new ADMColorScalerSimple(_w,_h,ADM_COLOR_YV12,
-                toRgbColor());
+    _algo = ((_h > ADM_FLYRGB_ALGO_CHANGE_THRESHOLD_RESOLUTION) ? ADM_CS_FAST_BILINEAR : ADM_CS_BICUBIC);
+     yuv2rgb =  new ADMColorScalerFull(_algo, 
+                            _w,
+                            _h,
+                            _w,
+                            _h,
+                            ADM_COLOR_YV12,toRgbColor());
     rgb2rgb=NULL;
     initializeSize();
-    updateZoom();
     postInit(false);
+    updateZoom();
 
 }
 void ADM_flyDialogRgb::resetScaler(void)
 {
     if(rgb2rgb) delete rgb2rgb;
-    rgb2rgb=new ADMColorScalerFull(ADM_CS_BICUBIC, 
+
+    uint32_t displayW, displayH;
+    _canvas->getDisplaySize(&displayW, &displayH);
+    
+    rgb2rgb=new ADMColorScalerFull(_algo, 
                             _w,
                             _h,
-                            _zoomW,
-                            _zoomH,
+                            displayW,
+                            displayH,
                             ADM_COLOR_RGB32A,ADM_COLOR_RGB32A);
 }
 /**
@@ -463,14 +541,23 @@ ADM_flyDialogRgb::~ADM_flyDialogRgb()
 }
 bool ADM_flyDialogRgb::process(void)
 {
-    yuv2rgb->convertImage(_yuvBuffer,_rgbByteBuffer.at(0));
-    if (_resizeMethod != RESIZE_NONE)
+    if (_bypassFilter)
     {
-        processRgb(_rgbByteBuffer.at(0),_rgbByteBufferOut.at(0));
-        rgb2rgb->convert(_rgbByteBufferOut.at(0), _rgbByteBufferDisplay.at(0));
-    }else
-    {
-        processRgb(_rgbByteBuffer.at(0),_rgbByteBufferDisplay.at(0));
+        yuv2rgb->convertImage(_yuvBuffer,_rgbByteBufferDisplay.at(0));
+    } else {
+        if (_scaledPts != lastPts)
+        {
+            yuv2rgb->convertImage(_yuvBuffer,_rgbByteBuffer.at(0));
+            _scaledPts = lastPts;
+        }
+        if (_resizeMethod != RESIZE_NONE)
+        {
+            processRgb(_rgbByteBuffer.at(0),_rgbByteBufferOut.at(0));
+            rgb2rgb->convert(_rgbByteBufferOut.at(0), _rgbByteBufferDisplay.at(0));
+        }else
+        {
+            processRgb(_rgbByteBuffer.at(0),_rgbByteBufferDisplay.at(0));
+        }
     }
     return true;
 }
@@ -485,8 +572,8 @@ bool ADM_flyDialogRgb::process(void)
 
 FlyDialogEventFilter::FlyDialogEventFilter(ADM_flyDialog *flyDialog)
 {
-	recomputed = false;
-	this->flyDialog = flyDialog;
+    recomputed = false;
+    this->flyDialog = flyDialog;
 }
 /**
     \fn    eventFilter
@@ -495,19 +582,19 @@ FlyDialogEventFilter::FlyDialogEventFilter(ADM_flyDialog *flyDialog)
 
 bool FlyDialogEventFilter::eventFilter(QObject *obj, QEvent *event)
 {
-	if (event->type() == QEvent::Show && !recomputed)
-	{
-		recomputed = true;
-		QWidget* parent = (QWidget*)obj;
-		uint32_t screenWidth, screenHeight;
+    if (event->type() == QEvent::Show && !recomputed)
+    {
+        recomputed = true;
+        QWidget* parent = (QWidget*)obj;
+        uint32_t screenWidth, screenHeight;
 
-		UI_getPhysicalScreenSize(parent, &screenWidth, &screenHeight);
-		flyDialog->recomputeSize();
-		QCoreApplication::processEvents();
-		parent->move((((int)screenWidth) - parent->frameSize().width()) / 2, (((int)screenHeight) - parent->frameSize().height()) / 2);
-	}
+        UI_getPhysicalScreenSize(parent, &screenWidth, &screenHeight);
+        flyDialog->recomputeSize();
+        QCoreApplication::processEvents();
+        parent->move((((int)screenWidth) - parent->frameSize().width()) / 2, (((int)screenHeight) - parent->frameSize().height()) / 2);
+    }
 
-	return QObject::eventFilter(obj, event);
+    return QObject::eventFilter(obj, event);
 }
 /**
     \fn    ADM_flyDialog
@@ -534,7 +621,11 @@ bool FlyDialogEventFilter::eventFilter(QObject *obj, QEvent *event)
     _zoomChangeCount = 0;        
     _yuvBuffer=new ADMImageDefault(_w,_h);
     _usedWidth= _usedHeight=0;
-    lastPts=0;
+    lastPts= _in->getInfo()->markerA;
+    setCurrentPts(lastPts);
+    _in->goToTime(lastPts);
+    updateSlider();
+    _bypassFilter=false;
 
     QGraphicsScene *sc=new QGraphicsScene(this);
     sc->setBackgroundBrush(QBrush(Qt::darkGray, Qt::SolidPattern));
@@ -562,21 +653,21 @@ bool FlyDialogEventFilter::eventFilter(QObject *obj, QEvent *event)
 
 void ADM_flyDialog::postInit(uint8_t reInit)
 {
-	QWidget *graphicsView = ((ADM_QCanvas*)_canvas)->parentWidget();
-	ADM_QSlider  *slider=(ADM_QSlider *)_slider;
+    QWidget *graphicsView = _canvas->parentWidget();
+    ADM_QSlider  *slider=(ADM_QSlider *)_slider;
 
-	if (reInit)
-	{
-		FlyDialogEventFilter *eventFilter = new FlyDialogEventFilter(this);
+    if (reInit)
+    {
+        FlyDialogEventFilter *eventFilter = new FlyDialogEventFilter(this);
 
-		if (slider)
-			slider->setMaximum(ADM_FLY_SLIDER_MAX);
+        if (slider)
+            slider->setMaximum(ADM_FLY_SLIDER_MAX);
 
-		graphicsView->parentWidget()->installEventFilter(eventFilter);
-	}
+        graphicsView->parentWidget()->installEventFilter(eventFilter);
+    }
 
-	((ADM_QCanvas*)_canvas)->changeSize(_zoomW, _zoomH);
-	graphicsView->setMinimumSize(_zoomW, _zoomH);
+    _canvas->changeSize(_zoomW, _zoomH);
+    graphicsView->setMinimumSize(_zoomW, _zoomH);
 }
 
 /**
@@ -624,8 +715,8 @@ void ADM_flyDialog::fitCanvasIntoView(uint32_t width, uint32_t height)
         _zoomW = tmpZoomW&0xfffffffe;
         _zoomH = tmpZoomH&0xfffffffe;
         _zoom = (float)_zoomW / _w;
-        updateZoom();
         _canvas->changeSize(_zoomW, _zoomH);
+        updateZoom();
         sameImage();
     }
 }
@@ -660,15 +751,15 @@ float ADM_flyDialog::calcZoomFactor(void)
 
 uint8_t  ADM_flyDialog::display(uint8_t *rgbData)
 {
-   ADM_QCanvas *view=(ADM_QCanvas *)_canvas;
-   ADM_assert(view);
-   view->dataBuffer=rgbData;
-   if(!rgbData)
-   {
-      ADM_info("flyDialog: No rgbuffer ??\n"); 
-   } 
-   view->repaint();
-  return 1; 
+    ADM_QCanvas *view=_canvas;
+    ADM_assert(view);
+    view->dataBuffer=rgbData;
+    if(!rgbData)
+    {
+        ADM_info("flyDialog: No rgbuffer ??\n"); 
+    } 
+    view->repaint();
+    return 1; 
 }
 /**
     \fn    sliderGet
@@ -677,9 +768,9 @@ uint8_t  ADM_flyDialog::display(uint8_t *rgbData)
 
 uint32_t ADM_flyDialog::sliderGet(void)
 {
-  ADM_QSlider  *slide=(ADM_QSlider *)_slider;
-  ADM_assert(slide);
-  return slide->value();
+    ADM_QSlider  *slide=(ADM_QSlider *)_slider;
+    ADM_assert(slide);
+    return slide->value();
   
 }
 /**
@@ -689,11 +780,11 @@ uint32_t ADM_flyDialog::sliderGet(void)
 
 uint8_t     ADM_flyDialog::sliderSet(uint32_t value)
 {
-  ADM_QSlider  *slide=(ADM_QSlider *)_slider;
-  ADM_assert(slide);
-  if(value>ADM_FLY_SLIDER_MAX) value=ADM_FLY_SLIDER_MAX;
-  slide->setValue(value);
-  return 1; 
+    ADM_QSlider  *slide=(ADM_QSlider *)_slider;
+    ADM_assert(slide);
+    if(value>ADM_FLY_SLIDER_MAX) value=ADM_FLY_SLIDER_MAX;
+    slide->setValue(value);
+    return 1; 
 }
 
 /**
@@ -769,17 +860,46 @@ void ADM_flyDialog::play(bool state)
     }
     
 }
+/**
+ * 
+ */
+void ADM_flyDialog::peekOriginalPressed(void)
+{
+    if (!_bypassFilter)
+    {
+        _bypassFilter = true;
+        this->sameImage();
+    }
+}
+/**
+ * 
+ */
+void ADM_flyDialog::peekOriginalReleased(void)
+{
+    if (_bypassFilter)
+    {
+        _bypassFilter = false;
+        this->sameImage();
+    }
+}
 
 /**
     \fn timeout
     \brief play filtered video
 */
-void ADM_flyDialog::timeout()
+void ADM_flyDialog::timeout(void)
 {
     bool r=nextImage();
-    uint64_t duration=_in->getInfo()->totalDuration;
-    QString time=QString(ADM_us2plain(_yuvBuffer->Pts)) + QString(" / ") + QString(ADM_us2plain(duration));
-    _control->labelTime->setText(time);
+    if(_control)
+    {
+        char text[80];
+        uint32_t mm,hh,ss,ms;
+        uint32_t milly = _yuvBuffer->Pts/1000;
+
+        ms2time(milly,&hh,&mm,&ss,&ms);
+        sprintf(text, "%02d:%02d:%02d.%03d", hh, mm, ss, ms);
+        _control->currentTime->setText(text);
+    }
     if(r)
     {
         int now=_clock.getElapsedMS();

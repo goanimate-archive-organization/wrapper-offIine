@@ -38,13 +38,21 @@ Ui_eq2Window::Ui_eq2Window(QWidget *parent, eq2 *param,ADM_coreVideoFilter *in) 
 
     canvas=new ADM_QCanvas(ui.graphicsView,width,height);
 
-    myCrop=new flyEq2(this, width, height,in,canvas,ui.horizontalSlider);
+    scene=new QGraphicsScene(this);
+    scene->setSceneRect(0,0,256,128);
+    ui.graphicsViewHistogram->setScene(scene);
+    ui.graphicsViewHistogram->scale(1.0,1.0);
+
+    myCrop=new flyEq2(this, width, height,in,canvas,ui.horizontalSlider,scene);
     memcpy(&(myCrop->param),param,sizeof(eq2));
     myCrop->_cookie=&ui;
-    myCrop->addControl(ui.toolboxLayout);
+    myCrop->addControl(ui.toolboxLayout, true);
+    myCrop->setTabOrder();
     myCrop->upload();
     myCrop->sliderChanged();
     myCrop->update();
+
+    ui.horizontalSliderContrast->setFocus();
 
     QSignalMapper *signalMapper = new QSignalMapper(this);
     connect( signalMapper,SIGNAL(mapped(QWidget*)),this,SLOT(resetSlider(QWidget*)));
@@ -66,6 +74,7 @@ Ui_eq2Window::Ui_eq2Window(QWidget *parent, eq2 *param,ADM_coreVideoFilter *in) 
     SPINNER(Red);
     SPINNER(Blue);
     SPINNER(Green);
+
 
     setResetSliderEnabledState();
 
@@ -157,6 +166,7 @@ Ui_eq2Window::~Ui_eq2Window()
     myCrop=NULL;
     if(canvas) delete canvas;
     canvas=NULL;
+    scene=NULL;
 }
 
 /**
@@ -217,6 +227,8 @@ uint8_t flyEq2::upload(void)
     sliderSet(Green,ggamma);
     sliderSet(Blue,bgamma);
 
+    tablesDone = false;
+
     return 1;
 }
 
@@ -238,9 +250,43 @@ uint8_t flyEq2::download(void)
     sliderGet(Green,ggamma);
     sliderGet(Blue,bgamma);
 
+    tablesDone = false;
+
     return 1;
 }
 
+/**
+    \fn setTabOrder
+*/
+void flyEq2::setTabOrder(void)
+{
+    Ui_eq2Dialog *w=(Ui_eq2Dialog *)_cookie;
+    std::vector<QWidget *> controls;
+
+#define SLDR(x) controls.push_back(w->horizontalSlider##x);
+    SLDR(Contrast)
+    SLDR(Brightness)
+    SLDR(Saturation)
+    SLDR(Initial)
+    SLDR(Red)
+    SLDR(Green)
+    SLDR(Blue)
+    SLDR(Weight)
+
+    controls.insert(controls.end(), buttonList.begin(), buttonList.end());
+    controls.push_back(w->horizontalSlider);
+
+    QWidget *first, *second;
+
+    for(std::vector<QWidget *>::iterator tor = controls.begin(); tor != controls.end(); ++tor)
+    {
+        if(tor+1 == controls.end()) break;
+        first = *tor;
+        second = *(tor+1);
+        _parent->setTabOrder(first,second);
+        //ADM_info("Tab order: %p (%s) --> %p (%s)\n",first,first->objectName().toUtf8().constData(),second,second->objectName().toUtf8().constData());
+    }
+}
 /**
       \fn     DIA_getEQ2Param
       \brief  Handle MPlayer EQ2 flyDialog

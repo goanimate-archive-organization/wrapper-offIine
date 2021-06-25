@@ -35,17 +35,112 @@ flyCrop::flyCrop (QDialog *parent,uint32_t width,uint32_t height,ADM_coreVideoFi
                 : ADM_flyDialogRgb(parent,width, height,in,canvas, slider,RESIZE_LAST)
 {
     rubber=new ADM_rubberControl(this,canvas);
+    left=right=top=bottom=0;
     _ox=0;
     _oy=0;
-    _ow=width;
-    _oh=height;
+    _lw=_ow=width;
+    _lh=_oh=height;
+    ar = (double)width / height;
 }
 flyCrop::~flyCrop()
 {
     delete rubber;
     rubber=NULL;
 }
-
+/**
+ * \fn setAspectRatioIndex
+ */
+void flyCrop::setAspectRatioIndex(int index)
+{
+    ar_select = index;
+    switch(index) {
+        case 1: ar = ((double)_lw / _lh);    // current selection
+            break;
+        case 2: ar = ((double)_w / _h);    // source
+            break;
+        case 3: ar = (64.0/27.0);    // 21:9
+            break;
+        case 4: ar = (2.0);    // 18:9
+            break;
+        case 5: ar = (16.0/9.0);    // 16:9
+            break;
+        case 6: ar = (4.0/3.0);    // 4:3
+            break;
+        case 7: ar = (1.0);    // 1:1
+            break;
+        case 8: ar = (9.0/16.0);    // 9:16
+            break;
+        default:ar_select = 0;
+            break;
+    }
+}
+/**
+ * \fn getCropMargins
+ */
+bool flyCrop::getCropMargins(int *lf, int *rt, int *tp, int *bt)
+{
+    if(lf) *lf=left;
+    if(rt) *rt=right;
+    if(tp) *tp=top;
+    if(bt) *bt=bottom;
+    return true;
+}
+/**
+ * \fn setCropMargins
+ * \brief Negative input values will be ignored
+ */
+void flyCrop::setCropMargins(int lf, int rt, int tp, int bt)
+{
+    if(lf>=0) left=lf;
+    if(rt>=0) right=rt;
+    if(tp>=0) top=tp;
+    if(bt>=0) bottom=bt;
+}
+/**
+ * \fn initRubber
+ * \brief To be called on show event
+ */
+void flyCrop::initRubber(void)
+{
+    rubber->rubberband->show(); // must be called first
+    rubber->rubberband->setVisible(!rubber_is_hidden);
+    rubber->nestedIgnore = 0;
+}
+/**
+ * \fn hideRubber
+ */
+void flyCrop::hideRubber(bool hide)
+{
+    rubber_is_hidden = hide;
+    rubber->rubberband->setVisible(!hide);
+}
+/**
+ * \fn hideRubberGrips
+ */
+void flyCrop::hideRubberGrips(bool hideTopLeft, bool hideBottomRight)
+{
+    rubber->sizeGripEnable(!hideTopLeft, !hideBottomRight);
+}
+/**
+ * \fn adjustRubber
+ */
+void flyCrop::adjustRubber(int x, int y, int w, int h)
+{
+    rubber->move(x,y);
+    rubber->resize(w,h);
+}
+/**
+ * \fn lockRubber
+ */
+int flyCrop::lockRubber(bool lock)
+{
+    int old = rubber->nestedIgnore;
+    if(lock)
+        rubber->nestedIgnore++;
+    else
+        rubber->nestedIgnore--;
+    return old;
+}
 /**
  * \fn blank
  * \brief Green bars
@@ -53,15 +148,18 @@ flyCrop::~flyCrop()
 
 static void blank(uint8_t *in, int w, int h, int stride)
 {
+    uint32_t * tmp;
     for(int y=0;y<h;y++)
     {
-        memset(in,0,4*w);
-        uint8_t *green=in+1;
+        tmp = (uint32_t*)in;
         for(int x=0;x<w;x++)
-            green[x<<2]=0xff;
-        uint8_t *alpha=in+3;
-        for(int x=0;x<w;x++)
-            alpha[x<<2]=0xff;
+        {
+            *tmp >>= 2;
+            *tmp &= 0xFF3F3F3F;
+            *tmp |= 0xFF000000;
+            *tmp += (192 << 8);
+            tmp += 1;
+        }
         in+=stride;
     }
 }
@@ -95,6 +193,63 @@ static int bound(int val, int other, int maxx)
    if(r<0) 
         r=0;
    return r;
+}
+/**
+ * \fn boundChecked
+ */
+static int boundChecked(int val, int maxx)
+{
+    if(val<0) return 0;
+    if(val>maxx) return maxx;
+    return val;
+}
+/**
+ * \fn recomputeDimensions
+ * \brief Calculate width and height of output picture for given aspect ratio
+          and top-left corner position, bound-check left and top crop values.
+ * @param ar  : Aspect ratio
+ * @param inw : Input width
+ * @param inh : Input height
+ * @param left: Left crop value
+ * @param top : Top crop value
+ * @param outw: Output width
+ * @param outh: Output height
+ */
+static void recomputeDimensions(const double ar, const int inw, const int inh, int &left, int &top, int &outw, int &outh)
+{
+    int arW, arH;
+    aprintf("Keep aspect ratio: %d/%d == %f\n", inw, inh, ar);
+
+    left = boundChecked(left,inw);
+    top  = boundChecked(top,inh);
+    outw = boundChecked(outw,inw);
+    outh = boundChecked(outh,inh);
+    if(!outw || !outh)
+        return;
+
+    if((double)outw / outh > ar)
+    {
+        arW = outw;
+        arH = (double)outw / ar + 0.49;
+    }else
+    {
+        arW = (double)outh * ar + 0.49;
+        arH = outh;
+    }
+
+    if(left + arW > inw)
+    {
+        arW = inw - left;
+        arH = (double)arW / ar + 0.49;
+    }
+    if (top + arH > inh)
+    {
+        arH = inh - top;
+        arW = (double)arH * ar + 0.49;
+    }
+
+    outw = boundChecked(arW,inw);
+    outh = boundChecked(arH,inh);
 }
 /**
  * \fn bandResized
@@ -141,6 +296,13 @@ bool    flyCrop::bandResized(int x,int y,int w, int h)
         aprintf("rubberband out of bounds, will be resized back\n");
     }
 
+    // keep aspect ratio only when dragged on the bottom-right corner
+    if (ar_select > 0 && !ignore && rightHandleMoved)
+    {
+        recomputeDimensions(ar,_w,_h,normX,normY,normW,normH);
+        resizeRubber=true;
+    }
+
     if(ignore)
     {
         upload(false,resizeRubber);
@@ -167,11 +329,45 @@ bool    flyCrop::bandResized(int x,int y,int w, int h)
     return true; 
 }
 /**
+ * \fn bandMoved
+ * @param x
+ * @param y
+ * @param w
+ * @param h
+ * @return 
+ */
+bool    flyCrop::bandMoved(int x,int y,int w, int h)
+{
+    double halfzoom=_zoom/2-0.01;
+
+    int normX, normY, normW, normH;
+    normX=(int)(((double)x+halfzoom)/_zoom);
+    normY=(int)(((double)y+halfzoom)/_zoom);
+    normW=(int)(((double)w+halfzoom)/_zoom);
+    normH=(int)(((double)h+halfzoom)/_zoom);
+
+    // bound checks are done in rubber control
+
+    right=bound(normX&0xfffe,normW,_w)&0xfffe;
+    bottom=bound(normY&0xfffe,normH,_h)&0xfffe;
+
+    if(normX<0) normX=0;
+    if(normY<0) normY=0;
+
+    top=normY&0xfffe;
+    left=normX&0xfffe;
+
+    upload(false,false);
+    sameImage();
+    return true; 
+}
+/**
  * \fn blockChanges
  * @param block
  * @return 
  */
-#define APPLY_TO_ALL(x) {w->spinBoxLeft->x;w->spinBoxRight->x;w->spinBoxTop->x;w->spinBoxBottom->x;rubber->x;}
+#define APPLY_TO_ALL(x) {w->spinBoxLeft->x;w->spinBoxRight->x;w->spinBoxTop->x;w->spinBoxBottom->x; \
+                         rubber->x;w->checkBoxRubber->x;w->comboBoxAspectRatio->x;}
 bool flyCrop::blockChanges(bool block)
 {
     Ui_cropDialog *w=(Ui_cropDialog *)_cookie;
@@ -326,8 +522,8 @@ Ui_cropDialog *w=(Ui_cropDialog *)_cookie;
             }
         }
         rubber->nestedIgnore++;
-        rubber->move(_zoom*(float)left,_zoom*(float)top);
-        rubber->resize(_zoom*(float)(_w-left-right),_zoom*(float)(_h-top-bottom));
+        rubber->move(_zoom*left+0.49,_zoom*top+0.49);
+        rubber->resize(_zoom*bound(left,right,_w)+0.49,_zoom*bound(top,bottom,_h)+0.49);
         rubber->nestedIgnore--;
         blockChanges(false);
     }
@@ -346,7 +542,39 @@ void flyCrop::dimensions(void)
     dim+=QString::number(_w-left-right);
     dim+=QString(" x ");
     dim+=QString::number(_h-top-bottom);
-    w->label_5->setText(dim);
+    w->labelSize->setText(dim);
+}
+
+/**
+ * \fn setTabOrder
+ * \brief Move navigation / playback buttons up the tab order list
+ */
+void flyCrop::setTabOrder(void)
+{
+    Ui_cropDialog *w=(Ui_cropDialog *)_cookie;
+    std::vector<QWidget *> controls;
+
+#define PUSHME(x) controls.push_back(w->spinBox##x);
+    PUSHME(Left)
+    PUSHME(Right)
+    PUSHME(Top)
+    PUSHME(Bottom)
+
+    controls.push_back(w->checkBoxRubber);
+    controls.push_back(w->comboBoxAspectRatio);
+    controls.insert(controls.end(), buttonList.begin(), buttonList.end());
+    controls.push_back(w->horizontalSlider);
+
+    QWidget *first, *second;
+
+    for(std::vector<QWidget *>::iterator tor = controls.begin(); tor != controls.end(); ++tor)
+    {
+        if(tor+1 == controls.end()) break;
+        first = *tor;
+        second = *(tor+1);
+        _parent->setTabOrder(first,second);
+        //ADM_info("Tab order: %p (%s) --> %p (%s)\n",first,first->objectName().toUtf8().constData(),second,second->objectName().toUtf8().constData());
+    }
 }
 
 //
@@ -355,38 +583,59 @@ void flyCrop::dimensions(void)
 //
 Ui_cropWindow::Ui_cropWindow(QWidget* parent, crop *param,ADM_coreVideoFilter *in) : QDialog(parent)
 {
-uint32_t width,height;
     ui.setupUi(this);
     lock=0;
     // Allocate space for green-ised video
-    width=in->getInfo()->width;
-    height=in->getInfo()->height;
+    inputWidth = in->getInfo()->width;
+    inputHeight = in->getInfo()->height;
 
-    canvas=new ADM_QCanvas(ui.graphicsView,width,height);
+    canvas = new ADM_QCanvas(ui.graphicsView, inputWidth, inputHeight);
 
-    myCrop=new flyCrop( this,width, height,in,canvas,ui.horizontalSlider);
-    myCrop->left=param->left;
-    myCrop->right=param->right;
-    myCrop->top=param->top;
-    myCrop->bottom=param->bottom;
-    myCrop->rubber_is_hidden=param->rubber_is_hidden;
+    myCrop = new flyCrop(this, inputWidth, inputHeight, in, canvas, ui.horizontalSlider);
+    myCrop->setCropMargins(param->left, param->right, param->top, param->bottom);
+
+    bool rubberIsHidden = false;
+    QSettings *qset = qtSettingsCreate();
+    if(qset)
+    {
+        qset->beginGroup("crop");
+        rubberIsHidden = qset->value("rubberIsHidden", false).toBool();
+        qset->endGroup();
+        delete qset;
+        qset = NULL;
+    }
+
+    myCrop->hideRubber(rubberIsHidden);
     myCrop->_cookie=&ui;
     myCrop->addControl(ui.toolboxLayout);
-    myCrop->upload(false,true);
-    myCrop->sliderChanged();
-    myCrop->rubber->nestedIgnore=1;
+    myCrop->setTabOrder();
 
-    ui.checkBoxRubber->setChecked(myCrop->rubber_is_hidden);
+    ui.checkBoxRubber->setChecked(rubberIsHidden);
+    ui.comboBoxAspectRatio->setCurrentIndex(param->ar_select);
+    if(!param->ar_select)
+        myCrop->upload(false,true);
+    myCrop->sliderChanged();
+    myCrop->lockRubber(true);
 
     connect( ui.horizontalSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderUpdate(int)));
     connect( ui.checkBoxRubber,SIGNAL(stateChanged(int)),this,SLOT(toggleRubber(int)));
-    connect( ui.pushButtonAutoCrop,SIGNAL(clicked(bool)),this,SLOT(autoCrop(bool)));
-    connect( ui.pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset(bool)));
-#define SPINNER(x) connect( ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(valueChanged(int))); 
-      SPINNER(Left);
-      SPINNER(Right);
-      SPINNER(Top);
-      SPINNER(Bottom);
+    connect( ui.comboBoxAspectRatio,SIGNAL(currentIndexChanged(int)),this,SLOT(changeARSelect(int)));
+
+    QPushButton *pushButtonReset = ui.buttonBox->button(QDialogButtonBox::Reset);
+    connect(pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset(bool)));
+
+    const QString autorun = QT_TRANSLATE_NOOP("crop","Auto Crop");
+    pushButtonAutoCrop = ui.buttonBox->addButton(autorun,QDialogButtonBox::ActionRole);
+    changeARSelect(param->ar_select); // may be called only after pushButtonAutoCrop has become valid
+    connect(pushButtonAutoCrop,SIGNAL(clicked(bool)),this,SLOT(autoCrop(bool)));
+
+#define SPINNER(x) connect(ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(widthChanged(int)));
+    SPINNER(Left)
+    SPINNER(Right)
+#undef SPINNER
+#define SPINNER(x) connect(ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(heightChanged(int)));
+    SPINNER(Top)
+    SPINNER(Bottom)
 
     setModal(true);
 }
@@ -405,35 +654,92 @@ void Ui_cropWindow::sliderUpdate(int foo)
 void Ui_cropWindow::gather(crop *param)
 {
     myCrop->download(true);
-    param->left=myCrop->left;
-    param->right=myCrop->right;
-    param->top=myCrop->top;
-    param->bottom=myCrop->bottom;
-    param->rubber_is_hidden=myCrop->rubber_is_hidden;
+    int left,right,top,bottom;
+    myCrop->getCropMargins(&left,&right,&top,&bottom);
+    param->left = left;
+    param->right = right;
+    param->top = top;
+    param->bottom = bottom;
+    param->ar_select = myCrop->getAspectRatioIndex();
 }
 /**
- * 
+ * \fn dtor
  */
 Ui_cropWindow::~Ui_cropWindow()
 {
-    if(myCrop) delete myCrop;
-    myCrop=NULL; 
+    if(myCrop)
+    {
+        QSettings *qset = qtSettingsCreate();
+        if(qset)
+        {
+            qset->beginGroup("crop");
+            qset->setValue("rubberIsHidden", myCrop->stateOfRubber());
+            qset->endGroup();
+            delete qset;
+            qset = NULL;
+        }
+        delete myCrop;
+        myCrop=NULL;
+    }
     if(canvas) delete canvas;
     canvas=NULL;
 }
 /**
- * 
- * @param f
+ * \fn widthChanged
  */
-void Ui_cropWindow::valueChanged( int f )
+void Ui_cropWindow::widthChanged(int val)
 {
     if(lock) return;
     lock++;
-    myCrop->rubber->nestedIgnore++;
+    myCrop->lockRubber(true);
+    if(myCrop->getKeepAspect())
+        updateRightBottomSpinners(val,false);
     myCrop->download();
     myCrop->sameImage();
-    myCrop->rubber->nestedIgnore--;
+    myCrop->lockRubber(false);
     lock--;
+}
+/**
+ * \fn heightChanged
+ */
+void Ui_cropWindow::heightChanged(int val)
+{
+    if(lock) return;
+    lock++;
+    myCrop->lockRubber(true);
+    if(myCrop->getKeepAspect())
+        updateRightBottomSpinners(val,true);
+    myCrop->download();
+    myCrop->sameImage();
+    myCrop->lockRubber(false);
+    lock--;
+}
+/**
+ * \fn updateRightBottomSpinners
+ */
+void Ui_cropWindow::updateRightBottomSpinners(int val, bool useHeightAsRef)
+{
+    const double ar = myCrop->getAspectRatio();
+    int left,top;
+    myCrop->getCropMargins(&left,NULL,&top,NULL);
+    myCrop->blockChanges(true);
+
+    if(useHeightAsRef)
+    {
+        int h = boundChecked(inputHeight - top - val, inputHeight);
+        int w = (double)h * ar + 0.49;
+        w = boundChecked(inputWidth - w - left, inputWidth);
+
+        ui.spinBoxRight->setValue(w);
+    }else
+    {
+        int w = boundChecked(inputWidth - left - val, inputWidth);
+        int h = (double)w / ar + 0.49;
+        h = boundChecked(inputHeight - h - top, inputHeight);
+
+        ui.spinBoxBottom->setValue(h);
+    }
+    myCrop->blockChanges(false);
 }
 /**
  * \fn toggleRubber
@@ -443,8 +749,48 @@ void Ui_cropWindow::toggleRubber(int checkState)
     bool visible=true;
     if(checkState)
         visible=false;
-    myCrop->rubber->rubberband->setVisible(visible);
-    myCrop->rubber_is_hidden=!visible;
+    myCrop->hideRubber(!visible);
+}
+/**
+ * \fn applyAspectRatio
+ */
+void Ui_cropWindow::applyAspectRatio(void) {
+    if(!lock)
+    {
+        lock++;
+        int left,right,top,bottom;
+        myCrop->getCropMargins(&left,&right,&top,&bottom);
+        int wout = inputWidth - left - right;
+        int hout = inputHeight - top - bottom;
+        recomputeDimensions(myCrop->getAspectRatio(),inputWidth,inputHeight,left,top,wout,hout);
+
+        right = boundChecked(inputWidth - wout - left, inputWidth);
+        bottom = boundChecked(inputHeight - hout - top, inputHeight);
+        myCrop->setCropMargins(left,right,top,bottom);
+        myCrop->upload(true,true);
+
+        myCrop->lockRubber(true);
+        myCrop->download();
+        myCrop->sameImage();
+        myCrop->lockRubber(false);
+        lock--;
+    }
+}
+/**
+ * \fn changeARSelect
+ */
+void Ui_cropWindow::changeARSelect(int f)
+{
+    myCrop->lockDimensions();
+    myCrop->setAspectRatioIndex(f);
+
+    bool keep_aspect = myCrop->getKeepAspect();
+    if(keep_aspect)
+        applyAspectRatio();
+    ui.spinBoxLeft->setEnabled(!keep_aspect);
+    ui.spinBoxTop->setEnabled(!keep_aspect);
+    pushButtonAutoCrop->setEnabled(!keep_aspect);
+    myCrop->hideRubberGrips(keep_aspect,false);
 }
 /**
  * 
@@ -462,11 +808,14 @@ void Ui_cropWindow::autoCrop( bool f )
  */
 void Ui_cropWindow::reset( bool f )
 {
-    myCrop->left=0;
-    myCrop->right=0;
-    myCrop->bottom=0;
-    myCrop->top=0;
     lock++;
+    myCrop->blockChanges(true);
+    ui.comboBoxAspectRatio->setCurrentIndex(0);
+    myCrop->setAspectRatioIndex(0);
+    changeARSelect(0);
+    myCrop->setCropMargins(0,0,0,0);
+    myCrop->lockDimensions();
+    myCrop->blockChanges(false);
     myCrop->upload();
     myCrop->sameImage();
     lock--;
@@ -484,16 +833,19 @@ void Ui_cropWindow::resizeEvent(QResizeEvent *event)
     myCrop->fitCanvasIntoView(graphicsViewWidth,graphicsViewHeight);
     myCrop->adjustCanvasPosition();
 
-    int x=(int)((double)myCrop->left*myCrop->_zoom);
-    int y=(int)((double)myCrop->top*myCrop->_zoom);
-    int w=(int)((double)(myCrop->_w-(myCrop->left+myCrop->right))*myCrop->_zoom);
-    int h=(int)((double)(myCrop->_h-(myCrop->top+myCrop->bottom))*myCrop->_zoom);
+    int left,right,top,bottom;
+    myCrop->getCropMargins(&left,&right,&top,&bottom);
+
+    float z = myCrop->getZoomValue();
+    int x = (double)left * z + 0.49;
+    int y = (double)top * z + 0.49;
+    int w = (double)(inputWidth - (left + right)) * z + 0.49;
+    int h = (double)(inputHeight - (top + bottom)) * z + 0.49;
 
     myCrop->blockChanges(true);
-    myCrop->rubber->nestedIgnore++;
-    myCrop->rubber->move(x,y);
-    myCrop->rubber->resize(w,h);
-    myCrop->rubber->nestedIgnore--;
+    myCrop->lockRubber(true);
+    myCrop->adjustRubber(x,y,w,h);
+    myCrop->lockRubber(false);
     myCrop->blockChanges(false);
 }
 
@@ -503,12 +855,10 @@ void Ui_cropWindow::resizeEvent(QResizeEvent *event)
  */
 void Ui_cropWindow::showEvent(QShowEvent *event)
 {
-    myCrop->rubber->rubberband->show(); // must be called first
-    myCrop->rubber->rubberband->setVisible(!(myCrop->rubber_is_hidden));
+    myCrop->initRubber();
     QDialog::showEvent(event);
     myCrop->adjustCanvasPosition();
     canvas->parentWidget()->setMinimumSize(30,30); // allow resizing both ways after the dialog has settled
-    myCrop->rubber->nestedIgnore=0;
 }
 
 //EOF

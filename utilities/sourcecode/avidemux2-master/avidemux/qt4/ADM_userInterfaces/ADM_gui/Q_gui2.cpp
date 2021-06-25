@@ -20,7 +20,15 @@
 #include <QGraphicsView>
 #include <QtCore/QDir>
 #include <QMessageBox>
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
+#   include <QDesktopWidget>
+#else
+#   include <QScreen>
+#endif
 #include <QClipboard>
+#ifdef USE_CUSTOM_TIME_DISPLAY_FONT
+#   include <QFontDatabase>
+#endif
 
 #ifdef __APPLE__
     #include <QFileOpenEvent>
@@ -280,6 +288,8 @@ void MainWindow::sliderReleased(void)
     dragTimer.stop();
     dragState=dragState_Normal;
     sendAction(ACT_Scale);
+    if (dragWhilePlay)
+        sendAction(ACT_PlayAvi); // resume playback
 }
 /**
  * \fn sliderPressed
@@ -288,6 +298,7 @@ void MainWindow::sliderPressed(void)
 {
     if(playing)
         sendAction(ACT_PlayAvi); // stop playback
+    dragWhilePlay=playing;
     dragTimer.stop();
     dragState=dragState_Active;
 //  ADM_info("Pressed\n");
@@ -306,13 +317,59 @@ void MainWindow::sliderWheel(int way)
         sendAction(ACT_PreviousKFrame);
     
 }
-
+/**
+ * \fn thumbSlider_valueEmitted
+ * \brief Slot to handle signals from the thumb slider.
+ */
 void MainWindow::thumbSlider_valueEmitted(int value)
 {
-        if (value > 0)
-                nextIntraFrame();
-        else
-                previousIntraFrame();
+    if (!avifileinfo)
+    {
+        if (value)
+            thumbSlider->reset();
+        return;
+    }
+
+    if (playing)
+    {
+        if (getPreviewMode() != ADM_PREVIEW_NONE)
+            return;
+        sendAction(ACT_PlayAvi); // stop playback;
+        dragWhilePlay = true;
+        return;
+    } else if (dragWhilePlay && !value)
+    {
+        dragWhilePlay = false;
+        if (getPreviewMode() == ADM_PREVIEW_NONE)
+            sendAction(ACT_PlayAvi); // resume playback;
+        return;
+    }
+
+    if (!value) return;
+
+    bool success = true;
+    if (value > 0)
+        success = admPreview::nextKeyFrame();
+    else
+        success = admPreview::previousKeyFrame();
+    if (success)
+    {
+        uint64_t total = video_body->getVideoDuration();
+        if (total)
+        {
+            uint64_t pts = admPreview::getCurrentPts();
+            UI_setCurrentTime(pts);
+
+            double percentage = pts;
+            percentage /= total;
+            percentage *= 100;
+
+            UI_setScale(percentage);
+        }
+        return;
+    }
+    thumbSlider->reset();
+    dragWhilePlay = false;
 }
 
 void MainWindow::volumeChange( int u )
@@ -464,18 +521,23 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
     connect(ui.checkBox_TimeShift,SIGNAL(stateChanged(int)),this,SLOT(checkChanged(int)));
     connect(ui.spinBox_TimeValue,SIGNAL(valueChanged(int)),this,SLOT(timeChanged(int)));
     connect(ui.spinBox_TimeValue, SIGNAL(editingFinished()), this, SLOT(timeChangeFinished()));
-
+#if 0 /* it is read-only */
     QRegExp timeRegExp("^[0-9]{2}:[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}$");
     QRegExpValidator *timeValidator = new QRegExpValidator(timeRegExp, this);
     ui.currentTime->setValidator(timeValidator);
     ui.currentTime->setInputMask("99:99:99.999");
+#endif
     // set the size of the current time display to fit the content
-    QString text=ui.currentTime->text();
-    QFontMetrics fm=ui.currentTime->fontMetrics();
-    int currentTimeWidth=fm.boundingRect(text).width()+20;
-    int currentTimeHeight=ui.currentTime->height();
-    ui.currentTime->setFixedSize(currentTimeWidth, currentTimeHeight);
-    ui.currentTime->adjustSize();
+    QString text = "00:00:00.000"; // Don't translate this.
+#ifdef USE_CUSTOM_TIME_DISPLAY_FONT
+    ui.currentTime->setFont(QFont("ADM7SEG"));
+#endif
+    ui.currentTime->setText(text); // Override ui translations to make sure we use point as decimal separator.
+    QRect ctrect = ui.currentTime->fontMetrics().boundingRect(text);
+    ui.currentTime->setFixedSize(1.15 * ctrect.width(), ui.currentTime->height());
+
+    text = QString("/ ") + text;
+    ui.totalTime->setText(text); // Override ui translations here too.
 
     //connect(ui.currentTime, SIGNAL(editingFinished()), this, SLOT(currentTimeChanged()));
 
@@ -508,6 +570,13 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
     // Crash in some cases addScriptReferencesToHelpMenu();
     connect(ui.menuVideo->actions().at(3),SIGNAL(toggled(bool)),this,SLOT(previewModeChangedFromMenu(bool)));
     connect(ui.toolBar->actions().at(5),SIGNAL(toggled(bool)),this,SLOT(previewModeChangedFromToolbar(bool)));
+
+    // Add action to show all dock widgets and move the toolbar to its default area
+    QAction *restoreDefaults = new QAction(QT_TRANSLATE_NOOP("qgui2","Restore defaults"),this);
+    ui.menuToolbars->addSeparator();
+    ui.menuToolbars->addAction(restoreDefaults);
+
+    connect(ui.menuToolbars->actions().at(6),SIGNAL(triggered(bool)),this,SLOT(restoreDefaultWidgetState(bool)));
 
     this->installEventFilter(this);
     slider->installEventFilter(this);
@@ -542,12 +611,14 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
     widgetsUpdateTooltips();
 
     this->adjustSize();
+    ui.currentTime->setTextMargins(0,0,0,0); // some Qt themes mess with text margins
 
     threshold = RESIZE_THRESHOLD;
     actZoomCalled = false;
     ignoreResizeEvent = false;
     blockResizing = false;
     blockZoomChanges = true;
+    dragWhilePlay = false;
 
     QuiTaskBarProgress=createADMTaskBarProgress();
 }
@@ -941,8 +1012,8 @@ void MainWindow::buildButtonLists(void)
     ADD_BUTTON_LOADED(toolButtonNextIntraFrame)
     ADD_BUTTON_LOADED(toolButtonSetMarkerA)
     ADD_BUTTON_LOADED(toolButtonSetMarkerB)
-    ADD_BUTTON_LOADED(toolButtonPreviousBlackFrame)
-    ADD_BUTTON_LOADED(toolButtonNextBlackFrame)
+    ADD_BUTTON_LOADED(toolButtonPreviousCutPoint)
+    ADD_BUTTON_LOADED(toolButtonNextCutPoint)
     ADD_BUTTON_LOADED(toolButtonFirstFrame)
     ADD_BUTTON_LOADED(toolButtonLastFrame)
     ADD_BUTTON_LOADED(toolButtonBackOneMinute)
@@ -954,8 +1025,8 @@ void MainWindow::buildButtonLists(void)
     ADD_BUTTON_PLAYBACK(toolButtonNextIntraFrame)
     ADD_BUTTON_PLAYBACK(toolButtonSetMarkerA)
     ADD_BUTTON_PLAYBACK(toolButtonSetMarkerB)
-    ADD_BUTTON_PLAYBACK(toolButtonPreviousBlackFrame)
-    ADD_BUTTON_PLAYBACK(toolButtonNextBlackFrame)
+    ADD_BUTTON_PLAYBACK(toolButtonPreviousCutPoint)
+    ADD_BUTTON_PLAYBACK(toolButtonNextCutPoint)
     ADD_BUTTON_PLAYBACK(toolButtonFirstFrame)
     ADD_BUTTON_PLAYBACK(toolButtonLastFrame)
     ADD_BUTTON_PLAYBACK(toolButtonBackOneMinute)
@@ -1164,6 +1235,14 @@ void MainWindow::updateActionShortcuts(void)
         q = findAction(&myMenuGo, ACT_NextKFrame);
         if(q)
             q->setShortcut(swpud ? Qt::Key_Down : Qt::Key_Up);
+
+        q = findAction(&myMenuGo, ACT_PrevCutPoint);
+        if(q)
+            q->setShortcut(Qt::SHIFT | (swpud ? Qt::Key_Up : Qt::Key_Down));
+
+        q = findAction(&myMenuGo, ACT_NextCutPoint);
+        if(q)
+            q->setShortcut(Qt::SHIFT | (swpud ? Qt::Key_Down : Qt::Key_Up));
     }
 
     std::vector<MenuEntry *> defaultShortcuts;
@@ -1317,6 +1396,14 @@ void MainWindow::widgetsUpdateTooltips(void)
     tt += SHORTCUT(ACT_MarkB,Edit)
     ui.toolButtonSetMarkerB->setToolTip(tt);
 
+    tt = QString(QT_TRANSLATE_NOOP("qgui2","Go to previous cut point"));
+    tt += SHORTCUT(ACT_PrevCutPoint,Go)
+    ui.toolButtonPreviousCutPoint->setToolTip(tt);
+
+    tt = QString(QT_TRANSLATE_NOOP("qgui2","Go to next cut point"));
+    tt += SHORTCUT(ACT_NextCutPoint,Go)
+    ui.toolButtonNextCutPoint->setToolTip(tt);
+
     // go to black frame tooltips are static, the actions don't have shortcuts
 
     tt = QString(QT_TRANSLATE_NOOP("qgui2","Go to first frame"));
@@ -1355,6 +1442,26 @@ void MainWindow::widgetsUpdateTooltips(void)
 
     tt=QString(QT_TRANSLATE_NOOP("qgui2","Forward one minute"))+QString(" [CTRL+")+forward+QString("]");
     ui.toolButtonForwardOneMinute->setToolTip(tt);
+}
+
+/**
+    \fn     restoreDefaultWidgetState
+    \brief  Show all dock widgets and move toolbar to the default area
+*/
+void MainWindow::restoreDefaultWidgetState(bool b)
+{
+    ui.codecWidget->setVisible(true);
+    ui.navigationWidget->setVisible(true);
+    ui.selectionWidget->setVisible(true);
+    ui.volumeWidget->setVisible(true);
+    ui.audioMetreWidget->setVisible(true);
+
+    syncToolbarsMenu();
+
+    addToolBar(ui.toolBar);
+
+    if(!playing)
+        setZoomToFit();
 }
 
 /**
@@ -1480,6 +1587,13 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event)
                             else
                                 sendAction(ACT_Back1Mn);
                         }else
+                        if (keyEvent->modifiers() & Qt::ShiftModifier)
+                        {
+                            if(!swpud)
+                                sendAction(ACT_NextCutPoint);
+                            else
+                                sendAction(ACT_PrevCutPoint);
+                        }else
                         {
                             if(!swpud)
                                 sendAction(ACT_NextKFrame);
@@ -1494,6 +1608,13 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event)
                                 sendAction(ACT_Back1Mn);
                             else
                                 sendAction(ACT_Forward1Mn);
+                        }else
+                        if (keyEvent->modifiers() & Qt::ShiftModifier)
+                        {
+                            if(!swpud)
+                                sendAction(ACT_PrevCutPoint);
+                            else
+                                sendAction(ACT_NextCutPoint);
                         }else
                         {
                             if(!swpud)
@@ -1802,39 +1923,31 @@ void MainWindow::setBlockResizingFlag(bool block)
     blockResizing = block;
 }
 
-void MainWindow::previousIntraFrame(void)
-{
-    if (ui.spinBox_TimeValue->hasFocus())
-        ui.spinBox_TimeValue->stepDown();
-    else
-        sendAction(ACT_PreviousKFrame);
-}
-
-void MainWindow::nextIntraFrame(void)
-{
-    if (ui.spinBox_TimeValue->hasFocus())
-        ui.spinBox_TimeValue->stepUp();
-    else
-        sendAction(ACT_NextKFrame);
-}
-
 /**
     \fn volumeWidgetOperational
 */
 void MainWindow::volumeWidgetOperational(void)
 {
-    // Hide and disable the volume widget if the audio device doesn't support setting volume
-    if(!AVDM_hasVolumeControl())
-    {
-        ui.volumeWidget->setEnabled(false);
-        ui.volumeWidget->hide();
-        ui.actionViewVolume->setChecked(false);
-    }else
-    {
-        ui.volumeWidget->setEnabled(true);
-        ui.volumeWidget->show();
-        ui.actionViewVolume->setChecked(true);
-    }
+    // Disable the volume widget if the audio device doesn't support setting volume
+    ui.volumeWidget->setEnabled(AVDM_hasVolumeControl());
+}
+
+/**
+    \fn syncToolbarsMenu
+    \brief Make sure only visible widgets have check marks
+           in the Toolbars submenu of the View menu.
+*/
+void MainWindow::syncToolbarsMenu(void)
+{
+#define EXPAND(x) ui.x ## Widget
+#define CHECKMARK(x,y) ui.menuToolbars->actions().at(x)->setChecked(EXPAND(y)->isVisible());
+    CHECKMARK(0,audioMetre)
+    CHECKMARK(1,codec)
+    CHECKMARK(2,navigation)
+    CHECKMARK(3,selection)
+    CHECKMARK(4,volume)
+#undef CHECKMARK
+#undef EXPAND
 }
 
 MainWindow::~MainWindow()
@@ -1887,10 +2000,19 @@ int UI_Init(int nargc, char **nargv)
     global_argc=nargc;
     global_argv=nargv;
     ADM_renderLibInit(&UI_Hooks);
-#if !defined(__APPLE__) && QT_VERSION >= QT_VERSION_CHECK(5,11,0)
+#if !defined(__APPLE__) && QT_VERSION >= QT_VERSION_CHECK(5,11,0) && QT_VERSION < QT_VERSION_CHECK(6,0,0)
     // Despite HiDPI scaling being supported from Qt 5.6 on, important aspects
     // like OpenGL support were fixed only in much later versions.
+    // Enabled by default with Qt6.
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+#if !defined(__APPLE__) && !defined(_WIN32) /* Linux */ && QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    // Fix video shown as solid black color with OpenGL display and Qt6.
+    QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+#endif
+#if defined(_WIN32) && QT_VERSION >= QT_VERSION_CHECK(5,10,0)
+    // Hide unhelpful context help buttons on Windows.
+    QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
 #endif
     myApplication=new myQApplication (global_argc, global_argv);
     myApplication->connect(myApplication, SIGNAL(lastWindowClosed()), myApplication, SLOT(quit()));
@@ -1904,6 +2026,10 @@ int UI_Init(int nargc, char **nargv)
 #endif
     Q_INIT_RESOURCE(filter);
 
+#ifdef USE_CUSTOM_TIME_DISPLAY_FONT
+    if(-1 == QFontDatabase::addApplicationFont(":/new/prefix1/fonts/ADM7SEG.ttf"))
+        ADM_warning("LCD display font could not be loaded from resource.\n");
+#endif
     loadTranslator();
 
     return 1;
@@ -1912,7 +2038,35 @@ int UI_Init(int nargc, char **nargv)
 uint8_t initGUI(const vector<IScriptEngine*>& scriptEngines)
 {
     MainWindow *mw = new MainWindow(scriptEngines);
+
+    bool openglEnabled = false;
+#ifdef USE_OPENGL
+    prefs->get(FEATURES_ENABLE_OPENGL,&openglEnabled);
+    ADM_info("OpenGL enabled at build time, checking whether we should run it... %s.\n",openglEnabled? "yes" : "no");
+#else
+    ADM_info("OpenGL: Not enabled at build time.\n");
+#endif
+
+    bool vuMeterIsHidden = false;
+    QSettings *qset = qtSettingsCreate();
+    if(qset)
+    {
+        qset->beginGroup("MainWindow");
+        mw->restoreState(qset->value("windowState").toByteArray());
+        qset->endGroup();
+        // Hack: allow to drop other Qt-specific settings on application restart
+        char *dropSettingsOnLaunch = getenv("ADM_QT_DROP_SETTINGS");
+        if(dropSettingsOnLaunch && !strcmp("1",dropSettingsOnLaunch))
+            qset->clear();
+        delete qset;
+        qset = NULL;
+        // Probing for OpenGL fails if VU meter is hidden, delay hiding it.
+        vuMeterIsHidden = !mw->ui.audioMetreWidget->isVisible();
+        if(openglEnabled && vuMeterIsHidden)
+            mw->ui.audioMetreWidget->setVisible(true);
+    }
     mw->show();
+    mw->syncToolbarsMenu();
 
     QuiMainWindows = (QWidget*)mw;
 
@@ -1936,21 +2090,17 @@ uint8_t initGUI(const vector<IScriptEngine*>& scriptEngines)
     UI_InitVUMeter(mw->ui.frameVU);
 
 #ifdef USE_OPENGL
-    ADM_info("OpenGL enabled at built time, checking if we should run it..\n");
-    bool enabled;
-    prefs->get(FEATURES_ENABLE_OPENGL,&enabled);
-
-    if(enabled)
+    if(openglEnabled)
     {
         ADM_info("OpenGL activated, initializing... \n");
         openGLStarted=true;
         UI_Qt4InitGl();
+        if(vuMeterIsHidden)
+            mw->ui.audioMetreWidget->setVisible(false);
     }else
     {
         ADM_info("OpenGL not activated, not initialized\n");
     }
-#else
-        ADM_info("OpenGL: Not enabled at built time.\n");
 #endif
 
     return 1;
@@ -1960,12 +2110,21 @@ uint8_t initGUI(const vector<IScriptEngine*>& scriptEngines)
  */
 void UI_closeGui(void)
 {
-        if(!uiRunning) return;
-        uiRunning=false;
-        
+    if(!uiRunning) return;
+    uiRunning=false;
+
+    QSettings *qset = qtSettingsCreate();
+    if(qset)
+    {
+        qset->beginGroup("MainWindow");
+        qset->setValue("windowState", ((QMainWindow *)QuiMainWindows)->saveState());
+        qset->endGroup();
+        delete qset;
+        qset = NULL;
+    }
+
     QuiMainWindows->close();
     qtUnregisterDialog(QuiMainWindows);
-        
 }
 
 void destroyGUI(void)
@@ -2274,7 +2433,10 @@ void UI_setFrameType( uint32_t frametype,uint32_t qp)
 
                     break;
     }
-    sprintf(string,QT_TRANSLATE_NOOP("qgui2","%c-%s (%02d)"),c,f,qp);
+    if(qp == ADM_IMAGE_UNKNOWN_QP)
+        sprintf(string,QT_TRANSLATE_NOOP("qgui2","%c-%s"),c,f);
+    else
+        sprintf(string,QT_TRANSLATE_NOOP("qgui2","%c-%s (%02d)"),c,f,qp);
     WIDGET(label_8)->setText(string);
 
 }
@@ -2317,6 +2479,14 @@ void UI_setTotalTime(uint64_t curTime)
       sprintf(text, "/ %02d:%02d:%02d.%03d", hh, mm, ss, ms);
     WIDGET(totalTime)->setText(text);
     slider->setTotalDuration(curTime);
+}
+/**
+    \fn UI_setSegments
+    \brief SEt segments boundaries
+*/
+void UI_setSegments(uint32_t numOfSegs, uint64_t * segPts)
+{
+    slider->setSegments(numOfSegs, segPts);
 }
 /**
     \fn     UI_setMarkers(uint64_t Ptsa, uint32_t Ptsb )
@@ -2533,45 +2703,73 @@ void UI_resize(uint32_t w,uint32_t h)
     QuiMainWindows->resize(reqw,reqh);
     ADM_info("Resizing the main window to %dx%d px\n",reqw,reqh);
 #ifdef _WIN32
-    QSize fs = QuiMainWindows->frameSize();
-    QPoint p = QuiMainWindows->pos();
+    QRect fs = QuiMainWindows->frameGeometry();
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
+    QRect space = QApplication::desktop()->availableGeometry();
+#else
+    QRect space = QApplication::primaryScreen()->availableGeometry();
+#endif
 
-    uint32_t screenWidth,screenHeight;
-    UI_getPhysicalScreenSize(QuiMainWindows, &screenWidth, &screenHeight);
-
-    int x = p.x() + fs.width() - (int)screenWidth;
+    int x = fs.x() + fs.width() - space.x() - space.width();
     bool move=false;
     if(x > 0) // the right edge of the window doesn't fit into the screen
     {
         move = true;
-        if(x < p.x())
-            x = p.x() - x;
+        if(x < fs.x())
+            x = fs.x() - x;
         else
             x = 0;
     }else
     {
-        x = p.x();
+        x = fs.x();
     }
-    int y = p.y() + fs.height() - (int)screenHeight;
+    int y = fs.y() + fs.height() - space.y() - space.height();
     if(y > 0) // the bottom edge of the window doesn't fit into the screen
     {
         move = true;
-        if(y < p.y())
-            y = p.y() - y;
+        if(y < fs.y())
+            y = fs.y() - y;
         else
             y = 0;
     }else
     {
-        y = p.y();
+        y = fs.y();
     }
     if(move)
     {
+        if(x < space.x()) x = space.x(); // adjust for taskbar on the left side
+        if(y < space.y()) y = space.y(); // adjust for taskbar on the top
         ADM_info("Moving the main window to position (%d, %d)\n",x,y);
         QuiMainWindows->move(x,y);
     }
 #endif
     UI_setBlockZoomChangesFlag(false);
     ((MainWindow *)QuiMainWindows)->setResizeThreshold(RESIZE_THRESHOLD);
+}
+
+/**
+    \fn UI_getMaximumPreviewSize
+    \brief Return maximum width and height available for video preview
+*/
+void UI_getMaximumPreviewSize(uint32_t *availWidth, uint32_t *availHeight)
+{
+    QSize frme = QuiMainWindows->frameSize();
+    int fwidth = frme.width() - QuiMainWindows->width();
+    int fheight = frme.height() - QuiMainWindows->height();
+    if(fwidth < 0) fwidth = 0;
+    if(fheight < 0) fheight = 0;
+
+    uint32_t reqw, reqh, screenWidth, screenHeight;
+
+    UI_getPhysicalScreenSize(QuiMainWindows, &screenWidth, &screenHeight);
+    ((MainWindow *)QuiMainWindows)->calcDockWidgetDimensions(reqw,reqh);
+
+    int w = screenWidth - reqw - fwidth;
+    int h = screenHeight - reqh - fheight;
+    if(w < 0) w = 0;
+    if(h < 0) h = 0;
+    *availWidth = w;
+    *availHeight = h;
 }
 
 /**

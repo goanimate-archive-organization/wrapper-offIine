@@ -11,6 +11,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <QPushButton>
 #include "Q_blackenBorders.h"
 #include "ADM_toolkitQt.h"
 
@@ -39,16 +40,27 @@ Ui_blackenWindow::Ui_blackenWindow(QWidget* parent, blackenBorder *param,ADM_cor
     myBlacken->bottom=param->bottom&0xffffe;
     myBlacken->_cookie=&ui;
     myBlacken->addControl(ui.toolboxLayout);
+    myBlacken->setTabOrder();
     myBlacken->upload();
     myBlacken->sliderChanged();
 
+    bool rubberIsHidden = false;
+    QSettings *qset = qtSettingsCreate();
+    if(qset)
+    {
+        qset->beginGroup("blackenBorder");
+        rubberIsHidden = qset->value("rubberIsHidden", false).toBool();
+        qset->endGroup();
+        delete qset;
+        qset = NULL;
+    }
+
     myBlacken->rubber->nestedIgnore=1;
-    myBlacken->rubber_is_hidden=param->rubber_is_hidden;
+    myBlacken->rubber_is_hidden = rubberIsHidden;
     ui.checkBoxRubber->setChecked(myBlacken->rubber_is_hidden);
 
     connect( ui.horizontalSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderUpdate(int)));
     connect( ui.checkBoxRubber,SIGNAL(stateChanged(int)),this,SLOT(toggleRubber(int)));
-    connect( ui.pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset(bool)));
 #define SPINNER(x) connect( ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(valueChanged(int))); 
     SPINNER(Left);
     SPINNER(Right);
@@ -62,6 +74,9 @@ Ui_blackenWindow::Ui_blackenWindow(QWidget* parent, blackenBorder *param,ADM_cor
     SPINNER(Bottom)
 #undef SPINNER
 
+    QPushButton *pushButtonReset = ui.buttonBox->button(QDialogButtonBox::Reset);
+    connect(pushButtonReset,SIGNAL(clicked(bool)),this,SLOT(reset(bool)));
+
     setModal(true);
 }
 /**
@@ -69,12 +84,23 @@ Ui_blackenWindow::Ui_blackenWindow(QWidget* parent, blackenBorder *param,ADM_cor
  */
 Ui_blackenWindow::~Ui_blackenWindow()
 {
-  if(myBlacken) 
-      delete myBlacken;
-  myBlacken=NULL; 
-  if(canvas) 
-      delete canvas;
-  canvas=NULL;
+    if(myBlacken)
+    {
+        QSettings *qset = qtSettingsCreate();
+        if(qset)
+        {
+            qset->beginGroup("blackenBorder");
+            qset->setValue("rubberIsHidden", myBlacken->rubber_is_hidden);
+            qset->endGroup();
+            delete qset;
+            qset = NULL;
+        }
+        delete myBlacken;
+        myBlacken=NULL;
+    }
+    if(canvas)
+        delete canvas;
+    canvas=NULL;
 }
 /**
  * \fn sliderUpdate
@@ -93,7 +119,6 @@ void Ui_blackenWindow::gather(blackenBorder *param)
     param->right=myBlacken->right;
     param->top=myBlacken->top;
     param->bottom=myBlacken->bottom;
-    param->rubber_is_hidden=myBlacken->rubber_is_hidden;
 }
 /**
  * \fn toggleRubber
@@ -210,7 +235,7 @@ uint8_t flyBlacken::download(void)
         SPIN_GET(top,Top);
         SPIN_GET(bottom,Bottom);
 
-        printf("%d %d %d %d\n",left,right,top,bottom);
+        //printf("%d %d %d %d\n",left,right,top,bottom);
 
         if((top+bottom)>_h)
                 {
@@ -234,6 +259,32 @@ uint8_t flyBlacken::download(void)
                blockChanges(false);
            }        
                return true;
+}
+void flyBlacken::setTabOrder(void)
+{
+    Ui_blackenDialog *w=(Ui_blackenDialog *)_cookie;
+    std::vector<QWidget *> controls;
+#define PUSH_SPIN(x) controls.push_back(w->spinBox##x);
+#define PUSH_TOG(x) controls.push_back(w->checkBox##x);
+    PUSH_SPIN(Left)
+    PUSH_SPIN(Right)
+    PUSH_SPIN(Top)
+    PUSH_SPIN(Bottom)
+    PUSH_TOG(Rubber)
+
+    controls.insert(controls.end(), buttonList.begin(), buttonList.end());
+    controls.push_back(w->horizontalSlider);
+
+    QWidget *first, *second;
+
+    for(std::vector<QWidget *>::iterator tor = controls.begin(); tor != controls.end(); ++tor)
+    {
+        if(tor+1 == controls.end()) break;
+        first = *tor;
+        second = *(tor+1);
+        _parent->setTabOrder(first,second);
+        //ADM_info("Tab order: %p (%s) --> %p (%s)\n",first,first->objectName().toUtf8().constData(),second,second->objectName().toUtf8().constData());
+    }
 }
 
 /**

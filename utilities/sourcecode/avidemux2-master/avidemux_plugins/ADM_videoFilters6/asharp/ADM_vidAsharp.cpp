@@ -52,6 +52,10 @@ public:
        virtual bool         getCoupledConf(CONFcouple **couples) ;   /// Return the current filter configuration
        virtual void         setCoupledConf(CONFcouple *couples);
        virtual bool         configure(void) ;                 /// Start graphical user interface
+
+        static void         reset(asharp *cfg);
+        static void         asharp_run_c(uc* planeptr, int pitch, int height, int width,
+                                        int T,int D, int B, int B2, bool bf, uint8_t *lineptr);
 };
 
 
@@ -66,9 +70,6 @@ DECLARE_VIDEO_FILTER_PARTIALIZABLE(   ASharp,   // Class
                         QT_TRANSLATE_NOOP("asharp","Adaptative sharpener by MarcFD.") // Description
                     );
 
-void asharp_run_c(      uc* planeptr, int pitch,
-                                        int height, int width,
-                                        int     T,int D, int B, int B2, bool bf,uint8_t *lineptr );
 /**
     \fn ASharp
     \brief ctor
@@ -76,16 +77,10 @@ void asharp_run_c(      uc* planeptr, int pitch,
 ASharp::ASharp(ADM_coreVideoFilter *in,CONFcouple *couples) : ADM_coreVideoFilter(in,couples)
 {
         if(!couples || !ADM_paramLoad(couples,asharp_param,&_param))
-        {
-            // Default value
-            _param.t=2;
-            _param.d=4;
-            _param.b=-1;
-            _param.bf=false;
-        }
+            reset(&_param);
         lineptr=new uint8_t[info.width];
         update();
-
+        ADM_info("%s\n",getConfiguration());
 }
 /**
     \fn dtor
@@ -97,17 +92,40 @@ ASharp::~ASharp(void)
     delete [] lineptr;
 }
 /**
+    \fn reset
+*/
+void ASharp::reset(asharp *cfg)
+{
+    cfg->t = 2;
+    cfg->d = 4;
+    cfg->b = -1;
+    cfg->bf = false;
+    cfg->d_enabled = true;
+    cfg->b_enabled = false;
+}
+/**
     \fn update
     \brief recompute parameters
 */
 
 void ASharp::update( void)
 {
+                if(_param.t<0) _param.t=0;
+                if(_param.t>32.) _param.t=32.;
+                if(_param.d<0) _param.d=0;
+                if(_param.d>16.) _param.d=16.;
+                if(_param.b>4.) _param.b=4;
+
+#define ALMOST_ZERO 0.002
+                // fake a non-zero value for param.d
+                float faked = _param.d;
+                if(faked < ALMOST_ZERO) faked = ALMOST_ZERO;
+
                 // parameters floating point to fixed point conversion
                 T = (int)(_param.t*(4<<7));
-                D = (int)(_param.d*(4<<7));
-                B = (int)(256-_param.b*64);
-                B2= (int)(256-_param.b*48);
+                D = _param.d_enabled ? (int)(faked*(4<<7)) : 0;
+                B = _param.b_enabled ? (int)(256-_param.b*64) : 256;
+                B2= _param.b_enabled ? (int)(256-_param.b*48) : 256;
 
                 // clipping (recommended for SIMD code)
 
@@ -143,21 +161,47 @@ extern uint8_t DIA_getASharp(asharp *param, ADM_coreVideoFilter *in);
 */
 bool ASharp::configure(void)
 {
-bool r=false;
-        if( DIA_getASharp(&_param, previousFilter))
-        {
-                r=true;
-        }
+    if(DIA_getASharp(&_param, previousFilter))
+    {
         update();
-        return r;
+        ADM_info("ASharp %s\n",getConfiguration());
+        return true;
+    }
+    return false;
 }
 /**
     \fn getConfiguration
 */
 const char   *ASharp::getConfiguration(void)
 {
-    static char s[256];
-    snprintf(s,255,"Asharp by MarcFd");
+#define CONF_MAX_LEN 256
+    static char s[CONF_MAX_LEN];
+    int len = CONF_MAX_LEN;
+    char *c = s;
+
+    s[len-1]=0;
+    snprintf(c,len,"Threshold: %.02f ",_param.t);
+    len-=strlen(c);
+    if(len<2) return s;
+
+    c+=strlen(c);
+    if(_param.d_enabled)
+        snprintf(c,len," Adaptive strength: %.02f ",_param.d);
+    else
+        snprintf(c,len," Adaptive strength: disabled ");
+    len-=strlen(c);
+    if(len<2) return s;
+
+    c+=strlen(c);
+    if(_param.b_enabled)
+        snprintf(c,len," Block adaptive: %.02f ",_param.b);
+    else
+        snprintf(c,len," Block adaptive: disabled ");
+    len-=strlen(c);
+    if(len<2) return s;
+
+    c+=strlen(c);
+    snprintf(c,len," HQBF: %s",_param.bf? "enabled" : "disabled");
     return s;
 
 }
@@ -187,7 +231,7 @@ ADMImage *dst;
 /**
     \fn asharp_run_c
 */
-void asharp_run_c(      uc* planeptr,   int pitch,
+void ASharp::asharp_run_c(uc* planeptr, int pitch,
                         int height,     int width,
                         int     T,      int D, int B, int B2, bool bf , uint8_t *lineptr)
 {

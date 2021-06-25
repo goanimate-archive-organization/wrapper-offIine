@@ -19,6 +19,7 @@
 #include "ADM_ffmp43.h"
 #include "DIA_coreToolkit.h"
 #include "ADM_hwAccel.h"
+#include "prefs.h"
 
 #ifdef ADM_DEBUG
     #define LAV_VERBOSITY_LEVEL AV_LOG_DEBUG
@@ -65,11 +66,11 @@ uint8_t decoderFF::clonePic (AVFrame * src, ADMImage * out, bool swap)
 
   ref->_planes[2] = (uint8_t *) src->data[u];
   ref->_planeStride[2] = src->linesize[u];
-  
-  _lastQ = 0;			//_context->quality;
-  out->_Qp = (src->quality * 32) / FF_LAMBDA_MAX;
+
+  // out->_Qp = (src->quality * 32) / FF_LAMBDA_MAX;
   out->flags = frameType ();
 
+#if 0 /* deprecated and dead, removed upstream */
   // Quant ?
   if (src->qstride && src->qscale_table && codecId != AV_CODEC_ID_H264)
     {
@@ -79,6 +80,7 @@ uint8_t decoderFF::clonePic (AVFrame * src, ADMImage * out, bool swap)
       out->_qSize *= (_h + 15) >> 4;	// FixME?
     }
   else
+#endif
     {
       out->_qSize = out->_qStride = 0;
       out->quant = NULL;
@@ -97,23 +99,31 @@ uint8_t decoderFF::clonePic (AVFrame * src, ADMImage * out, bool swap)
 */
 void decoderFF::decoderMultiThread (void)
 {
-  uint32_t threads = 0;
+    static uint32_t sessionThreads = 0;
+    uint32_t threads = 1;
 
- // prefs->get(FEATURE_THREADING_LAVC, &threads);
-//#warning Fixme
-    threads=1;
-  if (threads == 0)
-	  threads = ADM_cpu_num_processors();
-
-  if (threads == 1)
-	  threads = 0;
-
-  if (threads)
-  {
-      printf ("[lavc] Enabling MT decoder with %u threads\n", threads);
-      _threads = threads;
-      _usingMT = 1;
-  }
+    if(false == prefs->get(FEATURES_THREADING_LAVC, &threads))
+        threads = 1;
+    if(!threads)
+        threads = ADM_cpu_num_processors();
+    if(threads > LAVC_MAX_SAFE_THREAD_COUNT)
+        threads = LAVC_MAX_SAFE_THREAD_COUNT;
+    if(!sessionThreads)
+    {
+        sessionThreads = threads;
+    }else
+    {
+        if((threads > 1) != (sessionThreads > 1))
+            ADM_warning("Restart application to %s multithreaded decoding.\n",(threads>1)? "enable" : "disable");
+        else
+            sessionThreads = threads;
+    }
+    if(sessionThreads > 1)
+    {
+        printf ("[lavc] Enabling MT decoder with %u threads\n", sessionThreads);
+        _threads = sessionThreads;
+        _usingMT = 1;
+    }
 }
 uint8_t decoderFF::getPARWidth (void)
 {
@@ -261,10 +271,10 @@ uint32_t decoderFF::admFrameTypeFromLav (AVFrame *pic)
                 SET (AVI_KEY_FRAME);
                 if (!pic->key_frame)
                   {
-                    if (codecId == AV_CODEC_ID_H264)
+                    if (codecId == AV_CODEC_ID_H264 || codecId == AV_CODEC_ID_FFV1)
                         SET (AVI_P_FRAME)
                     else
-                      ADM_info ("\n But keyframe is not set\n");
+                        ADM_info("Picture type is I, but keyframe is not set\n");
                   }
                 break;
         case AV_PICTURE_TYPE_S:
@@ -377,7 +387,8 @@ bool   decoderFF::uncompress (ADMCompressedImage * in, ADMImage * out)
 {
   int ret = 0;
   out->_noPicture = 0;
-  if(hwDecoder)
+  out->_Qp = ADM_IMAGE_UNKNOWN_QP;
+  if(hwDecoder && !_usingMT)
         return hwDecoder->uncompress(in,out);
  
   //printf("Frame size : %d\n",in->dataLength);
@@ -438,7 +449,6 @@ bool   decoderFF::uncompress (ADMCompressedImage * in, ADMImage * out)
             (in->dataLength <= FRAPS_EMPTY_FRAME_THRESHOLD && codecId == AV_CODEC_ID_MPEG4))
         {
             printf ("[lavc] Probably placeholder frame (data length: %u)\n",in->dataLength);
-            out->_Qp = 2;
             out->Pts=ADM_NO_PTS; // not sure
             out->_noPicture = 1;
             return true;
@@ -570,6 +580,13 @@ bool   decoderFF::uncompress (ADMCompressedImage * in, ADMImage * out)
       printf ("[lavc] Unhandled colorspace: %d (AV_PIX_FMT_YUV444P10BE=%d)\n", _context->pix_fmt,AV_PIX_FMT_YUV444P10BE);
       return 0;
     }
+    // make sure the output is not marked as a hw image
+    int count = 0;
+    while(out->refType != ADM_HW_NONE && count < 32 /* arbitrary limit */)
+    {
+        out->hwDecRefCount();
+        count++;
+    }
     clonePic(_frame, out, swap);
     //printf("[AvCodec] Pts : %"PRIu64" Out Pts:%"PRIu64" \n",_frame.pts,out->Pts);
 
@@ -595,8 +612,12 @@ decoderFF (w, h,fcc,extraDataLen,extraData,bpp)
   _refCopy = 1;			// YUV420 only
   _setFcc=true;
   decoderMultiThread ();
+  if(_usingMT && _threads > 2)
+  {
+        ADM_warning("%u threads requested, reducing to 2\n",_threads);
+        _threads=2; // else we cannot handle placeholder frames following a keyframe. FIXME
+  }
   WRAP_Open (AV_CODEC_ID_MPEG4);
-  
 }
 bool decoderFFMpeg4::uncompress(ADMCompressedImage *in, ADMImage *out)
 {

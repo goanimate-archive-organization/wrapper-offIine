@@ -26,9 +26,10 @@ typedef enum
 	VF_SHARPNESS=4,
 	VF_SUBTITLE=5,
         VF_OPENGL=6,
-	VF_MISC=7,
-        VF_HIDDEN=8,
-	VF_MAX=9
+	VF_ART=7,
+	VF_MISC=8,
+        VF_HIDDEN=9,
+	VF_MAX=10
 }VF_CATEGORY;
 #define VF_INVALID 		  0
 

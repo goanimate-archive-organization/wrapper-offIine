@@ -41,9 +41,10 @@ typedef struct
 {
         const char *qt4;
         const char *qt5;
+        const char *qt6;
 }flavors;
 
-static flavors myFlavors={"qt4","qt5"};
+static flavors myFlavors={"qt4","qt5","qt6"};
 
 #ifdef main
 extern "C"
@@ -464,7 +465,7 @@ bool setPrefsDefault(void)
     #endif
 #endif
 #ifdef __linux__
-        prefs->set(AUDIO_DEVICE_AUDIODEVICE,std::string("PulseAudioS"));
+        prefs->set(AUDIO_DEVICE_AUDIODEVICE,std::string("PulseAudio"));
     #ifdef USE_VDPAU
         prefs->set(VIDEODEVICE,(uint32_t)RENDER_VDPAU);
     #elif defined(USE_XV)

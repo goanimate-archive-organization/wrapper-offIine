@@ -39,19 +39,17 @@
         canvas=new ADM_QCanvas(ui.graphicsView,width,height);
 
         scene=new QGraphicsScene(this);
+        scene->setSceneRect(0,0,256,128);
         ui.graphicsViewHistogram->setScene(scene);
         ui.graphicsViewHistogram->scale(1.0,1.0);
 
         myCrop=new flyContrast( this,width, height,in,canvas,ui.horizontalSlider,scene);
         memcpy(&(myCrop->param),param,sizeof(contrast));
         myCrop->_cookie=&ui;
-        myCrop->addControl(ui.toolboxLayout);
+        myCrop->addControl(ui.toolboxLayout, true);
+        myCrop->setTabOrder();
         myCrop->upload();
         myCrop->sliderChanged();
-
-        previewState=true;
-        ui.checkBox_Enabled->setChecked(true);
-
 
         connect( ui.horizontalSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderUpdate(int)));
 #define SPINNER(x) connect( ui.dial##x,SIGNAL(valueChanged(int)),this,SLOT(valueChanged(int))); 
@@ -73,7 +71,6 @@
           connect( ui.checkBoxU,SIGNAL(stateChanged(int)),this,SLOT(valueChanged(int)));
           connect( ui.checkBoxV,SIGNAL(stateChanged(int)),this,SLOT(valueChanged(int))); 
           connect( ui.checkBoxY,SIGNAL(stateChanged(int)),this,SLOT(valueChanged(int)));  
-          connect( ui.checkBox_Enabled,SIGNAL(stateChanged(int)),this,SLOT(previewActivated(int)));  
           connect( ui.toolButton__DVD2PC,SIGNAL(pressed()),this,SLOT(dvd2PC()));  
 
         setModal(true);
@@ -118,16 +115,6 @@ void Ui_contrastWindow::dvd2PC()
   myCrop->sameImage();
   setDialTitles();
   lock--;
-}
-/**
- * 
- * @param a
- */
-void Ui_contrastWindow::previewActivated(int a)
-{
-    previewState=a;
-    myCrop->setState(a);
-    myCrop->sameImage();
 }
 /**
  * 
@@ -194,6 +181,8 @@ uint8_t flyContrast::upload(void)
         CHECKSET(Y,doLuma);
         CHECKSET(U,doChromaU);
         CHECKSET(V,doChromaV);
+
+        tablesPopulated = false;
         return 1;
 }
 /**
@@ -205,6 +194,14 @@ uint8_t flyContrast::download(void)
        Ui_contrastDialog *w=(Ui_contrastDialog *)_cookie;
          param.coef=MYSPIN(Contrast)->value()/100.;
          param.offset=MYSPIN(Brightness)->value();
+
+        if(oldCoef != param.coef || oldOffset != param.offset)
+        {
+            tablesPopulated = false;
+            oldCoef = param.coef;
+            oldOffset = param.offset;
+        }
+
 #define CHECKGET(a,b) param.b=MYCHECK(a)->isChecked()
 
         CHECKGET(Y,doLuma);
@@ -212,7 +209,36 @@ uint8_t flyContrast::download(void)
         CHECKGET(V,doChromaV);
 return 1;
 }
+/**
+ * \fn setTabOrder
+ */
+void flyContrast::setTabOrder(void)
+{
+    Ui_contrastDialog *w=(Ui_contrastDialog *)_cookie;
+    std::vector<QWidget *> controls;
+#define PUSH_SPIN(x) controls.push_back(w->dial##x);
+#define PUSH_CHECK(x) controls.push_back(w->checkBox##x);
+    PUSH_SPIN(Contrast)
+    PUSH_SPIN(Brightness)
+    PUSH_CHECK(Y)
+    PUSH_CHECK(U)
+    PUSH_CHECK(V)
 
+    controls.push_back(w->toolButton__DVD2PC);
+    controls.insert(controls.end(), buttonList.begin(), buttonList.end());
+    controls.push_back(w->horizontalSlider);
+
+    QWidget *first, *second;
+
+    for(std::vector<QWidget *>::iterator tor = controls.begin(); tor != controls.end(); ++tor)
+    {
+        if(tor+1 == controls.end()) break;
+        first = *tor;
+        second = *(tor+1);
+        _parent->setTabOrder(first,second);
+        //ADM_info("Tab order: %p (%s) --> %p (%s)\n",first,first->objectName().toUtf8().constData(),second,second->objectName().toUtf8().constData());
+    }
+}
 /**
       \fn     DIA_getCropParams
       \brief  Handle crop dialog

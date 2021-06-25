@@ -73,6 +73,7 @@ bool     useCustomFragmentSize=false;
 uint32_t customFragmentSize=4000;
 
 uint32_t editor_cache_size=16;
+bool     editor_use_shared_cache=false;
 
 #ifdef USE_DXVA2
 bool     bdxva2=false;
@@ -157,6 +158,7 @@ std::string currentSdlDriver=getSdlDriverName();
             customFragmentSize=4000;
         // Video cache
         prefs->get(FEATURES_CACHE_SIZE,&editor_cache_size);
+        prefs->get(FEATURES_SHARED_CACHE,&editor_use_shared_cache);
 #ifdef USE_DXVA2
         // dxva2
         prefs->get(FEATURES_DXVA2,&bdxva2);
@@ -243,12 +245,14 @@ std::string currentSdlDriver=getSdlDriverName();
     #ifndef USE_VIDEOTOOLBOX
         diaElemReadOnlyText hwAccelText(NULL,QT_TRANSLATE_NOOP("adm","If you use Hw decoding, it is better to use the matching display driver"),NULL);
     #endif
+        diaElemReadOnlyText hwAccelMultiThreadText(NULL,QT_TRANSLATE_NOOP("adm","Enabling Hw decoding disables multi-threading, restart application to apply changes"),NULL);
 #endif
         diaElemToggle useOpenGl(&hasOpenGl,QT_TRANSLATE_NOOP("adm","Enable openGl support"));
         diaElemToggle allowAnyMpeg(&mpeg_no_limit,QT_TRANSLATE_NOOP("adm","_Accept non-standard audio frequency for DVD"));
         diaElemToggle resetEncoder(&loadDefault,QT_TRANSLATE_NOOP("adm","_Revert to saved default output settings on video load"));
         diaElemToggle enableAltShortcuts(&altKeyboardShortcuts,QT_TRANSLATE_NOOP("adm","_Enable alternative keyboard shortcuts"));
         diaElemToggle swapUpDownKeys(&swapUpDown,QT_TRANSLATE_NOOP("adm","Re_verse UP and DOWN arrow keys for navigation"));
+        diaElemToggle swapMarkers(&useSwap,QT_TRANSLATE_NOOP("adm","_Swap markers if marker A is set past marker B or marker B before A in video"));
         diaElemToggle checkForUpdate(&doAutoUpdate,QT_TRANSLATE_NOOP("adm","_Check for new release"));
 
 
@@ -285,8 +289,13 @@ std::string currentSdlDriver=getSdlDriverName();
 
         diaElemThreadCount lavcThreadCount(&lavcThreads, QT_TRANSLATE_NOOP("adm","_lavc threads:"));
 
+        diaElemReadOnlyText lavcMultiThreadHwText(NULL,
+            QT_TRANSLATE_NOOP("adm","Multi-threading is disabled internally if HW accelerated decoding is enabled, "
+                                    "restart application to apply changes"),NULL);
+
         diaElemFrame frameThread(QT_TRANSLATE_NOOP("adm","Multi-threading"));
         frameThread.swallow(&lavcThreadCount);
+        frameThread.swallow(&lavcMultiThreadHwText);
 
         diaMenuEntry priorityEntries[] = {
                      {0,       QT_TRANSLATE_NOOP("adm","High"),NULL}
@@ -315,7 +324,9 @@ std::string currentSdlDriver=getSdlDriverName();
 
         diaElemFrame frameCache(QT_TRANSLATE_NOOP("adm","Caching of decoded pictures"));
         diaElemUInteger cacheSize(&editor_cache_size,QT_TRANSLATE_NOOP("adm","_Cache size:"),8,16);
+        diaElemToggle toggleSharedCache(&editor_use_shared_cache,QT_TRANSLATE_NOOP("adm","Use _shared cache"));
         frameCache.swallow(&cacheSize);
+        frameCache.swallow(&toggleSharedCache);
 
         diaMenuEntry videoMode[]={
                              {RENDER_GTK, getNativeRendererDesc(0), NULL}
@@ -455,8 +466,8 @@ std::string currentSdlDriver=getSdlDriverName();
 
 
         /* User Interface */
-        diaElem *diaUser[]={&menuMessage,&menuLanguage,&resetEncoder,&enableAltShortcuts,&swapUpDownKeys,&checkForUpdate};
-        diaElemTabs tabUser(QT_TRANSLATE_NOOP("adm","User Interface"),6,diaUser);
+        diaElem *diaUser[]={&menuMessage, &menuLanguage, &resetEncoder, &enableAltShortcuts, &swapUpDownKeys, &swapMarkers, &checkForUpdate};
+        diaElemTabs tabUser(QT_TRANSLATE_NOOP("adm","User Interface"),7,diaUser);
 
          /* Automation */
 
@@ -503,14 +514,14 @@ std::string currentSdlDriver=getSdlDriverName();
         diaElemTabs tabVideo(QT_TRANSLATE_NOOP("adm","Display"),sizeof(diaVideo)/sizeof(diaElem *),(diaElem **)diaVideo);
         /* HW accel */
 #ifdef USE_DXVA2
-        diaElem *diaHwDecoding[]={&useDxva2,&dxva2OverrideVersion,&dxva2OverrideProfile,&hwAccelText};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),4,(diaElem **)diaHwDecoding);
+        diaElem *diaHwDecoding[]={&useDxva2,&dxva2OverrideVersion,&dxva2OverrideProfile,&hwAccelMultiThreadText,&hwAccelText};
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),5,(diaElem **)diaHwDecoding);
 #elif defined(USE_VIDEOTOOLBOX)
-        diaElem *diaHwDecoding[]={&useVideoToolbox};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),1,(diaElem **)diaHwDecoding);
+        diaElem *diaHwDecoding[]={&useVideoToolbox,&hwAccelMultiThreadText};
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),2,(diaElem **)diaHwDecoding);
 #elif defined(HW_ACCELERATED_DECODING)
-        diaElem *diaHwDecoding[]={&useVdpau,&useLibVA,&hwAccelText};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),3,(diaElem **)diaHwDecoding);
+        diaElem *diaHwDecoding[]={&useVdpau,&useLibVA,&hwAccelMultiThreadText,&hwAccelText};
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),4,(diaElem **)diaHwDecoding);
 #endif
 
         /* CPU tab */
@@ -625,8 +636,7 @@ std::string currentSdlDriver=getSdlDriverName();
             prefs->set(DEFAULT_MULTILOAD_CUSTOM_SIZE_M, customFragmentSize);
             // Video cache
             prefs->set(FEATURES_CACHE_SIZE, editor_cache_size);
-            // number of threads
-            prefs->set(FEATURES_THREADING_LAVC, lavcThreads);
+            prefs->set(FEATURES_SHARED_CACHE, editor_use_shared_cache);
             // Encoding priority
             prefs->set(PRIORITY_ENCODING, encodePriority);
             // Indexing / unpacking priority
@@ -634,7 +644,7 @@ std::string currentSdlDriver=getSdlDriverName();
             // Playback priority
             prefs->set(PRIORITY_PLAYBACK, playbackPriority);
 
-            // Auto swap A/B
+            // Auto swap A/B vs reset the other marker
             prefs->set(FEATURES_SWAP_IF_A_GREATER_THAN_B, useSwap);
             //
             prefs->set(MESSAGE_LEVEL,msglevel);
@@ -643,21 +653,27 @@ std::string currentSdlDriver=getSdlDriverName();
 #ifdef USE_VDPAU
             // VDPAU
             prefs->set(FEATURES_VDPAU,bvdpau);
+            if(bvdpau) lavcThreads=1; // disable multi-threaded decoding
 #endif
 #ifdef USE_DXVA2
             // DXVA2
             prefs->set(FEATURES_DXVA2,bdxva2);
             prefs->set(FEATURES_DXVA2_OVERRIDE_BLACKLIST_VERSION,bdxva2_override_version);
             prefs->set(FEATURES_DXVA2_OVERRIDE_BLACKLIST_PROFILE,bdxva2_override_profile);
+            if(bdxva2) lavcThreads=1;
 #endif
 #ifdef USE_LIBVA
             // LIBVA
             prefs->set(FEATURES_LIBVA,blibva);
+            if(blibva) lavcThreads=1;
 #endif
 #ifdef USE_VIDEOTOOLBOX
             // VideoToolbox
             prefs->set(FEATURES_VIDEOTOOLBOX,bvideotoolbox);
+            if(bvideotoolbox) lavcThreads=1;
 #endif
+            // number of threads
+            prefs->set(FEATURES_THREADING_LAVC, lavcThreads);
             // Make users happy who prefer the output dir to be the same as the input dir
             prefs->set(FEATURES_USE_LAST_READ_DIR_AS_TARGET,lastReadDirAsTarget);
             // Enable alternate keyboard shortcuts

@@ -36,6 +36,7 @@
 #include "ADM_coreJobs.h"
 #include "ADM_audioWrite.h"
 #include "ADM_filterChain.h"
+#include "audioEncoderApi.h"
 // Local prototypes
 #include "A_functions.h"
 #include "ADM_script2/include/ADM_script.h"
@@ -216,17 +217,13 @@ int A_audioSave(const char *name)
         ADM_error("[A_audioSave] No stream\n");
         return 0;
     }
-	if (audioProcessMode(0))
-	{
-		// if we get here, either not compressed
-		// or decompressable
-		A_saveAudioProcessed(name);
-    }
-	else			// copy mode...
+    if (audioProcessMode(0))
     {
-        A_saveAudioCopy(name);
+        // if we get here, either not compressed or decompressible
+        return A_saveAudioProcessed(name);
     }
-	return 1;
+    // copy mode...
+    return A_saveAudioCopy(name);
 }
 
 /**
@@ -260,11 +257,11 @@ static bool A_saveAudioCommon (const char *name,ADM_audioStream *stream,double d
   uint32_t hold,len,sample;
   uint64_t tgt_sample,cur_sample;
 
+   printf("[saveAudio] Duration: %s, ",ADM_us2plain(duration));
    duration*=stream->getInfo()->frequency;
    duration/=1000000; // in seconds to have samples
    tgt_sample=(uint64_t)floor(duration);
-   printf("[saveAudio]Duration:%f ms\n",duration/1000);
-   printf("[saveAudio]Samples:%" PRIu64" ms\n",tgt_sample);
+   printf("%" PRIu64" samples.\n",tgt_sample);
 
    cur_sample=0;
    written = 0;
@@ -299,7 +296,7 @@ static bool A_saveAudioCommon (const char *name,ADM_audioStream *stream,double d
   delete saver;
   delete work;
   delete[] buffer;
-  ADM_info ("\n wanted %" PRIu64" samples, goto %" PRIu64" samples, written %" PRIu32" bytes\n", tgt_sample,cur_sample, written);
+  ADM_info ("wanted %" PRIu64" samples, got %" PRIu64" samples, written %" PRIu32" bytes\n", tgt_sample,cur_sample, written);
   return true;
 }
 
@@ -337,8 +334,13 @@ int A_saveAudioCopy (const char *name)
    ADM_info("Saving from %s \n",ADM_us2plain(timeStart));
    ADM_info("Saving to %s \n",ADM_us2plain(timeEnd));
    ADM_info("duration %s \n",ADM_us2plain((uint64_t)duration));
-   return A_saveAudioCommon (name,stream,duration);
 
+    if(false == A_saveAudioCommon(name,stream,duration))
+    {
+        GUI_Error_HIG(QT_TRANSLATE_NOOP("adm","Audio"),QT_TRANSLATE_NOOP("adm","Saving failed"));
+        return 0;
+    }
+    return 1;
 }
 
 

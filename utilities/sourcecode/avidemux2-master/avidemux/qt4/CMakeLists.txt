@@ -88,6 +88,12 @@ ADD_DEFINITIONS(${QT_DEFINITIONS})
 ADD_DEFINITIONS(-DADM_UI_TYPE_BUILD=ADM_UI_QT4)
 SET(CONFIG_HEADER_TYPE ADM_BUILD_QT4)
 SET(UI_SUFFIX ${QT_EXTENSION})
+IF (${QT_EXTENSION} STREQUAL "qt6")
+    SET(CMAKE_CXX_STANDARD 17)
+    SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+    SET(CMAKE_CXX_EXTENSIONS OFF)
+ENDIF (${QT_EXTENSION} STREQUAL "qt6")
+
 
 CONFIGURE_FILE("${ADM_CMAKE_DIR}/config.h.cmake" "${CMAKE_BINARY_DIR}/config/${QT_EXTENSION}/config.h")
 MESSAGE(STATUS "${QT_EXTENSION} config.h generated")
@@ -103,6 +109,13 @@ ADD_SUBDIRECTORY(ADM_update)
 IF(USE_OPENGL)
     ADD_SUBDIRECTORY(ADM_openGL)
 ENDIF(USE_OPENGL)
+
+###########################################
+# Custom fixed width font for time display
+###########################################
+if (NOT WIN32)
+        SET(USE_CUSTOM_TIME_DISPLAY_FONT 1)
+endif (NOT WIN32)
 
 ########################################
 # Add common as a symlink or directly

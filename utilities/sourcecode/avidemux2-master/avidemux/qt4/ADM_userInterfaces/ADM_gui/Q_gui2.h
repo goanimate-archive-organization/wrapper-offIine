@@ -79,9 +79,7 @@ private:
                 void cleanup()
                 {
                   //ADM_ExitCleanup();
-                  emit quit();
                 }
-                
 };
 /**
  * \enum ADM_dragState
@@ -118,6 +116,7 @@ public:
     void setResizeThreshold(int value);
     void setActZoomCalledFlag(bool called);
     void setZoomToFit(void);
+    void syncToolbarsMenu(void);
     static void updateCheckDone(int version, const std::string &date, const std::string &downloadLink);
     static MainWindow *mainWindowSingleton;
 
@@ -181,6 +180,7 @@ protected:
     int  threshold; // track how much the window was resized
     /* allow to copy current pts to clipboard using a keyboard shortcut for convenience */
     void currentTimeToClipboard(void);
+    bool dragWhilePlay;
 
 public slots:
     void updateAvailableSlot(int version, std::string date, std::string url);
@@ -218,8 +218,6 @@ public slots:
     void audioToggled(bool checked);
     void previewModeChangedFromMenu(bool status);
     void previewModeChangedFromToolbar(bool status);
-    void previousIntraFrame(void);
-    void nextIntraFrame(void);
     void timeChangeFinished(void);
     void currentFrameChanged(void);
     void currentTimeChanged(void);
@@ -238,6 +236,7 @@ public slots:
     void searchRecentFiles(QAction * action);
     void searchRecentProjects(QAction * action);
     void searchToolBar(QAction *);
+    void restoreDefaultWidgetState(bool b);
 
     void scriptFileActionHandler();
     void scriptReferenceActionHandler();

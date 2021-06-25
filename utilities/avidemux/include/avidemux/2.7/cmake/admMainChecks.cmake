@@ -24,19 +24,11 @@ MESSAGE(STATUS "[BUILD] Linker   ${CMAKE_LINKER}")
 MESSAGE(STATUS "Top Source dir is ${AVIDEMUX_TOP_SOURCE_DIR}")
 MESSAGE("")
 
-PROJECT(${ADM_PROJECT})
-
 IF (${Avidemux_SOURCE_DIR} MATCHES ${Avidemux_BINARY_DIR})
 	MESSAGE("Please do an out-of-tree build:")
 	MESSAGE("rm CMakeCache.txt; mkdir build; cd build; cmake ..; make")
 	MESSAGE(FATAL_ERROR "in-tree-build detected")
 ENDIF (${Avidemux_SOURCE_DIR} MATCHES ${Avidemux_BINARY_DIR})
-
-if (${CMAKE_VERSION} VERSION_GREATER 2.8.5)
-	include(GenerateExportHeader)
-else (${CMAKE_VERSION} VERSION_GREATER 2.8.5)
-	include(_GenerateExportHeader)
-endif (${CMAKE_VERSION} VERSION_GREATER 2.8.5)
 
 IF(WIN32)
 	IF(NOT CROSS)
@@ -69,8 +61,11 @@ ENDIF (FRESH_BUILD)
 OPTION(VERBOSE "" OFF)
 
 IF (NOT CMAKE_BUILD_TYPE)
-	SET(CMAKE_BUILD_TYPE "Release")
+        SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 ENDIF (NOT CMAKE_BUILD_TYPE)
+
+SET(CMAKE_CXX_VISIBILITY_PRESET hidden)
+SET(CMAKE_VISIBILITY_INLINES_HIDDEN True)
 
 ########################################
 # Avidemux system specific tweaks
@@ -119,6 +114,11 @@ ENDIF (WIN32)
 if (CMAKE_COMPILER_IS_GNUCC)
 	add_definitions("-Werror=attributes") 
 endif (CMAKE_COMPILER_IS_GNUCC)
+
+IF (NOT MSVC AND CMAKE_BUILD_TYPE STREQUAL "Release")
+        add_compile_options("-O2") # override cmake default
+ENDIF (NOT MSVC AND CMAKE_BUILD_TYPE STREQUAL "Release")
+
 # MacOsX stuff
 IF(APPLE)
 	set (CMAKE_OSX_ARCHITECTURES "x86_64")
@@ -165,10 +165,10 @@ IF(NOT PLUGINS)
 INCLUDE(admCheckMiscLibs)
 INCLUDE(FindThreads)
 
-    if (NOT APPLE)
+if (NOT APPLE AND NOT ADM_CPU_ARMEL)
         INCLUDE(admCheckNvEnc)
         checkNvEnc()
-    endif (NOT APPLE)
+endif (NOT APPLE AND NOT ADM_CPU_ARMEL)
 #INCLUDE(admCheckXvba)
 #checkXvba()
 ENDIF(NOT PLUGINS)

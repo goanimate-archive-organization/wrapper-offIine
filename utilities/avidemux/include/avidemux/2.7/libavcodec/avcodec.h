@@ -945,10 +945,6 @@ typedef struct RcOverride{
  */
 #define AV_CODEC_FLAG2_IGNORE_CROP    (1 << 16)
 
-//MEANX: NEVER EVER USE CLOSED GOP ?
-#define AV_CODEC_FLAG2_32_PULLDOWN    (1 << 17)
-// /MEANX
-
 /**
  * Show all frames before the first keyframe
  */
@@ -2430,7 +2426,6 @@ typedef struct AVCodecContext {
      * - decoding: unused
      */
     int rc_buffer_size;
-    int rc_buffer_size_header; // MEANX : We fill the mpeg header with that value
 
     /**
      * ratecontrol override, see RcOverride
@@ -2446,7 +2441,6 @@ typedef struct AVCodecContext {
      * - decoding: Set by user, may be overwritten by libavcodec.
      */
     int64_t rc_max_rate;
-    int64_t rc_max_rate_header; // MEANX : We use that value to fill the mpeg header
 
     /**
      * minimum bitrate

@@ -49,22 +49,34 @@ int pySetNormalize(IEditor *, int track, int mode, int gain100);
 int pySetNormalize2(IEditor *, int track, int mode, int gain100, int maxlevel);
 int pySetFilm2Pal(IEditor *,int track,int onoff);
 int pySetPal2Film(IEditor *,int track,int onoff);
+/* Output */
+char *pyGetContainerEx(IEditor *editor);
 /* Info */
 int pyGetFps1000(IEditor *editor);
 int pyGetWidth(IEditor *editor);
 int pyGetHeight(IEditor *editor);
 
+/* Editing-related info */
+int pyGetCurrentFrameFlags(IEditor *editor);
+double pyGetPrevKFramePts(IEditor *editor, double time);
+double pyGetNextKFramePts(IEditor *editor, double time);
+int pySegmentGetRefIdx(IEditor *editor, int segment);
+double pySegmentGetTimeOffset(IEditor *editor, int segment);
+double pySegmentGetDuration(IEditor *editor, int segment);
+double pyGetRefVideoDuration(IEditor *editor, int refVideoIdx);
+char *pyGetRefVideoName(IEditor *editor, int idx);
+
 /* Detail info (debug) */
-bool pyHexDumpFrame(IEditor *editor, int framenumber);
+int pyHexDumpFrame(IEditor *editor, int framenumber);
 int pyPrintTiming(IEditor *editor, int framenumber);
 double pyGetPts(IEditor *editor, int frameNum);
 double pyGetDts(IEditor *editor, int frameNum);
-double pyGetPrevKFramePts(IEditor *editor);
-double pyGetNextKFramePts(IEditor *editor);
 
 /* File operation */
 char *pyFileSelWrite(IEditor *editor, const char *title);
 char *pyFileSelRead(IEditor *editor, const char *title);
+char *pyFileSelWriteEx(IEditor *editor, const char *title, const char *ext);
+char *pyFileSelReadEx(IEditor *editor, const char *title, const char *ext);
 char *pyDirSelect(IEditor *editor, const char *title);
 
 /* Display */
@@ -78,6 +90,6 @@ int pyTestSub( char *subName);
 /* OS */
 char *pyGetEnv(IEditor *editor,const char *);
 /* Navigate */
-bool pyNextFrame(IEditor *editor);
+int pyNextFrame(IEditor *editor);
 #endif
 // EOF

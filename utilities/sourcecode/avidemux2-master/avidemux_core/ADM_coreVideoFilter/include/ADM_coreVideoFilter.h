@@ -30,6 +30,7 @@
 typedef struct
 {
     uint32_t            tag; // Temporary filter tag
+    bool                enabled;
     ADM_coreVideoFilter *instance;
     int objectId;
 }ADM_VideoFilterElement;
@@ -46,6 +47,8 @@ typedef struct
     uint32_t timeBaseDen; // timebase denominator
     uint32_t timeBaseNum; // timebase numerator
     uint64_t totalDuration;     /// Duration of the whole stream in us
+    uint64_t markerA;
+    uint64_t markerB;
 }FilterInfo;
 
 /**

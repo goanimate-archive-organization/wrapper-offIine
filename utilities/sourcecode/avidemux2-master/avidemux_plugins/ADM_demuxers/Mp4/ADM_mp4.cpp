@@ -56,6 +56,7 @@ version 2 media descriptor :
 
 #include <string.h>
 #include <math.h>
+#include <climits>
 
 #include "ADM_default.h"
 #include "ADM_Video.h"
@@ -94,6 +95,7 @@ MP4Track::MP4Track(void)
     memset(&_rdWav,0,sizeof(_rdWav));
     delay=0;
     totalDataSize=0;
+    language = ADM_UNKNOWN_LANGUAGE;
 }
 MP4Track::~MP4Track()
 {
@@ -496,6 +498,7 @@ uint8_t    MP4Header::open(const char *name)
                 img.data=bfer;
                 uint32_t i,fields=0,nb=VDEO.nbIndex;
                 uint64_t processed=0;
+                bool secondField = false;
                 DIA_processingBase *work=createProcessing(QT_TRANSLATE_NOOP("mp4demuxer","Decoding frame type"),nb);
                 for(i=0;i<nb;i++)
                 {
@@ -561,6 +564,16 @@ uint8_t    MP4Header::open(const char *name)
                     {
                         if(flags & AVI_FIELD_STRUCTURE)
                         {
+                            if(flags & AVI_KEY_FRAME)
+                            {
+                                if(secondField)
+                                {
+                                    printf("Removing keyframe flag from second field at frame %u\n",i);
+                                    flags &= ~AVI_KEY_FRAME;
+                                }
+                                secondField = !secondField;
+                            }else
+                                secondField = false;
                             if(!fields)
                                 printf("First field at frame %u\n",i);
                             fields++;
@@ -584,6 +597,69 @@ uint8_t    MP4Header::open(const char *name)
                     ADM_info("Field encoded H.264 stream detected, # fields: %u\n",fields);
                 else
                     ADM_info("Probably a frame encoded H.264 stream.\n");
+            }
+        }else if(isH265Compatible(_videostream.fccHandler) && VDEO.extraDataSize)
+        { // Get frame type from HEVC slice headers
+            ADM_SPSinfoH265 info;
+            if(extractSPSInfoH265(VDEO.extraData,VDEO.extraDataSize,&info))
+            {
+                uint32_t nalSize = ADM_getNalSizeH265(VDEO.extraData,VDEO.extraDataSize);
+                uint8_t *bfer = new uint8_t[MAX_FRAME_LENGTH];
+                ADMCompressedImage img;
+                img.data = bfer;
+                int poc = INT_MIN;
+                uint32_t i, nb = VDEO.nbIndex, mismatched = 0;
+                uint64_t processed = 0;
+                DIA_processingBase *work = createProcessing(QT_TRANSLATE_NOOP("mp4demuxer","Decoding frame type"),nb);
+                for(i=0;i<nb;i++)
+                {
+                    if(work && work->update(1,processed++))
+                        break; // cancelling frame type decoding is non-fatal
+                    if(!getFrame(i,&img))
+                    {
+                        ADM_warning("Could not get frame %u while decoding HEVC frame type.\n",i);
+                        continue;
+                    }
+                    // TODO: Check for VPS/PPS/SPS changing on-the-fly. We are in trouble if this happens.
+                    uint32_t flags;
+                    if(extractH265FrameType(img.data,img.dataLength,nalSize,&info,&flags,&poc))
+                    {
+                        // Report disagreement with stss.
+                        uint32_t originalFlags = 0;
+                        if(getFlags(i,&originalFlags))
+                        {
+#define MAX_KEYFRAME_MISMATCH_WARNINGS 50
+                            if((flags & AVI_KEY_FRAME) && !(originalFlags & AVI_KEY_FRAME))
+                            {
+                                if(mismatched == MAX_KEYFRAME_MISMATCH_WARNINGS)
+                                    ADM_warning("Max. number of warnings (%u) reached, suppressing further messages.\n",mismatched++);
+                                else if(mismatched < MAX_KEYFRAME_MISMATCH_WARNINGS)
+                                {
+                                    ADM_warning("Frame %d not marked as keyframe in stss, fixing.\n",i);
+                                    mismatched++;
+                                }
+                            }
+                            if((originalFlags & AVI_KEY_FRAME) && !(flags & AVI_KEY_FRAME))
+                            {
+                                if(mismatched == MAX_KEYFRAME_MISMATCH_WARNINGS)
+                                    ADM_warning("Max. number of warnings (%u) reached, suppressing further messages.\n",mismatched++);
+                                else if(mismatched < MAX_KEYFRAME_MISMATCH_WARNINGS)
+                                {
+                                    ADM_warning("Frame %d wrongly marked as keyframe in stss, removing flag.\n",i);
+                                    mismatched++;
+                                }
+                            }
+                        }
+                        setFlag(i,flags);
+                    }else
+                    {
+                        poc = INT_MIN;
+                    }
+                }
+                if(work) delete work;
+                work=NULL;
+                delete [] bfer;
+                bfer=NULL;
             }
         }
         /*
@@ -731,7 +807,9 @@ uint8_t    MP4Header::open(const char *name)
                 break;
             }
             audioAccess[audio]=new ADM_mp4AudioAccess(name,&(_tracks[1+audio]));
-            audioStream[audio]=ADM_audioCreateStream(&(_tracks[1+audio]._rdWav), audioAccess[audio]);
+            ADM_audioStream *as = ADM_audioCreateStream(&(_tracks[1+audio]._rdWav), audioAccess[audio]);
+            as->setLanguage(_tracks[1+audio].language);
+            audioStream[audio] = as;
         }
         fseeko(_fd,0,SEEK_SET);
         uint64_t duration1=_movieDuration*1000LL;

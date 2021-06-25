@@ -104,12 +104,12 @@ uint8_t result=1;
     fullSize=pkt->getSize();
     gui=createProcessing(QT_TRANSLATE_NOOP("tsdemuxer","Indexing"),fullSize);
     int startCode;
-    decodingImage=false;
 #define likely(x) x
 #define unlikely(x) x
     int lastStartCode=0xb3;
     bool seqEntryPending=false;
     bool picEntryPending=false;
+    bool warningIgnored=false;
 
 #define REMEMBER() { lastStartCode=startCode;}
 #define CHECK(x) if(false==x) { result=ADM_IGN; goto the_end; }
@@ -137,34 +137,62 @@ uint8_t result=1;
                   {
 // B2: User Data
                   case 0xB3: // sequence start
+                        {
                           REMEMBER()
                           if(seq_found)
                           {
-                                decodingImage=false;
                                 pkt->getInfo(&spsUnit.packetInfo);
                                 spsUnit.consumedSoFar=pkt->getConsumed();
+                          }else
+                          {
+                                pkt->setConsumed(4); // reset consumed counter
+                          }
+                          val=pkt->readi32();                    //+4
+                          pkt->forward(4);                       //+4
+
+                          uint32_t widthToCheck,heightToCheck;
+                          widthToCheck = val>>20;
+                          //video.w=((video.w+15)&~15);
+                          //video.h= (((val>>8) & 0xfff)+15)& ~15;
+                          heightToCheck = ((val>>8) & 0xfff);
+                          if(!seq_found)
+                          {
+                                video.w = widthToCheck;
+                                video.h = heightToCheck;
+                                video.ar = (val >> 4) & 0xf;
+                                video.fps = FPS[val & 0xf];
+
+                                pkt->getInfo(&spsUnit.packetInfo);
+                                spsUnit.consumedSoFar=pkt->getConsumed();
+
+                          }else
+                          {
                                 CHECK(addUnit(data,unitTypeSps,spsUnit,4))
-                                pkt->forward(8);  // Ignore
+                                if(widthToCheck != video.w || heightToCheck != video.h)
+                                {
+                                    ADM_warning("Size change %ux%u => %ux%u at frame %u, offset 0x%" PRIx64"\n",
+                                            video.w, video.h, widthToCheck, heightToCheck, data.nbPics, spsUnit.packetInfo.startAt);
+                                    char alert[1024];
+                                    alert[0]='\0';
+                                    snprintf(alert,1024,QT_TRANSLATE_NOOP("tsdemuxer","The size of the video changes at frame %u "
+                                            "from %ux%u to %ux%u. This is unsupported and will result in a crash.\n"
+                                            "Proceed nevertheless?\n"
+                                            "This warning won't be shown again for this video."),
+                                            data.nbPics, video.w, video.h, widthToCheck, heightToCheck);
+                                    alert[1023]='\0';
+                                    if(!warningIgnored && !GUI_Question(alert,true))
+                                        goto the_end;
+
+                                    warningIgnored = true;
+                                    video.w = widthToCheck;
+                                    video.h = heightToCheck;
+                                }
                                 continue;
                           }
-                          pkt->setConsumed(4); // reset consumed counter
-                          //
-                          seq_found=1;
-                          val=pkt->readi32();                    //+4
-                          video.w=val>>20;
-                          video.w=((video.w+15)&~15);
-                          //video.h= (((val>>8) & 0xfff)+15)& ~15;
-                          video.h= ((val>>8) & 0xfff);
-
-                          video.ar = (val >> 4) & 0xf;
-                          video.fps= FPS[val & 0xf];
-                          pkt->forward(4);                      //+4
-
-                          decodingImage=false;
-                          pkt->getInfo(&spsUnit.packetInfo);
-                          spsUnit.consumedSoFar=pkt->getConsumed();
+                          seq_found=true;
                           seqEntryPending=true;
-                          break;
+                        }
+                        break;
 //#warning FIXME, update pic field info.... It triggers a end-of-pic message as it is
 
                     case 0xB5: //  extension

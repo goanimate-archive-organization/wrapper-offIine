@@ -20,6 +20,7 @@
 
 #include "ADM_vidEq2.h"
 #include "DIA_flyEq2.h"
+#include "QGraphicsScene"
 /**
     \class Ui_eq2Window
 */
@@ -29,6 +30,7 @@ class Ui_eq2Window : public QDialog
 
 protected:
     int lock;
+    QGraphicsScene *scene;
 
 public:
     flyEq2 *myCrop;

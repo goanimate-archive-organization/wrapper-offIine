@@ -66,23 +66,27 @@ flyMSharpen::~flyMSharpen()
     \fn process
 */
 uint8_t    flyMSharpen::processYuv(ADMImage* in, ADMImage *out)
-{        
-    
-    ADMImageRef          refIn(_w/2,_h);
-    ADMImageRefWrittable refOut(_w/2,_h);
-    
-    in->copyLeftSideTo(out);
-    
+{
+    uint32_t outw = _w;
+    if(blur->_width != outw)
+    {
+        delete blur;
+        blur = new ADMImageDefault(outw,_h);
+    }
+
+    ADMImageRef          refIn(outw,_h);
+    ADMImageRefWrittable refOut(outw,_h);
+
     for(int i=0;i<3;i++)
     {
         int halfWidth=in->GetWidth((ADM_PLANE)i)/2; // in and out have the same width
         refIn._planeStride[i] =in->_planeStride[i];
         refOut._planeStride[i]=out->_planeStride[i];
         refIn._planes[i]      =in->_planes[i];//+halfWidth;
-        refOut._planes[i]     =out->_planes[i]+halfWidth;
+        refOut._planes[i] = out->_planes[i];
     }
     
-    for (int i=0;i<3;i++)
+    for (int i=0;i<(param.chroma ? 3:1);i++)
     { 
             Msharpen::blur_plane(&refIn, blur, i,work);
             Msharpen::detect_edges(blur, &refOut,  i,param);
@@ -91,9 +95,12 @@ uint8_t    flyMSharpen::processYuv(ADMImage* in, ADMImage *out)
             if (!param.mask) 
                 Msharpen::apply_filter(&refIn, blur, &refOut,  i,param,invstrength);
     }
+    if (!param.chroma)
+    {
+        (&refOut)->copyPlane(&refIn,&refOut,PLANAR_U);
+        (&refOut)->copyPlane(&refIn,&refOut,PLANAR_V);
+    }
     out->copyInfo(in);
-    out->printString(1,1,"Original"); // printString can't handle non-ascii input, do not translate this!
-    out->printString(in->GetWidth(PLANAR_Y)/24+1,1,"Processed"); // as above, don't try to translate
 
     return 1;
 }
@@ -104,17 +111,21 @@ uint8_t    flyMSharpen::processYuv(ADMImage* in, ADMImage *out)
  */
 uint8_t flyMSharpen::upload()
 {
-#define MYSPIN(x) w->x
-#define MYTOGGLE(x) w->x
+#define MYSPIN(x,y) w->spinBox##x->setValue(param.y); w->horizontalSlider##x->setValue(param.y);
+#define MYTOGGLE(x,y) w->checkBox##x->setChecked(param.y);
     Ui_msharpenDialog *w=(Ui_msharpenDialog *)_cookie;
-    
-    
-    MYSPIN(spinBoxThreshold)->setValue(param.threshold);
-    MYSPIN(spinBoxStrength)->setValue(param.strength);
-    MYTOGGLE(CheckBoxHQ)->setChecked(param.highq);
-    MYTOGGLE(checkBoxMask)->setChecked(param.mask);
-    invstrength=255-param.strength;	
-    printf("Upload\n");
+    blockChanges(true);
+    if(param.strength > 255) param.strength=255;
+
+    MYSPIN(Strength,strength)
+    MYSPIN(Threshold,threshold)
+    MYTOGGLE(HQ,highq)
+    MYTOGGLE(Mask,mask)
+    MYTOGGLE(Chroma,chroma)
+#undef MYSPIN
+#undef MYTOGGLE
+    blockChanges(false);
+    invstrength = 255-param.strength;
     return 1;
 }
 /**
@@ -122,21 +133,66 @@ uint8_t flyMSharpen::upload()
 */
 uint8_t flyMSharpen::download(void)
 {
-    
-#define MYSPIN(x) w->x
-#define MYTOGGLE(x) w->x
+#define MYSPIN(x,y) param.y=w->spinBox##x->value(); w->horizontalSlider##x->setValue(param.y);
+#define MYTOGGLE(x,y) param.y=w->checkBox##x->isChecked();
     Ui_msharpenDialog *w=(Ui_msharpenDialog *)_cookie;
-    
-    
-    param.threshold=MYSPIN(spinBoxThreshold)->value();
-    param.strength=MYSPIN(spinBoxStrength)->value();
-    param.highq= MYTOGGLE(CheckBoxHQ)->isChecked();
-    param.mask= MYTOGGLE(checkBoxMask)->isChecked();
-    invstrength=255-param.strength;	
-    printf("Download\n");
+    blockChanges(true);
+
+    MYSPIN(Strength,strength)
+    MYSPIN(Threshold,threshold)
+    MYTOGGLE(HQ,highq)
+    MYTOGGLE(Mask,mask)
+    MYTOGGLE(Chroma,chroma)
+#undef MYSPIN
+#undef MYTOGGLE
+    blockChanges(false);
+    if(param.strength > 255) param.strength=255;
+    invstrength = 255-param.strength;
     return true;
 }
+/**
+    \fn blockChanges
+*/
+#define APPLY_TO_ALL(x) w->horizontalSliderThreshold->x; w->horizontalSliderStrength->x; \
+                        w->spinBoxThreshold->x; w->spinBoxStrength->x; \
+                        w->checkBoxHQ->x; w->checkBoxChroma->x; w->checkBoxMask->x;
+void flyMSharpen::blockChanges(bool block)
+{
+    Ui_msharpenDialog *w=(Ui_msharpenDialog *)_cookie;
 
+    APPLY_TO_ALL(blockSignals(block))
+}
+/**
+    \fn setTabOrder
+*/
+void flyMSharpen::setTabOrder(void)
+{
+    Ui_msharpenDialog *w=(Ui_msharpenDialog *)_cookie;
+    std::vector<QWidget *> controls;
+
+#define MYSPIN(x) controls.push_back(w->horizontalSlider##x); \
+                  controls.push_back(w->spinBox##x);
+#define MYTOGGLE(x) controls.push_back(w->checkBox##x);
+    MYSPIN(Strength)
+    MYSPIN(Threshold)
+    MYTOGGLE(HQ)
+    MYTOGGLE(Chroma)
+    MYTOGGLE(Mask)
+
+    controls.insert(controls.end(), buttonList.begin(), buttonList.end());
+    controls.push_back(w->horizontalSlider);
+
+    QWidget *first, *second;
+
+    for(std::vector<QWidget *>::iterator tor = controls.begin(); tor != controls.end(); ++tor)
+    {
+        if(tor+1 == controls.end()) break;
+        first = *tor;
+        second = *(tor+1);
+        _parent->setTabOrder(first,second);
+        //ADM_info("Tab order: %p (%s) --> %p (%s)\n",first,first->objectName().toUtf8().constData(),second,second->objectName().toUtf8().constData());
+    }
+}
 /**
       \fn     DIA_getMpDelogo
       \brief  Handle delogo dialog

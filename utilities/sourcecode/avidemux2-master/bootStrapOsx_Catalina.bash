@@ -4,12 +4,14 @@
 fallback_qtdir=/usr/local/opt/qt5
 if [ "x$MYQT" != "x" ] && [ -e "${MYQT}/bin/qmake" ] ; then
     export PATH=$PATH:$MYQT/bin:/opt/local/libexec/qt5/bin # for macports; /usr/local/bin is in PATH by default anyway
+    export QTDIR="${MYQT}" # needed for translations
 else
     export PATH=$PATH:/opt/local/libexec/qt5/bin
 fi
 if ! $(which -s qmake) && [ -e "${fallback_qtdir}/bin/qmake" ] ; then
     echo "Using ${fallback_qtdir} as fallback qt5 install path"
     export PATH=$PATH:${fallback_qtdir}/bin
+    export QTDIR="${fallback_qtdir}"
 fi
 if ! $(which -s qmake) ; then
     echo "Error: No qmake executable found, aborting."
@@ -23,13 +25,10 @@ export API_VERSION="${MAJOR}.${MINOR}"
 
 DAT=`date +"%y%m%d-%Hh%Mm"`
 gt=`git log --format=oneline -1 | head -c 11`
-export REV="${DAT}_$gt"
-#
-# To move as parameter
-#
-export FLAVOR="-DENABLE_QT5=True"
-export qt_ext=Qt5
-#
+REV="${DAT}_$gt"
+
+FLAVOR="-DENABLE_QT5=True"
+qt_ext="Qt5"
 packages_ext=""
 do_core=1
 do_cli=1
@@ -39,10 +38,10 @@ do_plugins=1
 do_rebuild=0
 debug=0
 create_app_bundle=1
-external_libass=0
-external_liba52=0
+external_libass=1
+external_liba52=1
 external_libmad=0
-external_libmp4v2=0
+external_libmp4v2=1
 
 # /usr/include is no more on Catalina
 export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
@@ -140,25 +139,26 @@ usage()
 {
         echo "Bootstrap avidemux ${API_VERSION}:"
         echo "***********************"
-        echo "  --help                : Print usage"
-        echo "  --tgz                 : Build tgz packages"
-        echo "  --nopkg               : Don't create macOS app bundle"
-        echo "  --debug               : Switch debugging on"
-        echo "  --rebuild             : Preserve existing build directories"
-        echo "  --output=NAME         : Specify a custom basename for dmg"
-        echo "  --version=STRING      : Specify a custom Avidemux version string"
-        echo "  --with-core           : Build core (default)"
-        echo "  --without-core        : Don't build core"
-        echo "  --with-cli            : Build cli (default)"
-        echo "  --without-cli         : Don't build cli"
-        echo "  --with-qt             : Build qt (default)"
-        echo "  --without-qt          : Don't build qt"
-        echo "  --with-plugins        : Build plugins (default)"
-        echo "  --without-plugins     : Don't build plugins"
-        echo "  --with-system-libass  : Use system libass instead of the bundled one"
-        echo "  --with-system-liba52  : Use system liba52 (a52dec) instead of the bundled one"
-        echo "  --with-system-libmad  : Use system libmad instead of the bundled one"
-        echo "  --with-system-libmp4v2: Use system libmp4v2 instead of the bundled one"
+        echo "  --help                  : Print usage"
+        echo "  --tgz                   : Build tgz packages"
+        echo "  --nopkg                 : Don't create macOS app bundle"
+        echo "  --debug                 : Switch debugging on"
+        echo "  --rebuild               : Preserve existing build directories"
+        echo "  --output=NAME           : Specify a custom basename for dmg"
+        echo "  --version=STRING        : Specify a custom Avidemux version string"
+        echo "  --enable-qt6            : Require Qt6 instead of Qt5"
+        echo "  --with-core             : Build core (default)"
+        echo "  --without-core          : Don't build core"
+        echo "  --with-cli              : Build cli (default)"
+        echo "  --without-cli           : Don't build cli"
+        echo "  --with-qt               : Build qt (default)"
+        echo "  --without-qt            : Don't build qt"
+        echo "  --with-plugins          : Build plugins (default)"
+        echo "  --without-plugins       : Don't build plugins"
+        echo "  --with-internal-libass  : Use bundled libass instead of the system one"
+        echo "  --with-internal-liba52  : Use bundled liba52 (a52dec) instead of the system one"
+        echo "  --with-external-libmad  : Use system libmad instead of the bundled one"
+        echo "  --with-internal-libmp4v2: Use bundled libmp4v2 instead of the system one"
         config
 }
 option_value()
@@ -211,6 +211,10 @@ while [ $# != 0 ] ;do
          --version=*)
                 adm_version=$(option_value "$config_option")
                 ;;
+         --enable-qt6)
+                FLAVOR="-DENABLE_QT6=True"
+                qt_ext=Qt6
+                ;;
          --without-qt)
                 do_qt4=0
              ;;
@@ -235,17 +239,17 @@ while [ $# != 0 ] ;do
          --with-core)
                 do_core=1
              ;;
-         --with-system-libass)
-                external_libass=1
+         --with-internal-libass)
+                external_libass=0
              ;;
-         --with-system-liba52)
-                external_liba52=1
+         --with-internal-liba52)
+                external_liba52=0
              ;;
-         --with-system-libmad)
+         --with-external-libmad)
                 external_libmad=1
              ;;
-         --with-system-libmp4v2)
-                external_libmp4v2=1
+         --with-internal-libmp4v2)
+                external_libmp4v2=0
              ;;
         *)
                 echo "unknown parameter $config_option"
@@ -329,8 +333,8 @@ if [ "x$create_app_bundle" = "x1" ] ; then
     mkdir -p installer
     rm -Rf installer/*
     cd installer
-    cmake -DAVIDEMUX_VERSION="$ADM_VERSION" -DDMG_BASENAME="$output" -DBUILD_REV="$REV" ../avidemux/osxInstaller
-    make && make package
-echo "** Preparing packaging **"
+    cmake -DAVIDEMUX_VERSION="$ADM_VERSION" -DDMG_BASENAME="$output" -DBUILD_REV="$REV" $FLAVOR ../avidemux/osxInstaller
+    echo "** Preparing packaging **"
+    make install && make package
 fi
 echo "** ALL DONE **"

@@ -1,6 +1,10 @@
 #include <QtCore/QStack>
 #include <QApplication>
-#include <QDesktopWidget>
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
+#   include <QDesktopWidget>
+#else
+#   include <QScreen>
+#endif
 
 #include "ADM_toolkitQt.h"
 #include "ADM_assert.h"
@@ -58,8 +62,11 @@ QWidget* qtLastRegisteredDialog()
 
 uint8_t UI_getPhysicalScreenSize(void* window, uint32_t *w,uint32_t *h)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5,11,0)
 	QRect qrect = QApplication::desktop()->availableGeometry();
-
+#else
+    QRect qrect = QApplication::primaryScreen()->availableGeometry();
+#endif
 	*w = (uint32_t)qrect.width();
 	*h = (uint32_t)qrect.height();
     return 1;
@@ -99,4 +106,16 @@ float UI_calcZoomToFitScreen(QWidget* window, QWidget* canvas, uint32_t imageWid
         float r= (widthRatio < heightRatio ? widthRatio : heightRatio);
         return r;
 		
+}
+
+/**
+ * \fn qtSettingsCreate
+ * \brief Returns a pointer to QSettings object, the caller is responsible for deleting it after use.
+ */
+QSettings *qtSettingsCreate(void)
+{
+    QString path = ADM_getBaseDir();
+    path += "QtSettings.ini";
+    QSettings *settings = new QSettings(path, QSettings::IniFormat);
+    return settings;
 }

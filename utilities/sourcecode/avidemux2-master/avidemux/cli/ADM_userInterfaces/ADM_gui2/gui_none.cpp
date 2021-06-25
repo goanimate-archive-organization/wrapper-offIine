@@ -164,6 +164,9 @@ void UI_setMarkers(uint64_t a,uint64_t b)
 void UI_setTotalTime(uint64_t t)
 {
 }
+void UI_setSegments(uint32_t numOfSegs, uint64_t * segPts)
+{
+}
 bool UI_setVUMeter(uint32_t volume[8])
 {
     return true;
@@ -192,4 +195,9 @@ void UI_resetZoomThreshold(void)
 {}
 void UI_setZoomToFitIntoWindow(void)
 {}
+void UI_getMaximumPreviewSize(uint32_t *availWidth, uint32_t *availHeight)
+{
+    *availWidth = 0;
+    *availHeight = 0;
+}
 // EOF

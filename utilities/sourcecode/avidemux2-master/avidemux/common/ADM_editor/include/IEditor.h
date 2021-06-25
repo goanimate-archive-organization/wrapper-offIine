@@ -45,7 +45,7 @@ public:
     virtual void dumpSegments(void) = 0;
     virtual bool dumpRefVideos(void) = 0;
     virtual bool dumpTiming(void) = 0;
-    virtual void getCurrentFrameFlags(uint32_t *flags, uint32_t *quantiser) = 0;
+    virtual bool getCurrentFrameFlags(uint32_t *flags, uint32_t *quantiser) = 0;
     virtual uint64_t getCurrentFramePts(void) = 0;
     virtual bool getDirectImageForDebug(uint32_t frameNum, ADMCompressedImage *img) = 0;
     virtual uint64_t getFrameIncrement(bool copy=false) = 0;
@@ -68,8 +68,8 @@ public:
     virtual bool goToIntraTimeVideo(uint64_t time) = 0;
     virtual bool goToTimeVideo(uint64_t time) = 0;
     virtual bool isFileOpen(void) = 0;
-    virtual bool nextPicture(ADMImage *image, int flags = 0) = 0;
-    virtual bool samePicture(ADMImage *image) = 0;
+    virtual bool nextPicture(ADMImage *image = NULL) = 0;
+    virtual bool samePicture(ADMImage *image = NULL) = 0;
     virtual int openFile(const char *name) = 0;
     virtual bool rewind(void) = 0;
     virtual int saveImageBmp(const char *filename) = 0;
@@ -112,8 +112,8 @@ public:
     virtual ActiveAudioTracks* getPoolOfActiveAudioTrack(void) = 0;
     virtual PoolOfAudioTracks* getPoolOfAudioTrack(void) = 0;
     virtual void updateDefaultAudioTrack(void) = 0;
-    virtual void seekFrame(int count) = 0;
-    virtual void seekKeyFrame(int count) = 0;
+    virtual bool seekFrame(int count) = 0;
+    virtual bool seekKeyFrame(int count) = 0;
     virtual void seekBlackFrame(int count) = 0;
     virtual uint32_t getFrameSize(int count) = 0;
     virtual int  setVideoCodecProfile(const char *codec, const char *profile)=0;

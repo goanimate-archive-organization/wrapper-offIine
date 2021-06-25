@@ -21,6 +21,9 @@ INITIALISE_SUMMARY_LISTS()
 ADD_DEFINITIONS(-D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
 include(admMainChecks)
 
+UNSET(CMAKE_CXX_VISIBILITY_PRESET)
+UNSET(CMAKE_VISIBILITY_INLINES_HIDDEN)
+
 ########################################
 # Add include dirs
 ########################################
@@ -57,7 +60,7 @@ SET(ADM_EXE_SRCS
 ../common/ADM_previewNavigate.cpp
 ../common/gui_main.cpp
 ../common/gui_autodrive.cpp
-../common/GUI_jobs.cpp
+#../common/GUI_jobs.cpp
 ../common/gui_navigate.cpp
 ../common/gui_play.cpp
 ../common/gui_save.cpp

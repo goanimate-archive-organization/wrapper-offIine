@@ -30,6 +30,9 @@
 #include <QDialog>
 #include <QLabel>
 #include <QRubberBand>
+#include <QMouseEvent>
+#include <QPoint>
+#include <QRect>
 
 #include "ADM_default.h"
 #include "ADM_rgb.h"
@@ -56,6 +59,7 @@ class ADM_UIQT46_EXPORT ADM_QCanvas : public QWidget
 {
 protected:
         uint32_t _w,_h;
+        uint32_t _l; // bytes per line
 public:
         uint8_t *dataBuffer;
 
@@ -92,7 +96,7 @@ class ADM_UIQT46_EXPORT ADM_flyDialog : public QObject
           ADM_byteBuffer _rgbByteBufferDisplay;
 
           flyControl  *_control;
-          
+          std::vector<QWidget *> buttonList; // useful for manipulating tab order
           QDialog     *_parent;
 
 
@@ -132,6 +136,7 @@ public:
 
   virtual bool       setCurrentPts(uint64_t pts) {return true;};
   virtual bool       bandResized(int x, int y, int w, int h) { return true; }
+  virtual bool       bandMoved(int x, int y, int w, int h) { return true; }
 
 
 // UI dependant part : They are implemented in ADM_flyDialogGtk/Qt/...
@@ -224,9 +229,18 @@ protected:
 class ADM_UIQT46_EXPORT ADM_QRubberBand : public QRubberBand
 {
 public:
+        typedef enum {
+             ADM_RUBBER_BAND_GRIPS_NONE=0,
+             ADM_RUBBER_BAND_GRIPS_FIRST=1,
+             ADM_RUBBER_BAND_GRIPS_SECOND=2,
+             ADM_RUBBER_BAND_GRIPS_MASK=3
+        } ADM_rubberBandFlags;
+
         ADM_QRubberBand(QWidget *parent);
         ~ADM_QRubberBand();
+        void drawGrips(int flags) { mode = (ADM_rubberBandFlags)(flags & ADM_RUBBER_BAND_GRIPS_MASK); }
 private:
+        ADM_rubberBandFlags mode;
         void paintEvent(QPaintEvent *event);
 };
 
@@ -247,8 +261,20 @@ public:
         {
             rubberband->blockSignals(block);
         }
+        void sizeGripEnable(bool topLeftEnabled, bool bottomRightEnabled);
 private:
+        QWidget * rubberControlParent;
+        void *grip1ptr;
+        void *grip2ptr;
+        bool drag;
+        QPoint dragOffset;
+        QRect dragGeometry;
         void resizeEvent(QResizeEvent *);
+        void enterEvent(QEvent *);
+        void leaveEvent(QEvent *);
+        void mousePressEvent(QMouseEvent *);
+        void mouseReleaseEvent(QMouseEvent *);
+        void mouseMoveEvent(QMouseEvent *);
 };
 
 //EOF

@@ -18,8 +18,10 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QPushButton>
 #include "Q_msharpen.h"
 #include "ADM_toolkitQt.h"
+#include "../ADM_vidMSharpen.h"
 
 //
 //	Video is in YV12 Colorspace
@@ -39,20 +41,27 @@
         flymsharpen=new flyMSharpen( this,width, height,in,canvas,ui.horizontalSlider);
         memcpy(&(flymsharpen->param),param,sizeof(*param));
         flymsharpen->_cookie=&ui;
-        flymsharpen->addControl(ui.toolboxLayout);
+        flymsharpen->addControl(ui.toolboxLayout, true);
+        flymsharpen->setTabOrder();
         flymsharpen->upload();
         flymsharpen->sliderChanged();
 
+        ui.horizontalSliderStrength->setFocus();
 
         connect( ui.horizontalSlider,SIGNAL(valueChanged(int)),this,SLOT(sliderUpdate(int)));
-#define SPINNER(x) connect( ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(valueChanged(int))); 
-#define TOGGLER(x) connect( ui.x,SIGNAL(stateChanged(int)),this,SLOT(valueChanged(int))); 
-        
-        TOGGLER(CheckBoxHQ);
-        TOGGLER(checkBoxMask);
-        
+#define SPINNER(x) connect( ui.spinBox##x,SIGNAL(valueChanged(int)),this,SLOT(valueChanged(int)));\
+		   connect( ui.horizontalSlider##x,SIGNAL(valueChanged(int)),this,SLOT(valueChangedSlider(int)));
+#define TOGGLER(x) connect(ui.checkBox##x,SIGNAL(stateChanged(int)),this,SLOT(valueChanged(int)));
+
+        TOGGLER(HQ)
+        TOGGLER(Mask)
+        TOGGLER(Chroma)
+
         SPINNER(Threshold);
         SPINNER(Strength);
+
+        QPushButton *resetButton = ui.buttonBox->button(QDialogButtonBox::Reset);
+        connect(resetButton,SIGNAL(clicked(bool)),this,SLOT(reset(bool)));
 
         setModal(true);
   }
@@ -75,14 +84,21 @@ Ui_msharpenWindow::~Ui_msharpenWindow()
 }
 void Ui_msharpenWindow::valueChanged( int f )
 {
-  printf("Update \n");
   if(lock) return;
   lock++;
   flymsharpen->download();
   flymsharpen->sameImage();
   lock--;
 }
-
+void Ui_msharpenWindow::reset(bool checked)
+{
+    if(lock) return;
+    lock++;
+    Msharpen::reset(&flymsharpen->param);
+    flymsharpen->upload();
+    flymsharpen->sameImage();
+    lock--;
+}
 void Ui_msharpenWindow::resizeEvent(QResizeEvent *event)
 {
     if(!canvas->height())
@@ -100,8 +116,17 @@ void Ui_msharpenWindow::showEvent(QShowEvent *event)
     canvas->parentWidget()->setMinimumSize(30,30); // allow resizing after the dialog has settled
 }
 
-#define MYSPIN(x) w->doubleSpinBox##x
+#define SYNCSPIN(x) ui.spinBox##x->setValue(ui.horizontalSlider##x->value());
+void Ui_msharpenWindow::valueChangedSlider(int f)
+{
+	flymsharpen->blockChanges(true);
 
+	SYNCSPIN(Threshold);
+	SYNCSPIN(Strength);
+
+	flymsharpen->blockChanges(false);
+	valueChanged(0);
+}
 //____________________________________
 // EOF
 
