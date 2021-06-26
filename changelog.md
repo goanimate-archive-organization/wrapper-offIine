@@ -60,6 +60,14 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
  - old logo
  - ps1 files
  - other nah
+## Build 108
+### Added
+ - Avidemux 2.7.8
+ - unzipped sourcecode
+### Changed
+ - an main removal
+### Fixed
+ - Discord rpc
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
 ## Build 5
