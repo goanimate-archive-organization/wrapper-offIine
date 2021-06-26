@@ -496,6 +496,9 @@ static int decode_frame(AVCodecContext *avctx,
 
         bytestream2_init(gb, s->lzf_buffer, uncompressed_size);
     } else if (s->format == 1) {
+        if (bytestream2_get_bytes_left(gb) < uncompressed_size / 255)
+            return AVERROR_INVALIDDATA;
+
         av_fast_padded_malloc(&s->uncompressed_buffer, &s->uncompressed_size,
                               uncompressed_size);
         if (!s->uncompressed_buffer)
@@ -534,7 +537,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_notchlc_decoder = {
+const AVCodec ff_notchlc_decoder = {
     .name             = "notchlc",
     .long_name        = NULL_IF_CONFIG_SMALL("NotchLC"),
     .type             = AVMEDIA_TYPE_VIDEO,
@@ -544,4 +547,5 @@ AVCodec ff_notchlc_decoder = {
     .close            = decode_end,
     .decode           = decode_frame,
     .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE,
 };

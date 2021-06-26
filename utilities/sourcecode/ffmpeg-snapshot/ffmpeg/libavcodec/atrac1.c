@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "get_bits.h"
 #include "fft.h"
@@ -380,7 +382,7 @@ static av_cold int atrac1_decode_init(AVCodecContext *avctx)
 }
 
 
-AVCodec ff_atrac1_decoder = {
+const AVCodec ff_atrac1_decoder = {
     .name           = "atrac1",
     .long_name      = NULL_IF_CONFIG_SMALL("ATRAC1 (Adaptive TRansform Acoustic Coding)"),
     .type           = AVMEDIA_TYPE_AUDIO,

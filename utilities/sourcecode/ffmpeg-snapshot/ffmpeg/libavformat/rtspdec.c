@@ -724,6 +724,7 @@ static int rtsp_probe(const AVProbeData *p)
 #if CONFIG_TLS_PROTOCOL
         av_strstart(p->filename, "rtsps:", NULL) ||
 #endif
+        av_strstart(p->filename, "satip:", NULL) ||
         av_strstart(p->filename, "rtsp:", NULL))
         return AVPROBE_SCORE_MAX;
     return 0;
@@ -982,7 +983,7 @@ static const AVClass rtsp_demuxer_class = {
     .version        = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_rtsp_demuxer = {
+const AVInputFormat ff_rtsp_demuxer = {
     .name           = "rtsp",
     .long_name      = NULL_IF_CONFIG_SMALL("RTSP input"),
     .priv_data_size = sizeof(RTSPState),

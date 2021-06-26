@@ -168,7 +168,7 @@ static const AVClass ac3_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_ac3_fixed_decoder = {
+const AVCodec ff_ac3_fixed_decoder = {
     .name           = "ac3_fixed",
     .type           = AVMEDIA_TYPE_AUDIO,
     .id             = AV_CODEC_ID_AC3,
@@ -182,4 +182,5 @@ AVCodec ff_ac3_fixed_decoder = {
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
                                                       AV_SAMPLE_FMT_NONE },
     .priv_class     = &ac3_decoder_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

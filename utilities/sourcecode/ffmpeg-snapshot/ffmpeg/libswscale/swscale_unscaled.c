@@ -30,6 +30,7 @@
 #include "libavutil/cpu.h"
 #include "libavutil/avutil.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/bswap.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/avassert.h"
@@ -1977,6 +1978,7 @@ void ff_get_unscaled_swscale(SwsContext *c)
     const enum AVPixelFormat dstFormat = c->dstFormat;
     const int flags = c->flags;
     const int dstH = c->dstH;
+    const int dstW = c->dstW;
     int needsDither;
 
     needsDither = isAnyRGB(dstFormat) &&
@@ -2032,7 +2034,7 @@ void ff_get_unscaled_swscale(SwsContext *c)
     /* bgr24toYV12 */
     if (srcFormat == AV_PIX_FMT_BGR24 &&
         (dstFormat == AV_PIX_FMT_YUV420P || dstFormat == AV_PIX_FMT_YUVA420P) &&
-        !(flags & SWS_ACCURATE_RND))
+        !(flags & SWS_ACCURATE_RND) && !(dstW&1))
         c->swscale = bgr24ToYv12Wrapper;
 
     /* RGB/BGR -> RGB/BGR (no dither needed forms) */

@@ -27,6 +27,7 @@
 #include "atrac9tab.h"
 #include "libavutil/lfg.h"
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
 
 #define ATRAC9_SF_VLC_BITS 8
 #define ATRAC9_COEFF_VLC_BITS 9
@@ -985,7 +986,7 @@ static av_cold int atrac9_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_atrac9_decoder = {
+const AVCodec ff_atrac9_decoder = {
     .name           = "atrac9",
     .long_name      = NULL_IF_CONFIG_SMALL("ATRAC9 (Adaptive TRansform Acoustic Coding 9)"),
     .type           = AVMEDIA_TYPE_AUDIO,

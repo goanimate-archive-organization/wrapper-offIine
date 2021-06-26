@@ -453,7 +453,7 @@ static int read_zp_coefficients(AVFilterContext *ctx, char *item_str, int nb_ite
     return 0;
 }
 
-static const char *format[] = { "%lf", "%lf %lfi", "%lf %lfr", "%lf %lfd", "%lf %lfi" };
+static const char *const format[] = { "%lf", "%lf %lfi", "%lf %lfr", "%lf %lfd", "%lf %lfi" };
 
 static int read_channels(AVFilterContext *ctx, int channels, uint8_t *item_str, int ab)
 {
@@ -966,7 +966,7 @@ static double coef_sf2zf(double *a, int N, int n)
         for (int k = FFMAX(n - N + i, 0); k <= FFMIN(i, n); k++) {
             acc += ((fact(i) * fact(N - i)) /
                     (fact(k) * fact(i - k) * fact(n - k) * fact(N - i - n + k))) *
-                   ((k & 1) ? -1. : 1.);;
+                   ((k & 1) ? -1. : 1.);
         }
 
         z += a[i] * pow(2., i) * acc;
@@ -1577,7 +1577,7 @@ static const AVOption aiir_options[] = {
 
 AVFILTER_DEFINE_CLASS(aiir);
 
-AVFilter ff_af_aiir = {
+const AVFilter ff_af_aiir = {
     .name          = "aiir",
     .description   = NULL_IF_CONFIG_SMALL("Apply Infinite Impulse Response filter with supplied coefficients."),
     .priv_size     = sizeof(AudioIIRContext),

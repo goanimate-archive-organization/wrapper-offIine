@@ -38,49 +38,24 @@
 extern RLTable ff_rl_speedhq;
 static uint8_t speedhq_static_rl_table_store[2][2*MAX_RUN + MAX_LEVEL + 3];
 
-static uint16_t mpeg12_vlc_dc_lum_code_reversed[12];
-static uint16_t mpeg12_vlc_dc_chroma_code_reversed[12];
+/* Exactly the same as MPEG-2, except little-endian. */
+static const uint16_t mpeg12_vlc_dc_lum_code_reversed[12] = {
+    0x1, 0x0, 0x2, 0x5, 0x3, 0x7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF
+};
+static const uint16_t mpeg12_vlc_dc_chroma_code_reversed[12] = {
+    0x0, 0x2, 0x1, 0x3, 0x7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF
+};
 
 /* simple include everything table for dc, first byte is bits
  * number next 3 are code */
 static uint32_t speedhq_lum_dc_uni[512];
 static uint32_t speedhq_chr_dc_uni[512];
 
-static uint8_t speedhq_index_run[2][64];
-static int8_t  speedhq_max_level[2][64];
-
 static uint8_t uni_speedhq_ac_vlc_len[64 * 64 * 2];
-
-static uint32_t reverse(uint32_t num, int bits)
-{
-    return bitswap_32(num) >> (32 - bits);
-}
-
-static void reverse_code(const uint16_t *code, const uint8_t *bits,
-                         uint16_t *reversed_code, int num_entries)
-{
-    for (int i = 0; i < num_entries; i++)
-        reversed_code[i] = reverse(code[i], bits[i]);
-}
 
 static av_cold void speedhq_init_static_data(void)
 {
-    /* Exactly the same as MPEG-2, except little-endian. */
-    reverse_code(ff_mpeg12_vlc_dc_lum_code,
-                 ff_mpeg12_vlc_dc_lum_bits,
-                 mpeg12_vlc_dc_lum_code_reversed,
-                 12);
-    reverse_code(ff_mpeg12_vlc_dc_chroma_code,
-                 ff_mpeg12_vlc_dc_chroma_bits,
-                 mpeg12_vlc_dc_chroma_code_reversed,
-                 12);
-
     ff_rl_init(&ff_rl_speedhq, speedhq_static_rl_table_store);
-
-    for (int i = 0; i < 64; i++) {
-        speedhq_max_level[0][i] = ff_rl_speedhq.max_level[0][i];
-        speedhq_index_run[0][i] = ff_rl_speedhq.index_run[0][i];
-    }
 
     /* build unified dc encoding tables */
     for (int i = -255; i < 256; i++) {
@@ -231,8 +206,8 @@ static void encode_block(MpegEncContext *s, int16_t *block, int n)
             MASK_ABS(sign, alevel);
             sign &= 1;
 
-            if (alevel <= speedhq_max_level[0][run]) {
-                code = speedhq_index_run[0][run] + alevel - 1;
+            if (alevel <= ff_rl_speedhq.max_level[0][run]) {
+                code = ff_rl_speedhq.index_run[0][run] + alevel - 1;
                 /* store the VLC & sign at once */
                 put_bits_le(&s->pb, ff_rl_speedhq.table_vlc[code][1] + 1,
                             ff_rl_speedhq.table_vlc[code][0] + (sign << ff_rl_speedhq.table_vlc[code][1]));
@@ -297,7 +272,7 @@ static const AVClass speedhq_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_speedhq_encoder = {
+const AVCodec ff_speedhq_encoder = {
     .name           = "speedhq",
     .long_name      = NULL_IF_CONFIG_SMALL("NewTek SpeedHQ"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -306,7 +281,7 @@ AVCodec ff_speedhq_encoder = {
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
-    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_NONE

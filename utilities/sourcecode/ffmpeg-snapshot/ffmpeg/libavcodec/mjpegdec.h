@@ -30,6 +30,7 @@
 #define AVCODEC_MJPEGDEC_H
 
 #include "libavutil/log.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/stereo3d.h"
 
@@ -42,6 +43,13 @@
 #undef near /* This file uses struct member 'near' which in windows.h is defined as empty. */
 
 #define MAX_COMPONENTS 4
+
+typedef struct ICCEntry {
+    uint8_t *data;
+    int    length;
+} ICCEntry;
+
+struct JLSState;
 
 typedef struct MJpegDecodeContext {
     AVClass *class;
@@ -59,7 +67,7 @@ typedef struct MJpegDecodeContext {
     VLC vlcs[3][4];
     int qscale[4];      ///< quantizer scale calculated from quant_matrixes
 
-    int org_height;  /* size given at codec init */
+    int orig_height;  /* size given at codec init */
     int first_picture;    /* true if decoding first picture */
     int interlaced;     /* true if interlaced */
     int bottom_field;   /* true if bottom field */
@@ -109,6 +117,7 @@ typedef struct MJpegDecodeContext {
     uint8_t *last_nnz[MAX_COMPONENTS];
     uint64_t coefs_finished[MAX_COMPONENTS]; ///< bitmask of which coefs have been completely decoded (progressive mode)
     int palette_index;
+    int force_pal8;
     ScanTable scantable;
     BlockDSPContext bdsp;
     HpelDSPContext hdsp;
@@ -137,8 +146,7 @@ typedef struct MJpegDecodeContext {
 
     const AVPixFmtDescriptor *pix_desc;
 
-    uint8_t **iccdata;
-    int *iccdatalens;
+    ICCEntry *iccentries;
     int iccnum;
     int iccread;
 
@@ -158,8 +166,11 @@ typedef struct MJpegDecodeContext {
     enum AVPixelFormat hwaccel_sw_pix_fmt;
     enum AVPixelFormat hwaccel_pix_fmt;
     void *hwaccel_picture_private;
+    struct JLSState *jls_state;
 } MJpegDecodeContext;
 
+int ff_mjpeg_build_vlc(VLC *vlc, const uint8_t *bits_table,
+                       const uint8_t *val_table, int is_ac, void *logctx);
 int ff_mjpeg_decode_init(AVCodecContext *avctx);
 int ff_mjpeg_decode_end(AVCodecContext *avctx);
 int ff_mjpeg_receive_frame(AVCodecContext *avctx, AVFrame *frame);

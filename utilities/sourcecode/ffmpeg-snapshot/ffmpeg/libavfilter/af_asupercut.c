@@ -368,7 +368,7 @@ static const AVFilterPad outputs[] = {
     { NULL }
 };
 
-AVFilter ff_af_asupercut = {
+const AVFilter ff_af_asupercut = {
     .name            = "asupercut",
     .description     = NULL_IF_CONFIG_SMALL("Cut super frequencies."),
     .query_formats   = query_formats,
@@ -391,7 +391,7 @@ static const AVOption asubcut_options[] = {
 
 AVFILTER_DEFINE_CLASS(asubcut);
 
-AVFilter ff_af_asubcut = {
+const AVFilter ff_af_asubcut = {
     .name            = "asubcut",
     .description     = NULL_IF_CONFIG_SMALL("Cut subwoofer frequencies."),
     .query_formats   = query_formats,
@@ -405,7 +405,7 @@ AVFilter ff_af_asubcut = {
                        AVFILTER_FLAG_SLICE_THREADS,
 };
 
-static const AVOption asuperpass_options[] = {
+static const AVOption asuperpass_asuperstop_options[] = {
     { "centerf","set center frequency", OFFSET(cutoff), AV_OPT_TYPE_DOUBLE, {.dbl=1000}, 2, 999999, FLAGS },
     { "order",  "set filter order",     OFFSET(order),  AV_OPT_TYPE_INT,    {.i64=4},    4,     20, FLAGS },
     { "qfactor","set Q-factor",         OFFSET(qfactor),AV_OPT_TYPE_DOUBLE, {.dbl=1.},0.01,   100., FLAGS },
@@ -413,9 +413,10 @@ static const AVOption asuperpass_options[] = {
     { NULL }
 };
 
+#define asuperpass_options asuperpass_asuperstop_options
 AVFILTER_DEFINE_CLASS(asuperpass);
 
-AVFilter ff_af_asuperpass = {
+const AVFilter ff_af_asuperpass = {
     .name            = "asuperpass",
     .description     = NULL_IF_CONFIG_SMALL("Apply high order Butterworth band-pass filter."),
     .query_formats   = query_formats,
@@ -429,17 +430,10 @@ AVFilter ff_af_asuperpass = {
                        AVFILTER_FLAG_SLICE_THREADS,
 };
 
-static const AVOption asuperstop_options[] = {
-    { "centerf","set center frequency", OFFSET(cutoff), AV_OPT_TYPE_DOUBLE, {.dbl=1000}, 2, 999999, FLAGS },
-    { "order",  "set filter order",     OFFSET(order),  AV_OPT_TYPE_INT,    {.i64=4},    4,     20, FLAGS },
-    { "qfactor","set Q-factor",         OFFSET(qfactor),AV_OPT_TYPE_DOUBLE, {.dbl=1.},0.01,   100., FLAGS },
-    { "level",  "set input level",      OFFSET(level),  AV_OPT_TYPE_DOUBLE, {.dbl=1.},   0.,    2., FLAGS },
-    { NULL }
-};
-
+#define asuperstop_options asuperpass_asuperstop_options
 AVFILTER_DEFINE_CLASS(asuperstop);
 
-AVFilter ff_af_asuperstop = {
+const AVFilter ff_af_asuperstop = {
     .name            = "asuperstop",
     .description     = NULL_IF_CONFIG_SMALL("Apply high order Butterworth band-stop filter."),
     .query_formats   = query_formats,

@@ -54,7 +54,7 @@ static int64_t read_ts(const char *s)
     if (sscanf(s,    "%u:%u.%u",      &mm, &ss, &ms) == 3) return (            mm*60LL + ss) * 100LL + ms;
     if (sscanf(s,    "%u:%u"   ,      &mm, &ss     ) == 2) return (            mm*60LL + ss) * 100LL;
     if (sscanf(s,       "%u.%u",           &ss, &ms) == 2) return (                      ss) * 100LL + ms;
-    return strtol(s, NULL, 10) * 100LL;
+    return strtoll(s, NULL, 10) * 100ULL;
 }
 
 static int realtext_read_header(AVFormatContext *s)
@@ -111,10 +111,11 @@ static int realtext_read_header(AVFormatContext *s)
             if (!merge) {
                 const char *begin = ff_smil_get_attr_ptr(buf.str, "begin");
                 const char *end   = ff_smil_get_attr_ptr(buf.str, "end");
+                int64_t endi = end ? read_ts(end) : 0;
 
                 sub->pos      = pos;
                 sub->pts      = begin ? read_ts(begin) : 0;
-                sub->duration = end ? (read_ts(end) - sub->pts) : duration;
+                sub->duration = (end && endi > sub->pts && endi - (uint64_t)sub->pts <= INT64_MAX) ? endi - sub->pts : duration;
             }
         }
         av_bprint_clear(&buf);
@@ -149,7 +150,7 @@ static int realtext_read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_realtext_demuxer = {
+const AVInputFormat ff_realtext_demuxer = {
     .name           = "realtext",
     .long_name      = NULL_IF_CONFIG_SMALL("RealText subtitle format"),
     .priv_data_size = sizeof(RealTextContext),

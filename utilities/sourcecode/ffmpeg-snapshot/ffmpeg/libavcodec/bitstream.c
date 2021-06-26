@@ -45,17 +45,6 @@ const uint8_t ff_log2_run[41]={
 24,
 };
 
-#if FF_API_AVPRIV_PUT_BITS
-void avpriv_align_put_bits(PutBitContext *s)
-{
-    align_put_bits(s);
-}
-void avpriv_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
-{
-    ff_copy_bits(pb, src, length);
-}
-#endif
-
 void ff_put_string(PutBitContext *pb, const char *string, int terminate_string)
 {
     while (*string) {
@@ -104,10 +93,10 @@ void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
         v = *(const uint16_t *)ptr;                         \
         break;                                              \
     case 4:                                                 \
+    default:                                                \
+        av_assert1(size == 4);                              \
         v = *(const uint32_t *)ptr;                         \
         break;                                              \
-    default:                                                \
-        av_assert1(0);                                      \
     }                                                       \
 }
 

@@ -39,6 +39,7 @@
 #include "libavutil/attributes.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/libm.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/thread.h"
 
 #include "avcodec.h"
@@ -1012,7 +1013,7 @@ static av_cold int atrac3_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_atrac3_decoder = {
+const AVCodec ff_atrac3_decoder = {
     .name             = "atrac3",
     .long_name        = NULL_IF_CONFIG_SMALL("ATRAC3 (Adaptive TRansform Acoustic Coding 3)"),
     .type             = AVMEDIA_TYPE_AUDIO,
@@ -1027,7 +1028,7 @@ AVCodec ff_atrac3_decoder = {
     .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 
-AVCodec ff_atrac3al_decoder = {
+const AVCodec ff_atrac3al_decoder = {
     .name             = "atrac3al",
     .long_name        = NULL_IF_CONFIG_SMALL("ATRAC3 AL (Adaptive TRansform Acoustic Coding 3 Advanced Lossless)"),
     .type             = AVMEDIA_TYPE_AUDIO,
