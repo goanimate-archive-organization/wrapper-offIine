@@ -1,4 +1,3 @@
-
 --TEST--
 mysqli_options()
 --EXTENSIONS--
