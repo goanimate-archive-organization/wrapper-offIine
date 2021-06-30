@@ -99,6 +99,11 @@
             "headers": {
                 "Content-Type": "text/javascript; charset=UTF-8"
             }
+        },
+		"pages/js/(.*)(php|PHP)$": {
+            "headers": {
+                "Content-Type": "text/javascript; charset=UTF-8"
+            }
         }
 	},
 	"POST": {
