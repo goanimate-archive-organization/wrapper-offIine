@@ -1,4 +1,5 @@
 const folder = process.env.SAVED_FOLDER;
+const importFolder = process.env.IMPORT_FOLDER;
 const nodezip = require("node-zip");
 const fs = require("fs");
 
@@ -42,6 +43,10 @@ module.exports = {
 		const indicies = this.getValidFileIndicies(s, suf, l);
 		return indicies.length ? indicies[indicies.length - 1] + 1 : 0;
 	},
+	getNextFileIdImport(s, suf = ".xml", l = 7) {
+		const indicies = this.getValidFileIndiciesImport(s, suf, l);
+		return indicies.length ? indicies[indicies.length - 1] + 1 : 0;
+	},
 	/**
 	 * @param {string} s
 	 * @param {string} suf
@@ -62,8 +67,12 @@ module.exports = {
 	 * @param {number} l
 	 * @returns {string}
 	 */
-	getFileIndex(s, suf = ".xml", n, l = 7) {
-		return this.getFileString(s, suf, this.padZero(n, l));
+	getFileIndex(s, suf, n, isImport = 0, l = 7) {
+		if (isImport == 1) {
+			return this.getFileStringImport(s, suf, this.padZero(n, l));
+		} else {
+			return this.getFileString(s, suf, this.padZero(n, l));
+		}
 	},
 	/**
 	 * @param {string} s
@@ -73,6 +82,9 @@ module.exports = {
 	 */
 	getFileString(s, suf = ".xml", name) {
 		return `${folder}/${s}${name}${suf}`;
+	},
+	getFileStringImport(s, suf = ".xml", name) {
+		return `${importFolder}/${s}${name}${suf}`;
 	},
 	/**
 	 * @param {string} s
@@ -84,6 +96,20 @@ module.exports = {
 		const regex = new RegExp(`${s}[0-9]{${l}}${suf}$`);
 		return fs
 			.readdirSync(folder)
+			.filter((v) => v && regex.test(v))
+			.map((v) => Number.parseInt(v.substr(s.length, l)));
+	},
+	getValidFileIndiciesImport(s, suf = ".xml", l = 7) {
+		const regex = new RegExp(`${s}[0-9]{${l}}${suf}$`);
+		return fs
+			.readdirSync(importFolder)
+			.filter((v) => v && regex.test(v))
+			.map((v) => Number.parseInt(v.substr(s.length, l)));
+	},
+	getAllValidFileIndiciesImport(s, suf = ".xml", l = 7) {
+		const regex = new RegExp(`[\s\S]*[0-9]{${l}}${suf}$`);
+		return fs
+			.readdirSync(importFolder)
 			.filter((v) => v && regex.test(v))
 			.map((v) => Number.parseInt(v.substr(s.length, l)));
 	},
