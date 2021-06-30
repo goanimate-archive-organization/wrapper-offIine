@@ -2,8 +2,15 @@ PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ?? ??? ????, PHP 8.1.0alpha3
 
-- Core
+- Core:
   . Fixed bug #81202 (powerpc64 build fails on fibers). (krakjoe)
+
+- Curl:
+  . Fixed bug #81085 (Support CURLOPT_SSLCERT_BLOB for cert strings).
+    (camporter)
+
+- Reflection:
+  . Fixed bug #81200 (no way to determine if Closure is static). (krakjoe)
 
 24 Jun 2021, PHP 8.1.0alpha2
 
