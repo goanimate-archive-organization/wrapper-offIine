@@ -1823,7 +1823,7 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
         (c->srcRange == c->dstRange || isAnyRGB(dstFormat)) &&
         alphaless_fmt(srcFormat) == dstFormat
     ) {
-        c->swscale = ff_sws_alphablendaway;
+        c->convert_unscaled = ff_sws_alphablendaway;
 
         if (flags & SWS_PRINT_INFO)
             av_log(c, AV_LOG_INFO,
@@ -1838,7 +1838,7 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
          isFloat(srcFormat) || isFloat(dstFormat))){
         ff_get_unscaled_swscale(c);
 
-        if (c->swscale) {
+        if (c->convert_unscaled) {
             if (flags & SWS_PRINT_INFO)
                 av_log(c, AV_LOG_INFO,
                        "using unscaled %s -> %s special converter\n",
@@ -1847,7 +1847,8 @@ av_cold int sws_init_context(SwsContext *c, SwsFilter *srcFilter,
         }
     }
 
-    c->swscale = ff_getSwsFunc(c);
+    ff_sws_init_scale(c);
+
     return ff_init_filters(c);
 nomem:
     ret = AVERROR(ENOMEM);
@@ -2294,6 +2295,9 @@ void sws_freeContext(SwsContext *c)
 
     av_freep(&c->gamma);
     av_freep(&c->inv_gamma);
+
+    av_freep(&c->rgb0_scratch);
+    av_freep(&c->xyz_scratch);
 
     ff_free_filters(c);
 

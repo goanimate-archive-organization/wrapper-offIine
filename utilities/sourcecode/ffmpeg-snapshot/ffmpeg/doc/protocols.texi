@@ -507,14 +507,19 @@ in ffmpeg.c and thus must not be used as a command line option.
 @example
 # Server side (sending):
 ffmpeg -i somefile.ogg -c copy -listen 1 -f ogg http://@var{server}:@var{port}
+
 # Client side (receiving):
 ffmpeg -i http://@var{server}:@var{port} -c copy somefile.ogg
+
 # Client can also be done with wget:
 wget http://@var{server}:@var{port} -O somefile.ogg
+
 # Server side (receiving):
 ffmpeg -listen 1 -i http://@var{server}:@var{port} -c copy somefile.ogg
+
 # Client side (sending):
 ffmpeg -i somefile.ogg -chunked_post 0 -c copy -f ogg http://@var{server}:@var{port}
+
 # Client can also be done with wget:
 wget --post-file=somefile.ogg http://@var{server}:@var{port}
 @end example
@@ -634,6 +639,7 @@ Some examples follow.
 @example
 # Write the MD5 hash of the encoded AVI file to the file output.avi.md5.
 ffmpeg -i input.flv -f avi -y md5:output.avi.md5
+
 # Write the MD5 hash of the encoded AVI file to stdout.
 ffmpeg -i input.flv -f avi -y md5:
 @end example
