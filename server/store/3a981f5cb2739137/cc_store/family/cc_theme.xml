@@ -18735,7 +18735,10 @@
     <component type="faceshape" id="kawaiiface" path="kawaiiface" name="kawaiiface" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
-    <component type="furryhead" id="furryhead" path="furryhead" name="furryhead" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+    <component type="faceshape" id="furryhead" path="furryhead" name="furryhead" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
+        <state id="default" filename="default.swf"/>
+    </component>
+    <component type="faceshape" id="furryface" path="furryface" name="furryface" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
         <state id="default" filename="default.swf"/>
     </component>
     <component type="faceshape" id="001c" path="001c" name="001c" thumb="thumbnail.swf" money="0" sharing="0" enable="Y">
