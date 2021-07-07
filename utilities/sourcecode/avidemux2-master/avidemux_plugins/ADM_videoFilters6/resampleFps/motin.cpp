@@ -119,6 +119,8 @@ void *motin::scaler_thread( void *ptr )
     }
     
     pthread_exit(NULL);
+
+    return NULL;
 }
 
 void motin::createPyramids(ADMImage * imgA, ADMImage * imgB)
@@ -402,6 +404,8 @@ void *motin::me_worker_thread( void *ptr )
     }
 
     pthread_exit(NULL);
+
+    return NULL;
 }
 
 void *motin::spf_worker_thread( void *ptr )
@@ -495,6 +499,8 @@ void *motin::spf_worker_thread( void *ptr )
     }
 
     pthread_exit(NULL);
+
+    return NULL;
 }
 
     

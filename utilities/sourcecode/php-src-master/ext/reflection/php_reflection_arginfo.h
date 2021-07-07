@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: e66c459f457f71cb677a93652364ab7e81be8b0e */
+ * Stub hash: 2564122a201ca462ee35ead1562c94da3ea3c8a3 */
 
 ZEND_BEGIN_ARG_WITH_TENTATIVE_RETURN_TYPE_INFO_EX(arginfo_class_Reflection_getModifierNames, 0, 1, IS_ARRAY, 0)
 	ZEND_ARG_TYPE_INFO(0, modifiers, IS_LONG, 0)
@@ -396,6 +396,8 @@ ZEND_END_ARG_INFO()
 
 #define arginfo_class_ReflectionClassConstant_isProtected arginfo_class_ReflectionFunctionAbstract_inNamespace
 
+#define arginfo_class_ReflectionClassConstant_isFinal arginfo_class_ReflectionFunctionAbstract_hasTentativeReturnType
+
 #define arginfo_class_ReflectionClassConstant_getModifiers arginfo_class_ReflectionFunctionAbstract_getNumberOfParameters
 
 #define arginfo_class_ReflectionClassConstant_getDeclaringClass arginfo_class_ReflectionMethod_getDeclaringClass
@@ -467,6 +469,8 @@ ZEND_END_ARG_INFO()
 #define arginfo_class_ReflectionNamedType_isBuiltin arginfo_class_ReflectionFunctionAbstract_inNamespace
 
 #define arginfo_class_ReflectionUnionType_getTypes arginfo_class_ReflectionFunctionAbstract_getClosureUsedVariables
+
+#define arginfo_class_ReflectionIntersectionType_getTypes arginfo_class_ReflectionFunctionAbstract_getClosureUsedVariables
 
 #define arginfo_class_ReflectionExtension___clone arginfo_class_ReflectionFunctionAbstract___clone
 
@@ -734,6 +738,7 @@ ZEND_METHOD(ReflectionClassConstant, getValue);
 ZEND_METHOD(ReflectionClassConstant, isPublic);
 ZEND_METHOD(ReflectionClassConstant, isPrivate);
 ZEND_METHOD(ReflectionClassConstant, isProtected);
+ZEND_METHOD(ReflectionClassConstant, isFinal);
 ZEND_METHOD(ReflectionClassConstant, getModifiers);
 ZEND_METHOD(ReflectionClassConstant, getDeclaringClass);
 ZEND_METHOD(ReflectionClassConstant, getDocComment);
@@ -766,6 +771,7 @@ ZEND_METHOD(ReflectionType, __toString);
 ZEND_METHOD(ReflectionNamedType, getName);
 ZEND_METHOD(ReflectionNamedType, isBuiltin);
 ZEND_METHOD(ReflectionUnionType, getTypes);
+ZEND_METHOD(ReflectionIntersectionType, getTypes);
 ZEND_METHOD(ReflectionExtension, __construct);
 ZEND_METHOD(ReflectionExtension, __toString);
 ZEND_METHOD(ReflectionExtension, getName);
@@ -1012,6 +1018,7 @@ static const zend_function_entry class_ReflectionClassConstant_methods[] = {
 	ZEND_ME(ReflectionClassConstant, isPublic, arginfo_class_ReflectionClassConstant_isPublic, ZEND_ACC_PUBLIC)
 	ZEND_ME(ReflectionClassConstant, isPrivate, arginfo_class_ReflectionClassConstant_isPrivate, ZEND_ACC_PUBLIC)
 	ZEND_ME(ReflectionClassConstant, isProtected, arginfo_class_ReflectionClassConstant_isProtected, ZEND_ACC_PUBLIC)
+	ZEND_ME(ReflectionClassConstant, isFinal, arginfo_class_ReflectionClassConstant_isFinal, ZEND_ACC_PUBLIC)
 	ZEND_ME(ReflectionClassConstant, getModifiers, arginfo_class_ReflectionClassConstant_getModifiers, ZEND_ACC_PUBLIC)
 	ZEND_ME(ReflectionClassConstant, getDeclaringClass, arginfo_class_ReflectionClassConstant_getDeclaringClass, ZEND_ACC_PUBLIC)
 	ZEND_ME(ReflectionClassConstant, getDocComment, arginfo_class_ReflectionClassConstant_getDocComment, ZEND_ACC_PUBLIC)
@@ -1066,6 +1073,12 @@ static const zend_function_entry class_ReflectionNamedType_methods[] = {
 
 static const zend_function_entry class_ReflectionUnionType_methods[] = {
 	ZEND_ME(ReflectionUnionType, getTypes, arginfo_class_ReflectionUnionType_getTypes, ZEND_ACC_PUBLIC)
+	ZEND_FE_END
+};
+
+
+static const zend_function_entry class_ReflectionIntersectionType_methods[] = {
+	ZEND_ME(ReflectionIntersectionType, getTypes, arginfo_class_ReflectionIntersectionType_getTypes, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
 };
 
@@ -1362,6 +1375,16 @@ static zend_class_entry *register_class_ReflectionUnionType(zend_class_entry *cl
 	zend_class_entry ce, *class_entry;
 
 	INIT_CLASS_ENTRY(ce, "ReflectionUnionType", class_ReflectionUnionType_methods);
+	class_entry = zend_register_internal_class_ex(&ce, class_entry_ReflectionType);
+
+	return class_entry;
+}
+
+static zend_class_entry *register_class_ReflectionIntersectionType(zend_class_entry *class_entry_ReflectionType)
+{
+	zend_class_entry ce, *class_entry;
+
+	INIT_CLASS_ENTRY(ce, "ReflectionIntersectionType", class_ReflectionIntersectionType_methods);
 	class_entry = zend_register_internal_class_ex(&ce, class_entry_ReflectionType);
 
 	return class_entry;

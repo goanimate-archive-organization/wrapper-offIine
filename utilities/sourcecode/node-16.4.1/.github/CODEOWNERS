@@ -22,7 +22,6 @@
 /doc/guides/contributing/pull-requests.md @nodejs/tsc
 /doc/guides/collaborator-guide.md @nodejs/tsc
 /doc/guides/offboarding.md @nodejs/tsc
-/doc/guides/onboarding-extras.md @nodejs/tsc
 
 # streams
 
@@ -119,3 +118,8 @@
 # V8
 /deps/v8/* @nodejs/v8-update
 /tools/v8_gypfiles/* @nodejs/v8-update
+
+# Actions
+
+/.github/workflows/* @nodejs/actions
+/tools/actions/* @nodejs/actions

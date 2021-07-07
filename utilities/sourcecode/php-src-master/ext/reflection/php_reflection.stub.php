@@ -475,6 +475,8 @@ class ReflectionClassConstant implements Reflector
     /** @tentative-return-type */
     public function isProtected(): bool {}
 
+    public function isFinal(): bool {}
+
     /** @tentative-return-type */
     public function getModifiers(): int {}
 
@@ -592,6 +594,11 @@ class ReflectionNamedType extends ReflectionType
 }
 
 class ReflectionUnionType extends ReflectionType
+{
+    public function getTypes(): array {}
+}
+
+class ReflectionIntersectionType extends ReflectionType
 {
     public function getTypes(): array {}
 }
