@@ -19,6 +19,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
   - License with markdown
   - VFProxy batch : localhost instead of 127.0.0.1
   - Mediainfo 20.03 is now 21.03
+  - Avidemux Is now a new version
   - Sourcecode no longer zip
   - http server a new version
   - A new logo
@@ -30,7 +31,6 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Deleted
   - reset_install.bat
   - patch.jpg cuz no one unjk
-  - ps1 files
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
 ## Build 5
