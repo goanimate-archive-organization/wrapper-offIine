@@ -15,10 +15,8 @@ goto start
 echo Uh-oh!
 echo You Have Been Crashed!!!
 echo How to fix wrapper offline
-echo 1. go to wrapper
-echo 2. select _CACHE and _SAVED folder and move to desktop.
-echo 3. Reinstall or Repair Wrapper Offline
-echo 4. go to settings.bat and switch on verbose mode
+echo 1. Reinstall or Repair Wrapper Offline
+echo 2. go to settings.bat and switch on verbose mode
 echo And done! you will no longer crash forever! U CAN USE IT!
 echo issues? Contact on discord.
 echo zoccorus#9939
