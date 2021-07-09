@@ -21,7 +21,6 @@ This includes:
   - http-server
   - SilentCMD
   - Chromium Web Store
-  - Runasti
   - Php
   - NCH Software
 
