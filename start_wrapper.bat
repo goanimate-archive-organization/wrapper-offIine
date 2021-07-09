@@ -1070,7 +1070,6 @@ echo endlocal>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 echo :: Version number and build number>> utilities\metadata.bat
 echo set WRAPPER_VER=1.3.3>> utilities\metadata.bat
-echo set WRAPPER_BLD=108>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 set NOMETA=n
 goto returnfrommetacopy
