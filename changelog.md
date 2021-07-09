@@ -5,7 +5,6 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
 ### Added
   - FFDEC version 14.4.0
-  - Wrapper Online Reborn Stuff
   - Themelist is at Premade folder
   - GoTest334 family
   - Custom Assets, lil peepz, chibi , cw
