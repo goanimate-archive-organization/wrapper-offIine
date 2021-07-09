@@ -3,71 +3,34 @@
 This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~~somewhat but not really~~ adheres to [Semantic Versioning](https://semver.org/). If you have no idea what that means, basically this changelog is formatted in a specific consistent way, and version numbers are formatted as X.Y.Z, X being a major not-backwards-compatible update, Y being a feature update, and X being bug fixes.
 
 ## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
-## Build 6
 ### Added
   - FFDEC version 14.4.0
-  - Custom Assets like Comedy World, cc2 , chibi
   - Wrapper Online Reborn Stuff
   - Themelist is at Premade folder
   - GoTest334 family
-### Changed
-  - The First Noel is now Egzod & Maestro Chives - Royalty (ft. Neoni) because l hate that song
-### Fixed
-  - Create.html DON'T messed up.
-### Deleted
-  - reset_install.bat
-## Build 14
-### Changed
-  - balabolka txt to md
-  - php txt to md
-  - ffdec txt to md
-### Fixed
-  - Checks Folder because is not here in utilities folder
-  - Import files are deleted after opening import.bat so im gonna add import_these folder
-  - ffdec NEVER MESSES!
-## Build 39
-### Deleted
-  - patch.jpg cuz no one unjk
-## Build 44
-### Changed
-  - Writing the Future to Elektronomia - Energy cuz sounds like it
-  - Remove business themes from gitignore
-## Build 55
-### Added
-  - Custom Assets 2.0 (with blurry)
+  - Custom Assets, lil peepz, chibi , cw
   - NCH Recordpad Sound Recorder
 ### Changed
+  - The First Noel is now Egzod & Maestro Chives - Royalty (ft. Neoni) because l hate that song
+  - Writing the Future to Elektronomia - Energy cuz sounds like it
+  - Remove business themes from gitignore
   - custom_voiceclip.bat : Windows Sound Recorder becomes NCH Recordpad Sound Recorder
   - Node installer becomes v14.17.0
-### Fixed
-  - > config.bat really???
-## Build 72
-### Added
-  - Mediainfo 21.03
-### Changed
   - License with markdown
   - VFProxy batch : localhost instead of 127.0.0.1
+  - Mediainfo 20.03 is now 21.03
+  - Sourcecode no longer zip
+  - http server a new version
+  - A new logo
 ### Fixed
-  - include mediainfo
-## Build 102
-### Changed
- - Sourcecode no longer zip
- - http server a new version
-### Fixed
- - include import
-### Delete
- - Files that are unusual
- - old logo
- - ps1 files
- - other nah
-## Build 108
-### Added
- - Avidemux 2.7.8
- - unzipped sourcecode
-### Changed
- - an main removal
-### Fixed
- - Discord rpc
+  - Create.html DON'T messed up.
+  - Checks Folder because is not here in utilities folder
+  - Import files are deleted after opening import.bat so im gonna add import_these folder
+  - Discord rpc
+### Deleted
+  - reset_install.bat
+  - patch.jpg cuz no one unjk
+  - ps1 files
 
 ## Version 1.3.1 - 2021-05-24 - the file size update + stability
 ## Build 5
