@@ -24,7 +24,7 @@ echo issues? Contact on discord.
 echo zoccorus#9939
 echo NOTE: Either Node.js has crashed or you don't have it installed.
 echo If Node.js crashed, please send the error in the GitHub issues page.
-echo If you don't have Node.js, install it in the utilities/installers or [Node.js LTS](https://nodejs.org/en/download/) or [Node.js Current](https://nodejs.org/en/download/current/).
+echo If you don't have Node.js, install it in the utilities/installers or https://nodejs.org/en/download/ or https://nodejs.org/en/download/current/.
 echo:
 echo If you saw an error that says "MODULE_NOT_FOUND",
 echo go in the utilities folder and run module_installer.bat.
