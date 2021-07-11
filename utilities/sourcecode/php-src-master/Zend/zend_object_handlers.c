@@ -1300,54 +1300,44 @@ static zend_always_inline zend_function *get_static_method_fallback(
 
 ZEND_API zend_function *zend_std_get_static_method(zend_class_entry *ce, zend_string *function_name, const zval *key) /* {{{ */
 {
-	zend_function *fbc = NULL;
 	zend_string *lc_function_name;
-	zend_class_entry *scope;
-
 	if (EXPECTED(key != NULL)) {
 		lc_function_name = Z_STR_P(key);
 	} else {
 		lc_function_name = zend_string_tolower(function_name);
 	}
 
-	do {
-		zval *func = zend_hash_find(&ce->function_table, lc_function_name);
-		if (EXPECTED(func != NULL)) {
-			fbc = Z_FUNC_P(func);
-		} else if (ce->constructor
-			&& ZSTR_LEN(lc_function_name) == ZSTR_LEN(ce->name)
-			&& zend_binary_strncasecmp(ZSTR_VAL(lc_function_name), ZSTR_LEN(lc_function_name), ZSTR_VAL(ce->name), ZSTR_LEN(lc_function_name), ZSTR_LEN(lc_function_name)) == 0
-			/* Only change the method to the constructor if the constructor isn't called __construct
-			 * we check for __ so we can be binary safe for lowering, we should use ZEND_CONSTRUCTOR_FUNC_NAME
-			 */
-			&& (ZSTR_VAL(ce->constructor->common.function_name)[0] != '_'
-				|| ZSTR_VAL(ce->constructor->common.function_name)[1] != '_')) {
-			fbc = ce->constructor;
-		} else {
-			if (UNEXPECTED(!key)) {
-				zend_string_release_ex(lc_function_name, 0);
-			}
-			return get_static_method_fallback(ce, function_name);
-		}
-	} while (0);
-
-	if (!(fbc->op_array.fn_flags & ZEND_ACC_PUBLIC)) {
-		scope = zend_get_executed_scope();
-		if (UNEXPECTED(fbc->common.scope != scope)) {
-			if (UNEXPECTED(fbc->op_array.fn_flags & ZEND_ACC_PRIVATE)
-			 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(fbc), scope))) {
-				zend_function *fallback_fbc = get_static_method_fallback(ce, function_name);
-				if (!fallback_fbc) {
-					zend_bad_method_call(fbc, function_name, scope);
+	zend_function *fbc;
+	zval *func = zend_hash_find(&ce->function_table, lc_function_name);
+	if (EXPECTED(func)) {
+		fbc = Z_FUNC_P(func);
+		if (!(fbc->op_array.fn_flags & ZEND_ACC_PUBLIC)) {
+			zend_class_entry *scope = zend_get_executed_scope();
+			if (UNEXPECTED(fbc->common.scope != scope)) {
+				if (UNEXPECTED(fbc->op_array.fn_flags & ZEND_ACC_PRIVATE)
+				 || UNEXPECTED(!zend_check_protected(zend_get_function_root_class(fbc), scope))) {
+					zend_function *fallback_fbc = get_static_method_fallback(ce, function_name);
+					if (!fallback_fbc) {
+						zend_bad_method_call(fbc, function_name, scope);
+					}
+					fbc = fallback_fbc;
 				}
-				fbc = fallback_fbc;
 			}
 		}
+	} else {
+		fbc = get_static_method_fallback(ce, function_name);
 	}
 
-	if (fbc && UNEXPECTED(fbc->common.fn_flags & ZEND_ACC_ABSTRACT)) {
-		zend_abstract_method_call(fbc);
-		fbc = NULL;
+	if (EXPECTED(fbc)) {
+		if (UNEXPECTED(fbc->common.fn_flags & ZEND_ACC_ABSTRACT)) {
+			zend_abstract_method_call(fbc);
+			fbc = NULL;
+		} else if (UNEXPECTED(fbc->common.scope->ce_flags & ZEND_ACC_TRAIT)) {
+			zend_error(E_DEPRECATED,
+				"Calling static trait method %s::%s is deprecated, "
+				"it should only be called on a class using the trait",
+				ZSTR_VAL(fbc->common.scope->name), ZSTR_VAL(fbc->common.function_name));
+		}
 	}
 
 	if (UNEXPECTED(!key)) {
@@ -1439,9 +1429,15 @@ undeclared_property:
 	if (UNEXPECTED((type == BP_VAR_R || type == BP_VAR_RW)
 				&& Z_TYPE_P(ret) == IS_UNDEF && ZEND_TYPE_IS_SET(property_info->type))) {
 		zend_throw_error(NULL, "Typed static property %s::$%s must not be accessed before initialization",
-			ZSTR_VAL(property_info->ce->name),
-			zend_get_unmangled_property_name(property_name));
+			ZSTR_VAL(property_info->ce->name), ZSTR_VAL(property_name));
 		return NULL;
+	}
+
+	if (UNEXPECTED(ce->ce_flags & ZEND_ACC_TRAIT)) {
+		zend_error(E_DEPRECATED,
+			"Accessing static trait property %s::$%s is deprecated, "
+			"it should only be accessed on a class using the trait",
+			ZSTR_VAL(property_info->ce->name), ZSTR_VAL(property_name));
 	}
 
 	return ret;

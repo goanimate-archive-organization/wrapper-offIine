@@ -251,8 +251,6 @@ For information about the governance of the Node.js project, see
 **Antoine du Hamel** &lt;duhamelantoine1995@gmail.com&gt; (he/him)
 * [ak239](https://github.com/ak239) -
 **Aleksei Koziatinskii** &lt;ak239spb@gmail.com&gt;
-* [AndreasMadsen](https://github.com/AndreasMadsen) -
-**Andreas Madsen** &lt;amwebdk@gmail.com&gt; (he/him)
 * [antsmartian](https://github.com/antsmartian) -
 **Anto Aravinth** &lt;anto.aravinth.cse@gmail.com&gt; (he/him)
 * [apapirovski](https://github.com/apapirovski) -
@@ -316,7 +314,7 @@ For information about the governance of the Node.js project, see
 * [gabrielschulhof](https://github.com/gabrielschulhof) -
 **Gabriel Schulhof** &lt;gabrielschulhof@gmail.com&gt;
 * [gdams](https://github.com/gdams) -
-**George Adams** &lt;george.adams@uk.ibm.com&gt; (he/him)
+**George Adams** &lt;george.adams@microsoft.com&gt; (he/him)
 * [geek](https://github.com/geek) -
 **Wyatt Preul** &lt;wpreul@gmail.com&gt;
 * [gengjiawen](https://github.com/gengjiawen) -
@@ -387,8 +385,6 @@ For information about the governance of the Node.js project, see
 **Brian White** &lt;mscdex@mscdex.net&gt;
 * [MylesBorins](https://github.com/MylesBorins) -
 **Myles Borins** &lt;myles.borins@gmail.com&gt; (he/him)
-* [ofrobots](https://github.com/ofrobots) -
-**Ali Ijaz Sheikh** &lt;ofrobots@google.com&gt; (he/him)
 * [oyyd](https://github.com/oyyd) -
 **Ouyang Yadong** &lt;oyydoibh@gmail.com&gt; (he/him)
 * [panva](https://github.com/panva) -
@@ -468,6 +464,8 @@ For information about the governance of the Node.js project, see
 **Andras** &lt;andras@kinvey.com&gt;
 * [AnnaMag](https://github.com/AnnaMag) -
 **Anna M. Kedzierska** &lt;anna.m.kedzierska@gmail.com&gt;
+* [AndreasMadsen](https://github.com/AndreasMadsen) -
+**Andreas Madsen** &lt;amwebdk@gmail.com&gt; (he/him)
 * [aqrln](https://github.com/aqrln) -
 **Alexey Orlenko** &lt;eaglexrlnk@gmail.com&gt; (he/him)
 * [bnoordhuis](https://github.com/bnoordhuis) -
@@ -536,6 +534,8 @@ For information about the governance of the Node.js project, see
 **Chen Gang** &lt;gangc.cxy@foxmail.com&gt;
 * [not-an-aardvark](https://github.com/not-an-aardvark) -
 **Teddy Katz** &lt;teddy.katz@gmail.com&gt; (he/him)
+* [ofrobots](https://github.com/ofrobots) -
+**Ali Ijaz Sheikh** &lt;ofrobots@google.com&gt; (he/him)
 * [Olegas](https://github.com/Olegas) -
 **Oleg Elifantiev** &lt;oleg@elifantiev.ru&gt;
 * [orangemocha](https://github.com/orangemocha) -

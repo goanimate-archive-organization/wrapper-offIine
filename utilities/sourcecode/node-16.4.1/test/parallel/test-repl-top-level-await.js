@@ -152,6 +152,36 @@ async function ordinaryTests() {
        'Unexpected token \'.\'',
      ],
     ],
+    ['for (const x of [1,2,3]) {\nawait x\n}', [
+      'for (const x of [1,2,3]) {\r',
+      '... await x\r',
+      '... }\r',
+      'undefined',
+    ]],
+    ['for (const x of [1,2,3]) {\nawait x;\n}', [
+      'for (const x of [1,2,3]) {\r',
+      '... await x;\r',
+      '... }\r',
+      'undefined',
+    ]],
+    ['for await (const x of [1,2,3]) {\nconsole.log(x)\n}', [
+      'for await (const x of [1,2,3]) {\r',
+      '... console.log(x)\r',
+      '... }\r',
+      '1',
+      '2',
+      '3',
+      'undefined',
+    ]],
+    ['for await (const x of [1,2,3]) {\nconsole.log(x);\n}', [
+      'for await (const x of [1,2,3]) {\r',
+      '... console.log(x);\r',
+      '... }\r',
+      '1',
+      '2',
+      '3',
+      'undefined',
+    ]],
   ];
 
   for (const [input, expected = [`${input}\r`], options = {}] of testCases) {
@@ -175,15 +205,17 @@ async function ordinaryTests() {
 
 async function ctrlCTest() {
   console.log('Testing Ctrl+C');
-  assert.deepStrictEqual(await runAndWait([
+  const output = await runAndWait([
     'await new Promise(() => {})',
     { ctrl: true, name: 'c' },
-  ]), [
+  ]);
+  assert.deepStrictEqual(output.slice(0, 3), [
     'await new Promise(() => {})\r',
     'Uncaught:',
-    '[Error [ERR_SCRIPT_EXECUTION_INTERRUPTED]: ' +
-      'Script execution was interrupted by `SIGINT`] {',
-    "  code: 'ERR_SCRIPT_EXECUTION_INTERRUPTED'",
+    'Error [ERR_SCRIPT_EXECUTION_INTERRUPTED]: ' +
+      'Script execution was interrupted by `SIGINT`',
+  ]);
+  assert.deepStrictEqual(output.slice(-2), [
     '}',
     PROMPT,
   ]);

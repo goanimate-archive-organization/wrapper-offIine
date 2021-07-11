@@ -143,6 +143,9 @@ PHP 8.1 UPGRADE NOTES
   . The PgSQL functions now accept and return, respectively, \PgSql\Lob
     objects instead of "pgsql large object" resources. Return value checks
     using is_resource() should be replaced with checks for `false`.
+  . Not passing the connection argument to PgSQL functions and using the
+    default connection is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
 
 - PSpell:
   . The PSpell functions now accept and return, respectively, PSpell\Dictionary objects
@@ -330,7 +333,52 @@ PHP 8.1 UPGRADE NOTES
     e.g. a truncation from 1.9 to 1, is deprecated. This affects array keys,
     int parameter and return types, and operators working on integers.
     RFC: https://wiki.php.net/rfc/implicit-float-int-deprecate
-  . returning a non-array from __sleep will raise a warning
+  . Calling a static method or accessing a static property directly on a trait
+    is deprecated. Static methods and properties should only be accessed on a
+    class using the trait.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . Returning a non-array from __sleep will raise a warning
+  . Returning by reference from a void function is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Ctype:
+  . Passing a non-string value to ctype_*() functions is deprecated. A future
+    version of PHP will make ctype_*() accept a string argument, which means
+    that either only strings will be accepted (strict_types=1) or inputs may be
+    converted to string (strict_types=0). In particular, using ctype_*($cp) to
+    check whether an ASCII codepoint given as integer satisfies a given ctype
+    predicate will no longer be supported. Instead ctype_*(chr($cp)) should be
+    used.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Date:
+  . The date_sunrise() and date_sunset() functions have been deprecated in
+    favor of date_sun_info().
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Filter:
+  . The FILTER_SANITIZE_STRING and FILTER_SANITIZE_STRIPPED filters have been
+    deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Hash:
+  . The mhash(), mhash_keygen_s2k(), mhash_count(), mhash_get_block_size() and
+    mhash_get_hash_name() functions are deprecated. Use the hash_*() APIs
+    instead.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- IMAP:
+  . The NIL constant has been deprecated. Use 0 instead.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Intl:
+  . Calling IntlCalendar::roll() with bool argument is deprecated. Pass 1 and -1
+    instead of true and false respectively.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- Mbstring:
+  . Calling mb_check_encoding() without an argument is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
 
 - MySQLi:
   . The mysqli_driver::$driver_version property has been deprecated. The driver
@@ -340,10 +388,33 @@ PHP 8.1 UPGRADE NOTES
     mysqli_get_client_info() function has been deprecated. Use
     mysqli_get_client_info() without any arguments to obtain the client
     library version information.
+  . The mysqli::init() method has been deprecated. Replace calls to
+    parent::init() with parent::__construct().
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- ODBC:
+  . odbc_result_all() has been deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
 
 - PDO:
   . The PDO::FETCH_SERIALIZE mode has been deprecated.
     RFC: https://wiki.php.net/rfc/phase_out_serializable
+
+- Standard:
+  . Calling key(), current(), next(), prev(), reset(), or end() on objects
+    is deprecated. Instead cast the object to array first, or make use of
+    ArrayIterator.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . The strptime() function has been deprecated. Use date_parse_from_format()
+    instead (for locale-independent parsing) or IntlDateFormatter::parse() (for
+    locale-dependent parsing).
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . The auto_detect_line_endings ini setting has been deprecated. If necessary,
+    handle "\r" line breaks manually instead.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . The FILE_BINARY and FILE_TEXT constants are deprecated. They already had
+    no effect previously.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
 
 ========================================
 5. Changed Functions
@@ -370,6 +441,12 @@ PHP 8.1 UPGRADE NOTES
 - PDO ODBC:
   . PDO::getAttributes() with PDO::ATTR_SERVER_INFO and PDO::ATTR_SERVER_VERSION
     now return values instead of throwing PDOException.
+
+- Reflection:
+  . ReflectionProperty::setAccessible() and ReflectionMethod::setAccessible()
+    no longer have an effect. Properties and methods are always considered
+    accessible through reflection.
+    RFC: https://wiki.php.net/rfc/make-reflection-setaccessible-no-op
 
 ========================================
 6. New Functions
