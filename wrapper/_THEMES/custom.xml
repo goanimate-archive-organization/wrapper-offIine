@@ -4554,10 +4554,4 @@
 	<char id="400001036" name="xomdjl_ (W:O Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001035" name="Baby Epik" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
-	<char id="400001038" name="Mommy Alison" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
 </theme>
