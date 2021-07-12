@@ -4533,25 +4533,25 @@
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
 
-	<char id="400001006" name="GoTube (Creator of Mega CW & Mega CW 2.0)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001006" name="GoTube (Creator of Mega CW)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001007" name="2Epik4u (Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001013" name="GoTest334 (Wrapper: Offline Owner)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,_free,_cat:The Credits</tags>	
+	</char>
+	<char id="327068826" name="benson (Original creator of W:O)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,_free,_cat:The Credits</tags>	
+	</char>
+	<char id="400001007" name="2Epik4u (W:O Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001013" name="GoTest334 (Mega CW Beta Tester)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:The Credits</tags>
-	</char>
-	<char id="400001037" name="MJ, the Spirit (Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001037" name="MJ, the Spirit (W:O Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
-	<char id="400001035" name="octanuary (Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001035" name="octanuary (W:O Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
-	<char id="327068826" name="benson (Creator of Wrapper Offline & Helper with Mega CW 2.0)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:The Credits</tags>
-	</char>
-	<char id="400001036" name="xomdjl_ (Project Lead)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001036" name="xomdjl_ (W:O Developer)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
 	</char>
 	<char id="400001035" name="Baby Epik" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
@@ -4568,10 +4568,6 @@
 	</char>
 	<char id="400001040" name="Lemonations GoTest Cusion" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
-
-	<char id="327412169" name="Made by GoTube" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:Made by GoTube</tags>
 	</char>
 </theme>
 <!--If you see this, Blukas/GoTube says hi and you should give him credit if you modify this ;)-->
