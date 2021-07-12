@@ -4496,9 +4496,6 @@
 	<char id="330469767" name="Fartnoise9" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
-	<char id="400001002" name="GoTest334" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,_free,_cat:GoAnimators</tags>
-	</char>
 	<char id="327764590" name="Brendan Barney" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
@@ -4526,10 +4523,13 @@
 	<char id="400001008" name="TheVideoEditorGuy6579" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
-	<char id="400001009" name="CyanAnimate" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+	<char id="400001009" name="CyansWorldCartoon" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
 	<char id="400001034" name="TBPG Studios" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,_free,_cat:GoAnimators</tags>
+	</char>
+	<char id="400001040" name="Lemonations" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
 
@@ -4557,17 +4557,7 @@
 	<char id="400001035" name="Baby Epik" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
 	</char>
-	<char id="400001036" name="Daddy GoTest334" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
 	<char id="400001038" name="Mommy Alison" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
 	</char>
-	<char id="400001041" name="Uncie benson" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
-	<char id="400001040" name="Lemonations GoTest Cusion" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
-		<tags>family,mcwcredits,_free,_cat:GoTest334 family</tags>
-	</char>
 </theme>
-<!--If you see this, Blukas/GoTube says hi and you should give him credit if you modify this ;)-->
