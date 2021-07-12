@@ -6,7 +6,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and ~
 ### Added
   - FFDEC version 14.4.0
   - Themelist is at Premade folder
-  - GoTest334 family
+  - Avidemux installer
   - Custom Assets, lil peepz, chibi , cw
   - NCH Recordpad Sound Recorder
 ### Changed
