@@ -4532,6 +4532,9 @@
 	<char id="400001040" name="Lemonations" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:GoAnimators</tags>
 	</char>
+	<char id="400001043" name="zoccorus" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
+		<tags>family,_free,_cat:GoAnimators</tags>
+	</char>
 
 	<char id="400001006" name="GoTube (Creator of Mega CW)" cc_theme_id="family" thumbnail_url="char-default.png" copyable="Y">
 		<tags>family,_free,_cat:The Credits</tags>
