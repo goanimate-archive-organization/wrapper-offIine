@@ -12,24 +12,26 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#ifndef FLY_QUADTRANS_H
-#define QUADTRANS_H
+#ifndef DIA_FLYIMAGESTAB_H
+#define DIA_FLYIMAGESTAB_H
 #include "imageStab.h"
 #include "ADM_vidImageStab.h"
-#include <QLineEdit>
-#include <QProgressBar>
+#include "DIA_flyDialogQt4.h"
 /**
     \class flyImageStab
 */
 class flyImageStab : public ADM_flyDialogYuv
 {
-  friend class Ui_imageStabWindow;
-  public:
-    imageStab            param;
+  private:
     ADMVideoImageStab::imageStab_buffers_t  buffers;
-    QLineEdit          * indctr;
-    QProgressBar       * indctrPB;
+    bool       newScene;
+    float      sceneDiff;
+
+    void       refreshIndicator(void);
+
   public:
+    imageStab  param;
+
     uint8_t    processYuv(ADMImage* in, ADMImage *out);
     uint8_t    download(void);
     uint8_t    upload(void);

@@ -45,6 +45,7 @@ import getmoduleversion
 import getnapibuildversion
 import getsharedopensslhasquic
 from gyp_node import run_gyp
+from utils import SearchFiles
 
 # parse our options
 parser = argparse.ArgumentParser()
@@ -1066,6 +1067,7 @@ def host_arch_cc():
     '__PPC__'     : 'ppc64',
     '__x86_64__'  : 'x64',
     '__s390x__'   : 's390x',
+    '__riscv'     : 'riscv',
   }
 
   rtn = 'ia32' # default
@@ -1077,6 +1079,12 @@ def host_arch_cc():
 
   if rtn == 'mipsel' and '_LP64' in k:
     rtn = 'mips64el'
+
+  if rtn == 'riscv':
+    if k['__riscv_xlen'] == '64':
+      rtn = 'riscv64'
+    else:
+      rtn = 'riscv32'
 
   return rtn
 
@@ -1148,6 +1156,8 @@ def gcc_version_ge(version_checked):
       return False
   return True
 
+def configure_node_lib_files(o):
+  o['variables']['node_library_files'] = SearchFiles('lib', 'js')
 
 def configure_node(o):
   if options.dest_os == 'android':
@@ -1896,6 +1906,7 @@ if (options.dest_os):
 flavor = GetFlavor(flavor_params)
 
 configure_node(output)
+configure_node_lib_files(output)
 configure_napi(output)
 configure_library('zlib', output)
 configure_library('http_parser', output)

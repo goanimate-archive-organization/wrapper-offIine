@@ -64,6 +64,7 @@ const {
   nonOpWrite,
   kType,
   kState,
+  kEnumerableProperty,
 } = require('internal/webstreams/util');
 
 const {
@@ -258,7 +259,7 @@ class WritableStream {
     return {
       data: { port: this[kState].transfer.port2 },
       deserializeInfo:
-        'internal/webstreams/writablestream:TransferedWritableStream'
+        'internal/webstreams/writablestream:TransferredWritableStream'
     };
   }
 
@@ -280,13 +281,13 @@ class WritableStream {
 }
 
 ObjectDefineProperties(WritableStream.prototype, {
-  locked: { enumerable: true },
-  abort: { enumerable: true },
-  close: { enumerable: true },
-  getWriter: { enumerable: true },
+  locked: kEnumerableProperty,
+  abort: kEnumerableProperty,
+  close: kEnumerableProperty,
+  getWriter: kEnumerableProperty,
 });
 
-function TransferedWritableStream() {
+function TransferredWritableStream() {
   return makeTransferable(ReflectConstruct(
     function() {
       this[kType] = 'WritableStream';
@@ -332,7 +333,7 @@ function TransferedWritableStream() {
     },
     [], WritableStream));
 }
-TransferedWritableStream.prototype[kDeserialize] = () => {};
+TransferredWritableStream.prototype[kDeserialize] = () => {};
 
 class WritableStreamDefaultWriter {
   [kType] = 'WritableStreamDefaultWriter';
@@ -469,13 +470,13 @@ class WritableStreamDefaultWriter {
 }
 
 ObjectDefineProperties(WritableStreamDefaultWriter.prototype, {
-  closed: { enumerable: true },
-  ready: { enumerable: true },
-  desiredSize: { enumerable: true },
-  abort: { enumerable: true },
-  close: { enumerable: true },
-  releaseLock: { enumerable: true },
-  write: { enumerable: true },
+  closed: kEnumerableProperty,
+  ready: kEnumerableProperty,
+  desiredSize: kEnumerableProperty,
+  abort: kEnumerableProperty,
+  close: kEnumerableProperty,
+  releaseLock: kEnumerableProperty,
+  write: kEnumerableProperty,
 });
 
 class WritableStreamDefaultController {
@@ -534,9 +535,9 @@ class WritableStreamDefaultController {
 }
 
 ObjectDefineProperties(WritableStreamDefaultController.prototype, {
-  abortReason: { enumerable: true },
-  signal: { enumerable: true },
-  error: { enumerable: true },
+  abortReason: kEnumerableProperty,
+  signal: kEnumerableProperty,
+  error: kEnumerableProperty,
 });
 
 function createWritableStreamDefaultController() {
@@ -1278,7 +1279,7 @@ module.exports = {
   WritableStream,
   WritableStreamDefaultWriter,
   WritableStreamDefaultController,
-  TransferedWritableStream,
+  TransferredWritableStream,
 
   // Exported Brand Checks
   isWritableStream,

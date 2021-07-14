@@ -103,6 +103,7 @@ const {
   nonOpStart,
   kType,
   kState,
+  kEnumerableProperty,
 } = require('internal/webstreams/util');
 
 const {
@@ -461,7 +462,7 @@ class ReadableStream {
       // Web Platform Tests that check for use of a modified
       // Promise.prototype.then. Since the await keyword
       // uses Promise.prototype.then, it is open to prototype
-      // polution, which causes the test to fail. The other
+      // pollution, which causes the test to fail. The other
       // await uses here do not trigger that failure because
       // the test that fails does not trigger those code paths.
       next() {
@@ -526,7 +527,7 @@ class ReadableStream {
     return {
       data: { port: this[kState].transfer.port2 },
       deserializeInfo:
-        'internal/webstreams/readablestream:TransferedReadableStream'
+        'internal/webstreams/readablestream:TransferredReadableStream'
     };
   }
 
@@ -553,15 +554,15 @@ ObjectDefineProperties(ReadableStream.prototype, {
     writable: true,
     value: ReadableStream.prototype.values,
   },
-  locked: { enumerable: true },
-  cancel: { enumerable: true },
-  getReader: { enumerable: true },
-  pipeThrough: { enumerable: true },
-  pipeTo: { enumerable: true },
-  tee: { enumerable: true },
+  locked: kEnumerableProperty,
+  cancel: kEnumerableProperty,
+  getReader: kEnumerableProperty,
+  pipeThrough: kEnumerableProperty,
+  pipeTo: kEnumerableProperty,
+  tee: kEnumerableProperty,
 });
 
-function TransferedReadableStream() {
+function TransferredReadableStream() {
   return makeTransferable(ReflectConstruct(
     function() {
       this[kType] = 'ReadableStream';
@@ -579,7 +580,7 @@ function TransferedReadableStream() {
     },
     [], ReadableStream));
 }
-TransferedReadableStream.prototype[kDeserialize] = () => {};
+TransferredReadableStream.prototype[kDeserialize] = () => {};
 
 class ReadableStreamBYOBRequest {
   [kType] = 'ReadableStreamBYOBRequest';
@@ -654,9 +655,9 @@ class ReadableStreamBYOBRequest {
 }
 
 ObjectDefineProperties(ReadableStreamBYOBRequest.prototype, {
-  view: { enumerable: true },
-  respond: { enumerable: true },
-  respondWithNewView: { enumerable: true },
+  view: kEnumerableProperty,
+  respond: kEnumerableProperty,
+  respondWithNewView: kEnumerableProperty,
 });
 
 function createReadableStreamBYOBRequest(controller, view) {
@@ -801,10 +802,10 @@ class ReadableStreamDefaultReader {
 }
 
 ObjectDefineProperties(ReadableStreamDefaultReader.prototype, {
-  closed: { enumerable: true },
-  read: { enumerable: true },
-  releaseLock: { enumerable: true },
-  cancel: { enumerable: true },
+  closed: kEnumerableProperty,
+  read: kEnumerableProperty,
+  releaseLock: kEnumerableProperty,
+  cancel: kEnumerableProperty,
 });
 
 class ReadableStreamBYOBReader {
@@ -918,10 +919,10 @@ class ReadableStreamBYOBReader {
 }
 
 ObjectDefineProperties(ReadableStreamBYOBReader.prototype, {
-  closed: { enumerable: true },
-  read: { enumerable: true },
-  releaseLock: { enumerable: true },
-  cancel: { enumerable: true },
+  closed: kEnumerableProperty,
+  read: kEnumerableProperty,
+  releaseLock: kEnumerableProperty,
+  cancel: kEnumerableProperty,
 });
 
 class ReadableStreamDefaultController {
@@ -977,10 +978,10 @@ class ReadableStreamDefaultController {
 }
 
 ObjectDefineProperties(ReadableStreamDefaultController.prototype, {
-  desiredSize: { enumerable: true },
-  close: { enumerable: true },
-  enqueue: { enumerable: true },
-  error: { enumerable: true },
+  desiredSize: kEnumerableProperty,
+  close: kEnumerableProperty,
+  enqueue: kEnumerableProperty,
+  error: kEnumerableProperty,
 });
 
 function createReadableStreamDefaultController() {
@@ -1106,11 +1107,11 @@ class ReadableByteStreamController {
 }
 
 ObjectDefineProperties(ReadableByteStreamController.prototype, {
-  byobRequest: { enumerable: true },
-  desiredSize: { enumerable: true },
-  close: { enumerable: true },
-  enqueue: { enumerable: true },
-  error: { enumerable: true },
+  byobRequest: kEnumerableProperty,
+  desiredSize: kEnumerableProperty,
+  close: kEnumerableProperty,
+  enqueue: kEnumerableProperty,
+  error: kEnumerableProperty,
 });
 
 function createReadableByteStreamController() {
@@ -1478,8 +1479,8 @@ function readableByteStreamControllerConvertPullIntoDescriptor(desc) {
   if (bytesFilled > byteLength)
     throw new ERR_INVALID_STATE.RangeError('The buffer size is invalid');
   assert(!(bytesFilled % elementSize));
-  const transferedBuffer = transferArrayBuffer(buffer);
-  return new ctor(transferedBuffer, byteOffset, bytesFilled / elementSize);
+  const transferredBuffer = transferArrayBuffer(buffer);
+  return new ctor(transferredBuffer, byteOffset, bytesFilled / elementSize);
 }
 
 function isReadableStreamLocked(stream) {
@@ -2100,15 +2101,15 @@ function readableByteStreamControllerPullInto(
   const byteLength = ArrayBufferViewGetByteLength(view);
   const bufferByteLength = ArrayBufferGetByteLength(buffer);
 
-  let transferedBuffer;
+  let transferredBuffer;
   try {
-    transferedBuffer = transferArrayBuffer(buffer);
+    transferredBuffer = transferArrayBuffer(buffer);
   } catch (error) {
     readIntoRequest[kError](error);
     return;
   }
   const desc = {
-    buffer: transferedBuffer,
+    buffer: transferredBuffer,
     bufferByteLength,
     byteOffset,
     byteLength,
@@ -2241,7 +2242,7 @@ function readableByteStreamControllerEnqueue(
   if (closeRequested || stream[kState].state !== 'readable')
     return;
 
-  const transferedBuffer = transferArrayBuffer(buffer);
+  const transferredBuffer = transferArrayBuffer(buffer);
 
   if (pendingPullIntos.length) {
     const firstPendingPullInto = pendingPullIntos[0];
@@ -2263,19 +2264,19 @@ function readableByteStreamControllerEnqueue(
     if (!readableStreamGetNumReadRequests(stream)) {
       readableByteStreamControllerEnqueueChunkToQueue(
         controller,
-        transferedBuffer,
+        transferredBuffer,
         byteOffset,
         byteLength);
     } else {
       assert(!queue.length);
-      const transferedView =
-        new Uint8Array(transferedBuffer, byteOffset, byteLength);
-      readableStreamFulfillReadRequest(stream, transferedView, false);
+      const transferredView =
+        new Uint8Array(transferredBuffer, byteOffset, byteLength);
+      readableStreamFulfillReadRequest(stream, transferredView, false);
     }
   } else if (readableStreamHasBYOBReader(stream)) {
     readableByteStreamControllerEnqueueChunkToQueue(
       controller,
-      transferedBuffer,
+      transferredBuffer,
       byteOffset,
       byteLength);
     readableByteStreamControllerProcessPullIntoDescriptorsUsingQueue(
@@ -2284,7 +2285,7 @@ function readableByteStreamControllerEnqueue(
     assert(!isReadableStreamLocked(stream));
     readableByteStreamControllerEnqueueChunkToQueue(
       controller,
-      transferedBuffer,
+      transferredBuffer,
       byteOffset,
       byteLength);
   }
@@ -2663,7 +2664,7 @@ module.exports = {
   ReadableStreamBYOBRequest,
   ReadableByteStreamController,
   ReadableStreamDefaultController,
-  TransferedReadableStream,
+  TransferredReadableStream,
 
   // Exported Brand Checks
   isReadableStream,

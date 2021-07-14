@@ -18,26 +18,27 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include "DIA_flyDialogQt4.h"
 #include "ADM_default.h"
 #include "ADM_image.h"
 #include "DIA_flyImageStab.h"
-#include <QPalette>
-#include <cmath>
+
 /************* COMMON PART *********************/
 
 /**
  */
 flyImageStab::flyImageStab (QDialog *parent,uint32_t width,uint32_t height,ADM_coreVideoFilter *in,
                                     ADM_QCanvas *canvas, ADM_QSlider *slider) : ADM_flyDialogYuv(parent, width, height, in, canvas, slider, RESIZE_AUTO)
-  {
-  }
+{
+    newScene = false;
+    sceneDiff = 0.;
+    ADMVideoImageStab::ImageStabCreateBuffers(width,height,&buffers);
+}
 /**
  * 
  */
 flyImageStab::~flyImageStab()
 {
-
+    ADMVideoImageStab::ImageStabDestroyBuffers(&buffers);
 }
 
 uint8_t  flyImageStab::update(void)
@@ -49,23 +50,13 @@ uint8_t  flyImageStab::update(void)
 */
 uint8_t   flyImageStab::processYuv(ADMImage *in,ADMImage *out )
 {
-    bool newScene;
-    float sceneDiff;
-    QPalette indctrPalette(indctr->palette());
-    QColor color;
-    
     out->duplicate(in);
 
     // Do it!
     ADMVideoImageStab::ImageStabProcess_C(out,in->GetWidth(PLANAR_Y),in->GetHeight(PLANAR_Y),param, &buffers, &newScene, &sceneDiff);
 
-    color.setRgb(0,(newScene ? 255:64),0,255);
-    indctrPalette.setColor(QPalette::Window,color);
-    indctrPalette.setColor(QPalette::Base,color);
-    indctrPalette.setColor(QPalette::AlternateBase,color);
-    indctr->setPalette(indctrPalette);
-    indctrPB->setValue(round(sceneDiff*100.0));
-    
+    refreshIndicator();
+
     return 1;
 }
 

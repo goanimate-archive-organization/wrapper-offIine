@@ -31,7 +31,6 @@ const {
 } = primordials;
 
 const { Readable, finished } = require('stream');
-const { kDestroy } = require('internal/streams/destroy');
 
 const kHeaders = Symbol('kHeaders');
 const kHeadersCount = Symbol('kHeadersCount');
@@ -88,6 +87,7 @@ function IncomingMessage(socket) {
   this.statusMessage = null;
   this.client = socket;
 
+  // TODO: Deprecate and remove.
   this._consuming = false;
   // Flag for when we decide that this message cannot possibly be
   // read by the user, so there's no point continuing to handle it.
@@ -197,11 +197,6 @@ IncomingMessage.prototype._destroy = function _destroy(err, cb) {
   } else {
     process.nextTick(onError, this, err, cb);
   }
-};
-
-IncomingMessage.prototype[kDestroy] = function(err) {
-  this.socket = null;
-  this.destroy(err);
 };
 
 IncomingMessage.prototype._addHeaderLines = _addHeaderLines;

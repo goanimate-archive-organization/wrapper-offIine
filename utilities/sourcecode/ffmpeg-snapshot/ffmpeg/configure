@@ -2370,6 +2370,7 @@ HAVE_LIST="
     perl
     pod2man
     texi2html
+    xmllint
     zlib_gzip
 "
 
@@ -3316,7 +3317,7 @@ libwebp_anim_encoder_deps="libwebp"
 libx262_encoder_deps="libx262"
 libx264_encoder_deps="libx264"
 libx264_encoder_select="atsc_a53"
-libx264rgb_encoder_deps="libx264 x264_csp_bgr"
+libx264rgb_encoder_deps="libx264"
 libx264rgb_encoder_select="libx264_encoder"
 libx265_encoder_deps="libx265"
 libxavs_encoder_deps="libxavs"
@@ -6132,7 +6133,6 @@ check_builtin MemoryBarrier windows.h "MemoryBarrier()"
 check_builtin sync_val_compare_and_swap "" "int *ptr; int oldval, newval; __sync_val_compare_and_swap(ptr, oldval, newval)"
 check_builtin gmtime_r time.h "time_t *time; struct tm *tm; gmtime_r(time, tm)"
 check_builtin localtime_r time.h "time_t *time; struct tm *tm; localtime_r(time, tm)"
-check_builtin x264_csp_bgr "stdint.h x264.h" "X264_CSP_BGR"
 
 case "$custom_allocator" in
     jemalloc)
@@ -6655,6 +6655,7 @@ disabled makeinfo_html && texi2html --help 2> /dev/null | grep -q 'init-file' &&
 perl -v            > /dev/null 2>&1 && enable perl      || disable perl
 pod2man --help     > /dev/null 2>&1 && enable pod2man   || disable pod2man
 rsync --help 2> /dev/null | grep -q 'contimeout' && enable rsync_contimeout || disable rsync_contimeout
+xmllint --version  > /dev/null 2>&1 && enable xmllint   || disable xmllint
 
 # check V4L2 codecs available in the API
 if enabled v4l2_m2m; then
@@ -7418,6 +7419,7 @@ echo "perl enabled              ${perl-no}"
 echo "pod2man enabled           ${pod2man-no}"
 echo "makeinfo enabled          ${makeinfo-no}"
 echo "makeinfo supports HTML    ${makeinfo_html-no}"
+echo "xmllint enabled           ${xmllint-no}"
 test -n "$random_seed" &&
     echo "random seed               ${random_seed}"
 echo

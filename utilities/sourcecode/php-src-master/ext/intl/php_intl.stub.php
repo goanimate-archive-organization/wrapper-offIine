@@ -330,7 +330,7 @@ function msgfmt_format_message(string $locale, string $pattern, array $values): 
 
 function msgfmt_parse(MessageFormatter $formatter, string $string): array|false {}
 
-function msgfmt_parse_message(string $locale, string $pattern, string $message): array|false|null {}
+function msgfmt_parse_message(string $locale, string $pattern, string $message): array|false {}
 
 function msgfmt_set_pattern(MessageFormatter $formatter, string $pattern): bool {}
 
@@ -344,7 +344,7 @@ function msgfmt_get_error_message(MessageFormatter $formatter): string {}
 
 /* normalizer */
 
-function normalizer_normalize(string $string, int $form = Normalizer::FORM_C): string|false|null {}
+function normalizer_normalize(string $string, int $form = Normalizer::FORM_C): string|false {}
 
 function normalizer_is_normalized(string $string, int $form = Normalizer::FORM_C): bool {}
 

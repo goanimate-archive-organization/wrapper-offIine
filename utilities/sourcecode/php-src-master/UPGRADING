@@ -193,6 +193,10 @@ PHP 8.1 UPGRADE NOTES
     RFC: https://wiki.php.net/rfc/noreturn_type
   . Added support for fibers.
     RFC: https://wiki.php.net/rfc/fibers
+  . It is now possible to use "new ClassName()" expressions as parameter
+    default values, static variable and global constant initializers, as well
+    as attribute arguments.
+    RFC: https://wiki.php.net/rfc/new_in_initializers
   . File uploads now provide an additional full_path key, which contains the
     full path (rather than just the basename) of the uploaded file. This is
     intended for use in conjunction with "upload webkitdirectory".
@@ -355,11 +359,19 @@ PHP 8.1 UPGRADE NOTES
   . The date_sunrise() and date_sunset() functions have been deprecated in
     favor of date_sun_info().
     RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . The strftime() and gmstrftime() functions have been deprecated in favor of
+    date()/DateTime::format() (for locale-independent formatting) or
+    IntlDateFormatter::format() (for locale-dependent formatting).
 
 - Filter:
   . The FILTER_SANITIZE_STRING and FILTER_SANITIZE_STRIPPED filters have been
     deprecated.
     RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+  . The filter.default ini setting is deprecated.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
+
+- GD:
+  . The $num_points parameter of image(open|filled)polygon has been deprecated.
 
 - Hash:
   . The mhash(), mhash_keygen_s2k(), mhash_count(), mhash_get_block_size() and
@@ -399,6 +411,13 @@ PHP 8.1 UPGRADE NOTES
 - PDO:
   . The PDO::FETCH_SERIALIZE mode has been deprecated.
     RFC: https://wiki.php.net/rfc/phase_out_serializable
+
+- SOAP:
+  . The ssl_method option for the SoapClient constructor has been deprecated in
+    favor of ssl stream context options. The direct equivalent would be
+    crypto_method, but min_proto_version/max_proto_version are recommended
+    instead.
+    RFC: https://wiki.php.net/rfc/deprecations_php_8_1
 
 - Standard:
   . Calling key(), current(), next(), prev(), reset(), or end() on objects

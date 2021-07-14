@@ -163,9 +163,7 @@ static ZEND_INI_MH(OnUpdateAssertions) /* {{{ */
 
 static ZEND_INI_MH(OnSetExceptionStringParamMaxLen) /* {{{ */
 {
-	zend_long i;
-
-	ZEND_ATOL(i, ZSTR_VAL(new_value));
+	zend_long i = ZEND_ATOL(ZSTR_VAL(new_value));
 	if (i >= 0 && i <= 1000000) {
 		EG(exception_string_param_max_len) = i;
 		return SUCCESS;
@@ -898,7 +896,7 @@ void zend_startup(zend_utility_functions *utility_functions) /* {{{ */
 	{
 		char *tmp = getenv("USE_ZEND_DTRACE");
 
-		if (tmp && zend_atoi(tmp, 0)) {
+		if (tmp && ZEND_ATOL(tmp)) {
 			zend_dtrace_enabled = 1;
 			zend_compile_file = dtrace_compile_file;
 			zend_execute_ex = dtrace_execute_ex;

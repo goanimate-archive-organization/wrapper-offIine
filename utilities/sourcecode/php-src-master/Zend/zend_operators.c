@@ -91,42 +91,18 @@ static const unsigned char tolower_map[256] = {
 		zend_binary_strncasecmp
  */
 
-ZEND_API int ZEND_FASTCALL zend_atoi(const char *str, size_t str_len) /* {{{ */
-{
-	int retval;
-
-	if (!str_len) {
-		str_len = strlen(str);
-	}
-	retval = ZEND_STRTOL(str, NULL, 0);
-	if (str_len>0) {
-		switch (str[str_len-1]) {
-			case 'g':
-			case 'G':
-				retval *= 1024;
-				ZEND_FALLTHROUGH;
-			case 'm':
-			case 'M':
-				retval *= 1024;
-				ZEND_FALLTHROUGH;
-			case 'k':
-			case 'K':
-				retval *= 1024;
-				break;
-		}
-	}
-	return retval;
-}
-/* }}} */
-
 ZEND_API zend_long ZEND_FASTCALL zend_atol(const char *str, size_t str_len) /* {{{ */
 {
-	zend_long retval;
-
 	if (!str_len) {
 		str_len = strlen(str);
 	}
-	retval = ZEND_STRTOL(str, NULL, 0);
+
+	/* Perform following multiplications on unsigned to avoid overflow UB.
+	 * For now overflow is silently ignored -- not clear what else can be
+	 * done here, especially as the final result of this function may be
+	 * used in an unsigned context (e.g. "memory_limit=3G", which overflows
+	 * zend_long on 32-bit, but not size_t). */
+	zend_ulong retval = (zend_ulong) ZEND_STRTOL(str, NULL, 0);
 	if (str_len>0) {
 		switch (str[str_len-1]) {
 			case 'g':
@@ -143,7 +119,7 @@ ZEND_API zend_long ZEND_FASTCALL zend_atol(const char *str, size_t str_len) /* {
 				break;
 		}
 	}
-	return retval;
+	return (zend_long) retval;
 }
 /* }}} */
 

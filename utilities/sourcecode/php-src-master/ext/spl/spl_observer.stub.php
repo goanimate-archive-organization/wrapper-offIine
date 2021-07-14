@@ -34,10 +34,10 @@ class SplObjectStorage implements Countable, Iterator, Serializable, ArrayAccess
     /** @return int */
     public function addAll(SplObjectStorage $storage) {}
 
-    /** @return void */
+    /** @return int */
     public function removeAll(SplObjectStorage $storage) {}
 
-    /** @return void */
+    /** @return int */
     public function removeAllExcept(SplObjectStorage $storage) {}
 
     /** @return mixed */

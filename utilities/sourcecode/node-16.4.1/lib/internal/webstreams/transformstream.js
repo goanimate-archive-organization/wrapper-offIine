@@ -45,6 +45,7 @@ const {
   nonOpFlush,
   kType,
   kState,
+  kEnumerableProperty,
 } = require('internal/webstreams/util');
 
 const {
@@ -211,7 +212,7 @@ class TransformStream {
         writable,
       },
       deserializeInfo:
-        'internal/webstreams/transformstream:TransferedTransformStream'
+        'internal/webstreams/transformstream:TransferredTransformStream'
     };
   }
 
@@ -226,11 +227,11 @@ class TransformStream {
 }
 
 ObjectDefineProperties(TransformStream.prototype, {
-  readable: { enumerable: true },
-  writable: { enumerable: true },
+  readable: kEnumerableProperty,
+  writable: kEnumerableProperty,
 });
 
-function TransferedTransformStream() {
+function TransferredTransformStream() {
   return makeTransferable(ReflectConstruct(
     function() {
       this[kType] = 'TransformStream';
@@ -248,7 +249,7 @@ function TransferedTransformStream() {
     },
     [], TransformStream));
 }
-TransferedTransformStream.prototype[kDeserialize] = () => {};
+TransferredTransformStream.prototype[kDeserialize] = () => {};
 
 class TransformStreamDefaultController {
   [kType] = 'TransformStreamDefaultController';
@@ -310,10 +311,10 @@ class TransformStreamDefaultController {
 }
 
 ObjectDefineProperties(TransformStreamDefaultController.prototype, {
-  desiredSize: { enumerable: true },
-  enqueue: { enumerable: true },
-  error: { enumerable: true },
-  terminate: { enumerable: true },
+  desiredSize: kEnumerableProperty,
+  enqueue: kEnumerableProperty,
+  error: kEnumerableProperty,
+  terminate: kEnumerableProperty,
 });
 
 function createTransformStreamDefaultController() {
@@ -583,7 +584,7 @@ function transformStreamDefaultSourcePullAlgorithm(stream) {
 module.exports = {
   TransformStream,
   TransformStreamDefaultController,
-  TransferedTransformStream,
+  TransferredTransformStream,
 
   // Exported Brand Checks
   isTransformStream,

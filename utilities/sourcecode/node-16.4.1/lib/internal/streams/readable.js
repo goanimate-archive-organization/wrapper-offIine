@@ -43,7 +43,7 @@ const { Stream, prependListener } = require('internal/streams/legacy');
 const { Buffer } = require('buffer');
 
 const {
-  addAbortSignalNoValidate,
+  addAbortSignal,
 } = require('internal/streams/add-abort-signal');
 const eos = require('internal/streams/end-of-stream');
 
@@ -171,6 +171,8 @@ function ReadableState(options, stream, isDuplex) {
   // If true, a maybeReadMore has been scheduled.
   this.readingMore = false;
 
+  this.didRead = false;
+
   this.decoder = null;
   this.encoding = null;
   if (options && options.encoding) {
@@ -199,8 +201,9 @@ function Readable(options) {
 
     if (typeof options.construct === 'function')
       this._construct = options.construct;
+
     if (options.signal && !isDuplex)
-      addAbortSignalNoValidate(options.signal, this);
+      addAbortSignal(options.signal, this);
   }
 
   Stream.call(this, options);
@@ -483,8 +486,25 @@ Readable.prototype.read = function(n) {
     // If the length is currently zero, then we *need* a readable event.
     if (state.length === 0)
       state.needReadable = true;
+
     // Call internal read method
-    this._read(state.highWaterMark);
+    try {
+      const result = this._read(state.highWaterMark);
+      if (result != null) {
+        const then = result.then;
+        if (typeof then === 'function') {
+          then.call(
+            result,
+            nop,
+            function(err) {
+              errorOrDestroy(this, err);
+            });
+        }
+      }
+    } catch (err) {
+      errorOrDestroy(this, err);
+    }
+
     state.sync = false;
     // If _read pushed data synchronously, then `reading` will be false,
     // and we need to re-evaluate how much data we can return to the user.
@@ -523,6 +543,8 @@ Readable.prototype.read = function(n) {
 
   if (ret !== null)
     this.emit('data', ret);
+
+  state.didRead = true;
 
   return ret;
 };
@@ -827,7 +849,9 @@ function pipeOnDrain(src, dest) {
 
     if ((!state.awaitDrainWriters || state.awaitDrainWriters.size === 0) &&
       EE.listenerCount(src, 'data')) {
+      // TODO(ronag): Call resume() instead?
       state.flowing = true;
+      state.didRead = true;
       flow(src);
     }
   };
@@ -975,6 +999,7 @@ Readable.prototype.resume = function() {
 function resume(stream, state) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
+    state.didRead = true;
     process.nextTick(resume_, stream, state);
   }
 }
@@ -1128,14 +1153,11 @@ async function* createAsyncIterator(stream, options) {
     error = aggregateTwoErrors(error, err);
     throw error;
   } finally {
-    if (error) {
-      if (options?.destroyOnError !== false) {
-        destroyImpl.destroyer(stream, error);
-      }
-    } else if (options?.destroyOnReturn !== false) {
-      if (error === undefined || stream._readableState.autoDestroy) {
-        destroyImpl.destroyer(stream, null);
-      }
+    if (
+      (error || options?.destroyOnReturn !== false) &&
+      (error === undefined || stream._readableState.autoDestroy)
+    ) {
+      destroyImpl.destroyer(stream, null);
     }
   }
 }
@@ -1159,6 +1181,13 @@ ObjectDefineProperties(Readable.prototype, {
       if (this._readableState) {
         this._readableState.readable = !!val;
       }
+    }
+  },
+
+  readableDidRead: {
+    enumerable: false,
+    get: function() {
+      return this._readableState.didRead;
     }
   },
 
@@ -1339,4 +1368,23 @@ function endWritableNT(state, stream) {
 
 Readable.from = function(iterable, opts) {
   return from(Readable, iterable, opts);
+};
+
+let webStreamsAdapters;
+
+// Lazy to avoid circular references
+function lazyWebStreams() {
+  if (webStreamsAdapters === undefined)
+    webStreamsAdapters = require('internal/webstreams/adapters');
+  return webStreamsAdapters;
+}
+
+Readable.fromWeb = function(readableStream, options) {
+  return lazyWebStreams().newStreamReadableFromReadableStream(
+    readableStream,
+    options);
+};
+
+Readable.toWeb = function(streamReadable) {
+  return lazyWebStreams().newStreamReadableFromReadableStream(streamReadable);
 };

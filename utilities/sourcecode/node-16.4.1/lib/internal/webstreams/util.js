@@ -121,7 +121,7 @@ function transferArrayBuffer(buffer) {
   const res = detachArrayBuffer(buffer);
   if (res === undefined) {
     throw new ERR_OPERATION_FAILED.TypeError(
-      'The ArrayBuffer could not be transfered');
+      'The ArrayBuffer could not be transferred');
   }
   return res;
 }
@@ -207,6 +207,9 @@ function lazyTransfer() {
   return transfer;
 }
 
+const kEnumerableProperty = ObjectCreate(null);
+kEnumerableProperty.enumerable = true;
+
 module.exports = {
   ArrayBufferViewGetBuffer,
   ArrayBufferViewGetByteLength,
@@ -234,4 +237,5 @@ module.exports = {
   nonOpWrite,
   kType,
   kState,
+  kEnumerableProperty,
 };
