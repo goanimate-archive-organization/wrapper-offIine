@@ -2749,7 +2749,9 @@
 		<library type="GoBehindBody" id="mime_tail" path="mime_tail" name="mime_tail" thumb="mime_tail_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y">
 		</library>		
 		<library type="GoBehindBody" id="splendid_tail" path="splendid_tail" name="splendid_tail" thumb="splendid_tail_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y">
-		</library>		
+		</library>	
+		<library type="GoBehindBody" id="marspuilami" path="marspuilami" name="marspuilami" thumb="marspuilami_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y">
+		</library>
 
         <library type="GoBehindBody" id="020" path="020" name="020" thumb="020_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
         <library type="GoBehindBody" id="021" path="021" name="021" thumb="021_thumbnail.swf" display_order="10" money="0" sharing="0" enable="Y"/>
