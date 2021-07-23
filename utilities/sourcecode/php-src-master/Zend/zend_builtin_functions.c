@@ -206,7 +206,7 @@ ZEND_FUNCTION(func_get_arg)
 		arg = ZEND_CALL_ARG(ex, requested_offset + 1);
 	}
 	if (EXPECTED(!Z_ISUNDEF_P(arg))) {
-		ZVAL_COPY_DEREF(return_value, arg);
+		RETURN_COPY_DEREF(arg);
 	}
 }
 /* }}} */
@@ -382,7 +382,7 @@ ZEND_FUNCTION(error_reporting)
 		zend_ini_entry *p = EG(error_reporting_ini_entry);
 
 		if (!p) {
-			zval *zv = zend_hash_find_ex(EG(ini_directives), ZSTR_KNOWN(ZEND_STR_ERROR_REPORTING), 1);
+			zval *zv = zend_hash_find_known_hash(EG(ini_directives), ZSTR_KNOWN(ZEND_STR_ERROR_REPORTING));
 			if (!zv) {
 				/* Ini setting does not exist -- can this happen? */
 				RETURN_LONG(old_error_reporting);
@@ -420,20 +420,12 @@ static bool validate_constant_array_argument(HashTable *ht, int argument_number)
 	GC_PROTECT_RECURSION(ht);
 	ZEND_HASH_FOREACH_VAL(ht, val) {
 		ZVAL_DEREF(val);
-		if (Z_REFCOUNTED_P(val)) {
-			if (Z_TYPE_P(val) == IS_ARRAY) {
-				if (Z_REFCOUNTED_P(val)) {
-					if (Z_IS_RECURSIVE_P(val)) {
-						zend_argument_value_error(argument_number, "cannot be a recursive array");
-						ret = 0;
-						break;
-					} else if (!validate_constant_array_argument(Z_ARRVAL_P(val), argument_number)) {
-						ret = 0;
-						break;
-					}
-				}
-			} else if (Z_TYPE_P(val) != IS_STRING && Z_TYPE_P(val) != IS_RESOURCE) {
-				zend_argument_type_error(argument_number, "cannot be an object, %s given", zend_zval_type_name(val));
+		if (Z_TYPE_P(val) == IS_ARRAY && Z_REFCOUNTED_P(val)) {
+			if (Z_IS_RECURSIVE_P(val)) {
+				zend_argument_value_error(argument_number, "cannot be a recursive array");
+				ret = 0;
+				break;
+			} else if (!validate_constant_array_argument(Z_ARRVAL_P(val), argument_number)) {
 				ret = 0;
 				break;
 			}
@@ -496,35 +488,15 @@ ZEND_FUNCTION(define)
 
 	ZVAL_UNDEF(&val_free);
 
-	switch (Z_TYPE_P(val)) {
-		case IS_LONG:
-		case IS_DOUBLE:
-		case IS_STRING:
-		case IS_FALSE:
-		case IS_TRUE:
-		case IS_NULL:
-		case IS_RESOURCE:
-			break;
-		case IS_ARRAY:
-			if (Z_REFCOUNTED_P(val)) {
-				if (!validate_constant_array_argument(Z_ARRVAL_P(val), 2)) {
-					RETURN_THROWS();
-				} else {
-					copy_constant_array(&c.value, val);
-					goto register_constant;
-				}
+	if (Z_TYPE_P(val) == IS_ARRAY) {
+		if (Z_REFCOUNTED_P(val)) {
+			if (!validate_constant_array_argument(Z_ARRVAL_P(val), 2)) {
+				RETURN_THROWS();
+			} else {
+				copy_constant_array(&c.value, val);
+				goto register_constant;
 			}
-			break;
-		case IS_OBJECT:
-			if (Z_OBJ_HT_P(val)->cast_object(Z_OBJ_P(val), &val_free, IS_STRING) == SUCCESS) {
-				val = &val_free;
-				break;
-			}
-			ZEND_FALLTHROUGH;
-		default:
-			zval_ptr_dtor(&val_free);
-			zend_argument_type_error(2, "cannot be an object, %s given", zend_zval_type_name(val));
-			RETURN_THROWS();
+		}
 	}
 
 	ZVAL_COPY(&c.value, val);

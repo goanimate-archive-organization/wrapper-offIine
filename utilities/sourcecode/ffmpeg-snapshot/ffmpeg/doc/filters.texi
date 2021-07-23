@@ -7857,7 +7857,7 @@ Set threshold for averaging chrominance values.
 Sum of absolute difference of Y, U and V pixel components of current
 pixel and neighbour pixels lower than this threshold will be used in
 averaging. Luma component is left unchanged and is copied to output.
-Default value is 30. Allowed range is from 1 to 200.
+Default value is 30. Allowed range is from 1 to 5000.
 
 @item sizew
 Set horizontal radius of rectangle used for averaging.
@@ -7881,19 +7881,31 @@ Mostly useful to speed-up filtering.
 Set Y threshold for averaging chrominance values.
 Set finer control for max allowed difference between Y components
 of current pixel and neigbour pixels.
-Default value is 200. Allowed range is from 1 to 200.
+Default value is 5000. Allowed range is from 1 to 5000.
 
 @item threu
 Set U threshold for averaging chrominance values.
 Set finer control for max allowed difference between U components
 of current pixel and neigbour pixels.
-Default value is 200. Allowed range is from 1 to 200.
+Default value is 5000. Allowed range is from 1 to 5000.
 
 @item threv
 Set V threshold for averaging chrominance values.
 Set finer control for max allowed difference between V components
 of current pixel and neigbour pixels.
-Default value is 200. Allowed range is from 1 to 200.
+Default value is 5000. Allowed range is from 1 to 5000.
+
+@item distance
+Set distance type used in calculations.
+
+@table @samp
+@item manhattan
+Absolute difference.
+@item euclidean
+Difference squared.
+@end table
+
+Default distance type is manhattan.
 @end table
 
 @subsection Commands
@@ -15898,8 +15910,53 @@ It accepts the following parameters:
 @table @option
 @item x
 @item y
-Set the x and y coordinates of the overlaid video on the main video.
+Set expressions for the x and y coordinates of the overlaid video
+on the main video.
+
+They can contain the following parameters:
+
+@table @option
+
+@item main_w, W
+@item main_h, H
+The main input width and height.
+
+@item overlay_w, w
+@item overlay_h, h
+The overlay input width and height.
+
+@item x
+@item y
+The computed values for @var{x} and @var{y}. They are evaluated for
+each new frame.
+
+@item n
+The ordinal index of the main input frame, starting from 0.
+
+@item pos
+The byte offset position in the file of the main input frame, NAN if unknown.
+
+@item t
+The timestamp of the main input frame, expressed in seconds, NAN if unknown.
+
+@end table
+
 Default value is "0" for both expressions.
+
+@item eval
+Set when the expressions for @option{x} and @option{y} are evaluated.
+
+It accepts the following values:
+@table @option
+@item init
+Evaluate expressions once during filter initialization or
+when a command is processed.
+
+@item frame
+Evaluate expressions for each incoming frame
+@end table
+
+Default value is @option{frame}.
 
 @item eof_action
 See @ref{framesync}.

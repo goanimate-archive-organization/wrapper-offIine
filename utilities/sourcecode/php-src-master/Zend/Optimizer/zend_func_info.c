@@ -346,11 +346,9 @@ static const func_info_t func_infos[] = {
 	F0("uasort",                       MAY_BE_TRUE),
 	F0("uksort",                       MAY_BE_TRUE),
 	F1("compact",                      MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_fill",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_ANY),
+	FN("array_fill",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_ANY),
 	F1("array_fill_keys",              MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	FC("range",                        zend_range_info),
-	F1("array_splice",                 MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_slice",                  MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	F1("array_replace",                MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	F1("array_replace_recursive",      MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	FN("array_keys",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
@@ -376,9 +374,6 @@ static const func_info_t func_infos[] = {
 	F1("array_udiff_assoc",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	F1("array_diff_uassoc",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	F1("array_udiff_uassoc",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_filter",                 MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_chunk",                  MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_combine",                MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	F1("str_rot13",                    MAY_BE_STRING),
 	F1("stream_get_filters",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
 	F1("stream_bucket_make_writeable", MAY_BE_NULL | MAY_BE_OBJECT),
@@ -538,7 +533,7 @@ static const func_info_t func_infos[] = {
 
 	/* ext/json */
 	F1("json_encode",                           MAY_BE_FALSE | MAY_BE_STRING),
-	F1("json_decode",                           MAY_BE_ANY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY),
+	FN("json_decode",                           MAY_BE_ANY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY),
 	F1("json_last_error_msg",                   MAY_BE_STRING),
 
 	/* ext/xml */
@@ -695,7 +690,7 @@ static const func_info_t func_infos[] = {
 	F1("pg_get_result",							MAY_BE_FALSE | MAY_BE_OBJECT),
 	F1("pg_result_status",						MAY_BE_LONG | MAY_BE_STRING),
 	F1("pg_get_notify",							MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY),
-	F1("pg_socket",								MAY_BE_FALSE | MAY_BE_OBJECT),
+	F1("pg_socket",								MAY_BE_FALSE | MAY_BE_RESOURCE),
 	F1("pg_meta_data",							MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ARRAY),
 	F1("pg_convert",							MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
 	F1("pg_insert",								MAY_BE_FALSE | MAY_BE_TRUE | MAY_BE_OBJECT | MAY_BE_STRING),
@@ -808,22 +803,27 @@ static const func_info_t func_infos[] = {
 static HashTable func_info;
 ZEND_API int zend_func_info_rid = -1;
 
-static uint32_t get_internal_func_info(
-		const zend_call_info *call_info, const zend_ssa *ssa) {
-	zend_function *callee_func = call_info->callee_func;
+uint32_t zend_get_internal_func_info(
+		const zend_function *callee_func, const zend_call_info *call_info, const zend_ssa *ssa) {
 	if (callee_func->common.scope) {
 		/* This is a method, not a function. */
 		return 0;
 	}
 
-	zval *zv = zend_hash_find_ex(&func_info, callee_func->common.function_name, 1);
+	zend_string *name = callee_func->common.function_name;
+	if (!name) {
+		/* zend_pass_function has no name. */
+		return 0;
+	}
+
+	zval *zv = zend_hash_find_known_hash(&func_info, name);
 	if (!zv) {
 		return 0;
 	}
 
 	func_info_t *info = Z_PTR_P(zv);
 	if (info->info_func) {
-		return info->info_func(call_info, ssa);
+		return call_info ? info->info_func(call_info, ssa) : 0;
 	} else {
 		return info->info;
 	}
@@ -839,7 +839,7 @@ ZEND_API uint32_t zend_get_func_info(
 	*ce_is_instanceof = 0;
 
 	if (callee_func->type == ZEND_INTERNAL_FUNCTION) {
-		uint32_t internal_ret = get_internal_func_info(call_info, ssa);
+		uint32_t internal_ret = zend_get_internal_func_info(callee_func, call_info, ssa);
 #if !ZEND_DEBUG
 		if (internal_ret) {
 			return internal_ret;

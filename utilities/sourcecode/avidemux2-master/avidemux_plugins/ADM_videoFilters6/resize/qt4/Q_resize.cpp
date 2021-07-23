@@ -46,6 +46,7 @@ resizeWindow::resizeWindow(QWidget *parent, resParam *param) : QDialog(parent)
 {
     ui.setupUi(this);
     lastPercentage = 100;
+    labelOutArFWidth = labelOutArFWidth10 = 0;
     _param=param;
 
 #define ADD_PAR(x) ui.comboBoxSource->addItem(x); ui.comboBoxDestination->addItem(x);
@@ -81,6 +82,8 @@ resizeWindow::resizeWindow(QWidget *parent, resParam *param) : QDialog(parent)
         updateWidthHeightSpinners();
     enableControls(_param->rsz.lockAR);
     roundupChanged(_param->rsz.roundup);
+    
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 
     connect(ui.comboBoxSource, SIGNAL(currentIndexChanged(int)), this, SLOT(aspectRatioChanged(int)));
     connect(ui.comboBoxDestination, SIGNAL(currentIndexChanged(int)), this, SLOT(aspectRatioChanged(int)));
@@ -89,6 +92,21 @@ resizeWindow::resizeWindow(QWidget *parent, resParam *param) : QDialog(parent)
     connect(ui.buttonBox, SIGNAL(accepted()), this, SLOT(okButtonClicked()));
 
     connectDimensionControls();
+}
+
+void resizeWindow::showEvent(QShowEvent *event)
+{
+    QDialog::showEvent(event);
+    /* Avoid shifting the layout displaying output aspect ratio
+    by setting a sufficient minimum width based on font metrics. */
+    QFontMetrics fm = ui.labelOutArFloat->fontMetrics(); // we may assume that both labels use the same font
+    QString text = "0.0000";
+    labelOutArFWidth = 1.05 * fm.boundingRect(text).width();
+    text = "00.0000";
+    labelOutArFWidth10 = 1.05 * fm.boundingRect(text).width();
+    ui.labelOutArFloat->setMinimumWidth(labelOutArFWidth);
+    text = "(00:00)";
+    ui.labelOutArDef->setMinimumWidth(1.05 * fm.boundingRect(text).width());
 }
 
 void resizeWindow::gather(void)
@@ -147,6 +165,8 @@ void resizeWindow::percentageSpinBoxChanged(int value)
 
     lastPercentage = ui.percentageSpinBox->value();
 
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
+
     connectDimensionControls();
 }
 
@@ -158,6 +178,8 @@ void resizeWindow::widthSpinBoxChanged(int value)
         updateWidthHeightSpinners(false);
     else
         roundUp(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
+
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 
     connectDimensionControls();
 }
@@ -171,6 +193,8 @@ void resizeWindow::heightSpinBoxChanged(int value)
     else
         roundUp(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
+
     connectDimensionControls();
 }
 
@@ -180,6 +204,8 @@ void resizeWindow::aspectRatioChanged(int index)
 
     if (ui.lockArCheckBox->isChecked())
         updateWidthHeightSpinners();
+
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 
     connectDimensionControls();
 }
@@ -283,12 +309,73 @@ void resizeWindow::roundUp(int xx, int yy)
     ui.labelErrorXY->setText(QString("%1").arg(erx * 100., 0, 'f', 2) + " / " + QString("%1").arg(ery * 100., 0, 'f', 2));
 }
 
+void resizeWindow::printOutAR(int w, int h)
+{
+    static const double arlist[][2] = {
+        {9, 16}, {1, 1}, {6, 5}, {5, 4}, {4, 3}, {11, 8}, {1.43, 1}, {3, 2}, {14, 9}, {16, 10}, {5, 3}, {16, 9}, {1.85, 1}, {1.9, 1}, {2, 1}, {2.2, 1}, {64, 27}, {2.35, 1}, {2.39, 1}, {2.4, 1}, {2.76, 1}, {32, 9}, {18, 5}, {4, 1}
+    };
+    
+    double xx = w;
+    double yy = h;
+    
+    if (ui.lockArCheckBox->isChecked())
+    {
+        int sar = ui.comboBoxSource->currentIndex();
+        int dar = ui.comboBoxDestination->currentIndex();
+        if (sar)
+            yy /= aspectRatio[_param->pal][sar];
+        if (dar)
+            yy /= aspectRatio[_param->pal][dar];
+    }
+    
+    double outar = xx/yy;
+    outar = round(outar*10000.0) / 10000.0;
+    
+    double mindiff = 9999;
+    int minindex = 0;
+    for (int i=0; i<sizeof(arlist) / sizeof(arlist[0]); i++)
+    {
+        double lsar = arlist[i][0] / arlist[i][1];
+        if (mindiff > fabs(lsar - outar))
+        {
+            mindiff = fabs(lsar - outar);
+            minindex = i;
+        }
+    }
+    
+    double lsar = arlist[minindex][0] / arlist[minindex][1];
+    if (outar > lsar)
+        mindiff = outar/lsar - 1.0;
+    else
+        mindiff = lsar/outar - 1.0;
+
+    if (outar < 10.)
+    {
+        if (labelOutArFWidth > 0)
+            ui.labelOutArFloat->setMinimumWidth(labelOutArFWidth);
+    } else
+    {
+        if (labelOutArFWidth10 > 0)
+            ui.labelOutArFloat->setMinimumWidth(labelOutArFWidth10);
+    }
+
+    QString arfloat = QString("%1").arg(outar, 0, 'f', 4);
+    ui.labelOutArFloat->setText(arfloat);
+
+    QString arstr;
+    if (mindiff <= 0.005)
+        arstr = QString("(%1:%2)").arg(arlist[minindex][0]).arg(arlist[minindex][1]);
+    ui.labelOutArDef->setText(arstr);
+}
+
 void resizeWindow::lockArToggled(bool toggled)
 {
     if (ui.lockArCheckBox->isChecked())
         widthSpinBoxChanged(0);
     /*else
         ui.comboBoxRoundup->setCurrentIndex(0);*/
+
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 
     enableControls(toggled);
 }
@@ -310,6 +397,8 @@ void resizeWindow::roundupChanged(int index)
         ui.spinBoxWidth->setSingleStep(2);
         ui.spinBoxHeight->setSingleStep(2);
     }
+
+    printOutAR(ui.spinBoxWidth->value(), ui.spinBoxHeight->value());
 }
 
 void resizeWindow::enableControls(bool lockArChecked)

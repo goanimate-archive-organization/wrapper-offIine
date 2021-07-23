@@ -23,6 +23,7 @@
 #include "internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/avassert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/internal.h"
 
 #define PP_BNK_MAX_READ_SIZE    4096
@@ -214,7 +215,6 @@ static int pp_bnk_read_header(AVFormatContext *s)
 
         par->sample_rate            = hdr.sample_rate;
         par->bits_per_coded_sample  = 4;
-        par->bits_per_raw_sample    = 16;
         par->block_align            = 1;
         par->bit_rate               = par->sample_rate * (int64_t)par->bits_per_coded_sample * par->channels;
 

@@ -28,7 +28,6 @@
 #include "ext/standard/file.h"
 #include "ext/standard/info.h"
 #include "php_ini.h"
-#include "zend_interfaces.h"
 #ifdef PHP_WIN32
 # include "windows_common.h"
 # include <win32/inet.h>
@@ -436,8 +435,6 @@ static PHP_MINIT_FUNCTION(sockets)
 
 	socket_ce = register_class_Socket();
 	socket_ce->create_object = socket_create_object;
-	socket_ce->serialize = zend_class_serialize_deny;
-	socket_ce->unserialize = zend_class_unserialize_deny;
 
 	memcpy(&socket_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
 	socket_object_handlers.offset = XtOffsetOf(php_socket, std);
@@ -449,8 +446,6 @@ static PHP_MINIT_FUNCTION(sockets)
 
 	address_info_ce = register_class_AddressInfo();
 	address_info_ce->create_object = address_info_create_object;
-	address_info_ce->serialize = zend_class_serialize_deny;
-	address_info_ce->unserialize = zend_class_unserialize_deny;
 
 	memcpy(&address_info_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
 	address_info_object_handlers.offset = XtOffsetOf(php_addrinfo, std);
@@ -547,6 +542,9 @@ static PHP_MINIT_FUNCTION(sockets)
 #endif
 	REGISTER_LONG_CONSTANT("SOL_SOCKET",	SOL_SOCKET,		CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("SOMAXCONN",		SOMAXCONN,		CONST_CS | CONST_PERSISTENT);
+#ifdef SO_MARK
+	REGISTER_LONG_CONSTANT("SO_MARK",   SO_MARK,    CONST_CS | CONST_PERSISTENT);
+#endif
 #ifdef TCP_NODELAY
 	REGISTER_LONG_CONSTANT("TCP_NODELAY",   TCP_NODELAY,    CONST_CS | CONST_PERSISTENT);
 #endif

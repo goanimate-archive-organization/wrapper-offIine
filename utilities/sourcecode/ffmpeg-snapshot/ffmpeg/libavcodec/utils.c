@@ -28,6 +28,7 @@
 #include "config.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
@@ -40,7 +41,6 @@
 #include "internal.h"
 #include "put_bits.h"
 #include "raw.h"
-#include "version.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdatomic.h>

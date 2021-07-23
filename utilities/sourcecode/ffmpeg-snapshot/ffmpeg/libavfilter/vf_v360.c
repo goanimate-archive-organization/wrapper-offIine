@@ -2926,7 +2926,7 @@ static int xyz_to_fisheye(const V360Context *s,
     float uf = vec[0] / lh * phi / s->iflat_range[0];
     float vf = vec[1] / lh * phi / s->iflat_range[1];
 
-    const int visible = hypotf(uf, vf) <= 0.5f;
+    const int visible = -0.5f < uf && uf < 0.5f && -0.5f < vf && vf < 0.5f;
     int ui, vi;
 
     uf = (uf + 0.5f) * width;
@@ -4161,8 +4161,8 @@ static void fov_from_dfov(int format, float d_fov, float w, float h, float *h_fo
             const float d = 0.5f * hypotf(w, h);
             const float l = sinf(d_fov * M_PI / 360.f) / d;
 
-            *h_fov = asinf(w * 0.5 * l) * 360.f / M_PI;
-            *v_fov = asinf(h * 0.5 * l) * 360.f / M_PI;
+            *h_fov = asinf(w * 0.5f * l) * 360.f / M_PI;
+            *v_fov = asinf(h * 0.5f * l) * 360.f / M_PI;
 
             if (d_fov > 180.f) {
                 *h_fov = 180.f - *h_fov;

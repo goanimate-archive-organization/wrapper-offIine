@@ -123,6 +123,11 @@ ZEND_API zend_long ZEND_FASTCALL zend_atol(const char *str, size_t str_len) /* {
 }
 /* }}} */
 
+ZEND_API int ZEND_FASTCALL zend_atoi(const char *str, size_t str_len)
+{
+	return (int) zend_atol(str, str_len);
+}
+
 /* {{{ convert_object_to_type: dst will be either ctype or UNDEF */
 #define convert_object_to_type(op, dst, ctype)									\
 	ZVAL_UNDEF(dst);																		\
@@ -1913,7 +1918,7 @@ ZEND_API zend_result ZEND_FASTCALL concat_function(zval *result, zval *op1, zval
 		size_t result_len = op1_len + op2_len;
 		zend_string *result_str;
 
-		if (UNEXPECTED(op1_len > SIZE_MAX - op2_len)) {
+		if (UNEXPECTED(op1_len > ZSTR_MAX_LEN - op2_len)) {
 			zend_throw_error(NULL, "String size overflow");
 			zval_ptr_dtor_str(&op1_copy);
 			zval_ptr_dtor_str(&op2_copy);

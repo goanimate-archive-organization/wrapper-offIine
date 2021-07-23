@@ -26,6 +26,7 @@
 #include "libavutil/bprint.h"
 
 #include "libavcodec/avcodec.h"
+#include "libavcodec/bsf.h"
 
 #include "avformat.h"
 #include "os_support.h"
@@ -203,8 +204,6 @@ struct AVStreamInternal {
      * 1 if avctx has been initialized with the values from the codec parameters
      */
     int avctx_inited;
-
-    enum AVCodecID orig_codec_id;
 
     /* the context for extracting extradata in find_stream_info()
      * inited=1/bsf=NULL signals that extracting is not possible (codec not

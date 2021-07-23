@@ -47,6 +47,7 @@
 
 #include "config.h"
 #include "libavutil/avassert.h"
+#include "libavutil/cpu.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 
@@ -175,6 +176,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_INTERPLAY_ACM: maxsamples /= 16384;  break;
     case AV_CODEC_ID_JPEG2000:    maxpixels  /= 16;    break;
     case AV_CODEC_ID_LAGARITH:    maxpixels  /= 1024;  break;
+    case AV_CODEC_ID_VORBIS:      maxsamples /= 1024;  break;
     case AV_CODEC_ID_LSCR:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_MOTIONPIXELS:maxpixels  /= 256;   break;
     case AV_CODEC_ID_MP4ALS:      maxsamples /= 65536; break;
@@ -227,6 +229,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         GetByteContext gbc;
         int extradata_size;
         int flags;
+        int64_t flags64;
+
         size -= 1024;
         bytestream2_init(&gbc, data + size, 1024);
         ctx->width                              = bytestream2_get_le32(&gbc);
@@ -246,6 +250,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
         if ((flags & 0x10) && c->id != AV_CODEC_ID_H264)
             ctx->flags2 |= AV_CODEC_FLAG2_FAST;
+        if (flags & 0x80)
+            ctx->flags2 |= AV_CODEC_FLAG2_EXPORT_MVS;
 
         if (flags & 0x40)
             av_force_cpu_flags(0);
@@ -266,6 +272,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
         ctx->idct_algo                          = bytestream2_get_byte(&gbc) % 25;
         flushpattern                            = bytestream2_get_le64(&gbc);
+        ctx->skip_frame                         = bytestream2_get_byte(&gbc) - 254 + AVDISCARD_ALL;
+
 
         if (flags & 0x20) {
             switch (ctx->codec_id) {
@@ -279,6 +287,13 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             }
         }
 
+        flags64 = bytestream2_get_le64(&gbc);
+        if (flags64 &1)
+            ctx->debug |= FF_DEBUG_SKIP;
+        if (flags64 &2)
+            ctx->debug |= FF_DEBUG_QP;
+        if (flags64 &4)
+            ctx->debug |= FF_DEBUG_MB_TYPE;
 
         if (extradata_size < size) {
             ctx->extradata = av_mallocz(extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -301,6 +316,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         return 0; // Failure of avcodec_open2() does not imply that a issue was found
     }
     parser_avctx->codec_id = ctx->codec_id;
+    parser_avctx->extradata_size = ctx->extradata_size;
+    parser_avctx->extradata      = av_memdup(ctx->extradata, ctx->extradata_size);
+
 
     int got_frame;
     AVFrame *frame = av_frame_alloc();

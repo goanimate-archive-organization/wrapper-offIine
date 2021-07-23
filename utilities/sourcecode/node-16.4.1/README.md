@@ -144,7 +144,7 @@ For information on reporting security vulnerabilities in Node.js, see
 
 * [Contributing to the project][]
 * [Working Groups][]
-* [Strategic Initiatives][]
+* [Strategic initiatives][]
 * [Technical values and prioritization][]
 
 ## Current project team members
@@ -347,8 +347,6 @@ For information about the governance of the Node.js project, see
 **Jackson Tian** &lt;shyvo1987@gmail.com&gt;
 * [jasnell](https://github.com/jasnell) -
 **James M Snell** &lt;jasnell@gmail.com&gt; (he/him)
-* [jdalton](https://github.com/jdalton) -
-**John-David Dalton** &lt;john.david.dalton@gmail.com&gt;
 * [jkrems](https://github.com/jkrems) -
 **Jan Krems** &lt;jan.krems@gmail.com&gt; (he/him)
 * [joaocgreis](https://github.com/joaocgreis) -
@@ -384,7 +382,7 @@ For information about the governance of the Node.js project, see
 * [mildsunrise](https://github.com/mildsunrise) -
 **Alba Mendez** &lt;me@alba.sh&gt; (she/her)
 * [misterdjules](https://github.com/misterdjules) -
-**Julien Gilli** &lt;jgilli@nodejs.org&gt;
+**Julien Gilli** &lt;jgilli@netflix.com&gt;
 * [mmarchini](https://github.com/mmarchini) -
 **Mary Marchini** &lt;oss@mmarchini.me&gt; (she/her)
 * [mscdex](https://github.com/mscdex) -
@@ -516,6 +514,8 @@ For information about the governance of the Node.js project, see
 **Jason Ginchereau** &lt;jasongin@microsoft.com&gt;
 * [jbergstroem](https://github.com/jbergstroem) -
 **Johan Bergström** &lt;bugs@bergstroem.nu&gt;
+* [jdalton](https://github.com/jdalton) -
+**John-David Dalton** &lt;john.david.dalton@gmail.com&gt;
 * [jhamhader](https://github.com/jhamhader) -
 **Yuval Brik** &lt;yuval@brik.org.il&gt;
 * [joshgav](https://github.com/joshgav) -
@@ -704,6 +704,6 @@ license text.
 [Contributing to the project]: CONTRIBUTING.md
 [Node.js Website]: https://nodejs.org/
 [OpenJS Foundation]: https://openjsf.org/
-[Strategic Initiatives]: https://github.com/nodejs/TSC/blob/HEAD/Strategic-Initiatives.md
+[Strategic initiatives]: doc/guides/strategic-initiatives.md
 [Technical values and prioritization]: doc/guides/technical-values.md
 [Working Groups]: https://github.com/nodejs/TSC/blob/HEAD/WORKING_GROUPS.md

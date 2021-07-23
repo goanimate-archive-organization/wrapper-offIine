@@ -2806,13 +2806,14 @@ ZEND_API zend_result zend_register_functions(zend_class_entry *scope, const zend
 						zend_type_list *list = malloc(ZEND_TYPE_LIST_SIZE(num_types));
 						list->num_types = num_types;
 						ZEND_TYPE_SET_LIST(new_arg_info[i].type, list);
+						ZEND_TYPE_FULL_MASK(new_arg_info[i].type) |= _ZEND_TYPE_UNION_BIT;
 
 						const char *start = class_name;
 						uint32_t j = 0;
 						while (true) {
 							const char *end = strchr(start, '|');
-							zend_string *str =
-								zend_string_init(start, end ? end - start : strlen(start), 1);
+							zend_string *str = zend_string_init_interned(
+								start, end ? end - start : strlen(start), 1);
 							list->types[j] = (zend_type) ZEND_TYPE_INIT_CLASS(str, 0, 0);
 							if (!end) {
 								break;

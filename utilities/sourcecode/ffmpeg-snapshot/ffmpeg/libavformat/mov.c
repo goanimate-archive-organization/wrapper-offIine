@@ -286,6 +286,8 @@ static int mov_metadata_hmmt(MOVContext *c, AVIOContext *pb, unsigned len)
         int moment_time = avio_rb32(pb);
         avpriv_new_chapter(c->fc, i, av_make_q(1, 1000), moment_time, AV_NOPTS_VALUE, NULL);
     }
+    if (avio_feof(pb))
+        return AVERROR_INVALIDDATA;
     return 0;
 }
 
@@ -402,7 +404,18 @@ retry:
             str_size = data_size - 16;
             atom.size -= 16;
 
-            if (atom.type == MKTAG('c', 'o', 'v', 'r')) {
+            if (!key && c->found_hdlr_mdta && c->meta_keys) {
+                uint32_t index = AV_RB32(&atom.type);
+                if (index < c->meta_keys_count && index > 0) {
+                    key = c->meta_keys[index];
+                } else if (atom.type != MKTAG('c', 'o', 'v', 'r')) {
+                    av_log(c->fc, AV_LOG_WARNING,
+                           "The index of 'data' is out of range: %"PRId32" < 1 or >= %d.\n",
+                           index, c->meta_keys_count);
+                }
+            }
+            if (atom.type == MKTAG('c', 'o', 'v', 'r') ||
+                (key && !strcmp(key, "com.apple.quicktime.artwork"))) {
                 int ret = mov_read_covr(c, pb, data_type, str_size);
                 if (ret < 0) {
                     av_log(c->fc, AV_LOG_ERROR, "Error parsing cover art.\n");
@@ -412,15 +425,6 @@ retry:
                 if (atom.size > 8)
                     goto retry;
                 return ret;
-            } else if (!key && c->found_hdlr_mdta && c->meta_keys) {
-                uint32_t index = AV_RB32(&atom.type);
-                if (index < c->meta_keys_count && index > 0) {
-                    key = c->meta_keys[index];
-                } else {
-                    av_log(c->fc, AV_LOG_WARNING,
-                           "The index of 'data' is out of range: %"PRId32" < 1 or >= %d.\n",
-                           index, c->meta_keys_count);
-                }
             }
         } else return 0;
     } else if (atom.size > 4 && key && !c->itunes_metadata && !raw) {
@@ -499,6 +503,14 @@ retry:
                 av_free(str);
                 return AVERROR_INVALIDDATA;
             }
+        } else if (data_type > 1 && data_type != 4) {
+            // data_type can be 0 if not set at all above. data_type 1 means
+            // UTF8 and 4 means "UTF8 sort". For any other type (UTF16 or e.g.
+            // a picture), don't return it blindly in a string that is supposed
+            // to be UTF8 text.
+            av_log(c->fc, AV_LOG_WARNING, "Skipping unhandled metadata %s of type %d\n", key, data_type);
+            av_free(str);
+            return 0;
         } else {
             int ret = ffio_read_size(pb, str, str_size);
             if (ret < 0) {
@@ -3805,7 +3817,11 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
         if ((empty_duration || start_time) && mov->time_scale > 0) {
             if (empty_duration)
                 empty_duration = av_rescale(empty_duration, sc->time_scale, mov->time_scale);
-            sc->time_offset = start_time - empty_duration;
+
+            if (av_sat_sub64(start_time, empty_duration) != start_time - (uint64_t)empty_duration)
+                av_log(mov->fc, AV_LOG_WARNING, "start_time - empty_duration is not representable\n");
+
+            sc->time_offset = start_time -  (uint64_t)empty_duration;
             sc->min_corrected_pts = start_time;
             if (!mov->advanced_editlist)
                 current_dts = -sc->time_offset;

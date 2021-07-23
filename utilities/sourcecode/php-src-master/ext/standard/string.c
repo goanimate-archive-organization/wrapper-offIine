@@ -1738,13 +1738,13 @@ PHP_FUNCTION(pathinfo)
 	}
 
 	if (opt == PHP_PATHINFO_ALL) {
-		ZVAL_COPY_VALUE(return_value, &tmp);
+		RETURN_COPY_VALUE(&tmp);
 	} else {
 		zval *element;
 		if ((element = zend_hash_get_current_data(Z_ARRVAL(tmp))) != NULL) {
-			ZVAL_COPY_DEREF(return_value, element);
+			RETVAL_COPY_DEREF(element);
 		} else {
-			ZVAL_EMPTY_STRING(return_value);
+			RETVAL_EMPTY_STRING();
 		}
 		zval_ptr_dtor(&tmp);
 	}
@@ -2461,7 +2461,9 @@ PHP_FUNCTION(substr_replace)
 				}
 			}
 
-			if ((f + l) > (zend_long)ZSTR_LEN(orig_str)) {
+			ZEND_ASSERT(0 <= f && f <= ZEND_LONG_MAX);
+			ZEND_ASSERT(0 <= l && l <= ZEND_LONG_MAX);
+			if (((size_t) f + l) > ZSTR_LEN(orig_str)) {
 				l = ZSTR_LEN(orig_str) - f;
 			}
 

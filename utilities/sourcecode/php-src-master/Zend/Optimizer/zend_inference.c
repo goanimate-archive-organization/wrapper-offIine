@@ -21,6 +21,7 @@
 #include "zend_inference.h"
 #include "zend_func_info.h"
 #include "zend_call_graph.h"
+#include "zend_closures.h"
 #include "zend_worklist.h"
 #include "zend_optimizer_internal.h"
 
@@ -3473,6 +3474,9 @@ static zend_always_inline int _zend_update_type_info(
 				tmp |= MAY_BE_REF | MAY_BE_INDIRECT;
 			} else {
 				tmp &= ~MAY_BE_RC1;
+				if (opline->opcode == ZEND_FETCH_STATIC_PROP_IS) {
+					tmp |= MAY_BE_UNDEF;
+				}
 			}
 			UPDATE_SSA_TYPE(tmp, ssa_op->result_def);
 			if (ce) {
@@ -3503,6 +3507,10 @@ static zend_always_inline int _zend_update_type_info(
 					UPDATE_SSA_OBJ_TYPE(ce, ce_is_instanceof, ssa_op->result_def);
 				}
 			}
+			break;
+		case ZEND_CALLABLE_CONVERT:
+			UPDATE_SSA_TYPE(MAY_BE_OBJECT | MAY_BE_RC1 | MAY_BE_RCN, ssa_op->result_def);
+			UPDATE_SSA_OBJ_TYPE(zend_ce_closure, /* is_instanceof */ false, ssa_op->result_def);
 			break;
 		case ZEND_FETCH_CONSTANT:
 		case ZEND_FETCH_CLASS_CONSTANT:
@@ -3540,6 +3548,7 @@ static zend_always_inline int _zend_update_type_info(
 			} else {
 				zend_arg_info *ret_info = op_array->arg_info - 1;
 				tmp = zend_fetch_arg_info_type(script, ret_info, &ce);
+				tmp |= (t1 & MAY_BE_INDIRECT);
 
 				// TODO: We could model more precisely how illegal types are converted.
 				uint32_t extra_types = t1 & ~tmp;
@@ -4748,7 +4757,7 @@ ZEND_API int zend_may_throw_ex(const zend_op *opline, const zend_ssa_op *ssa_op,
 					return 1;
 				}
 			}
-			return (t1 & (MAY_BE_OBJECT|MAY_BE_RESOURCE|MAY_BE_TRUE|MAY_BE_STRING|MAY_BE_LONG|MAY_BE_DOUBLE)) || opline->op2_type == IS_UNUSED ||
+			return (t1 & (MAY_BE_OBJECT|MAY_BE_RESOURCE|MAY_BE_TRUE|MAY_BE_FALSE|MAY_BE_STRING|MAY_BE_LONG|MAY_BE_DOUBLE)) || opline->op2_type == IS_UNUSED ||
 				(t2 & (MAY_BE_UNDEF|MAY_BE_ARRAY|MAY_BE_OBJECT|MAY_BE_RESOURCE));
 		case ZEND_ASSIGN_OBJ:
 			if (t1 & (MAY_BE_ANY-(MAY_BE_NULL|MAY_BE_FALSE|MAY_BE_OBJECT))) {
@@ -4864,7 +4873,7 @@ ZEND_API int zend_may_throw_ex(const zend_op *opline, const zend_ssa_op *ssa_op,
 			return 0;
 		case ZEND_FETCH_DIM_W:
 		case ZEND_FETCH_LIST_W:
-			if (t1 & (MAY_BE_TRUE|MAY_BE_LONG|MAY_BE_DOUBLE|MAY_BE_STRING|MAY_BE_OBJECT|MAY_BE_RESOURCE|MAY_BE_REF)) {
+			if (t1 & (MAY_BE_FALSE|MAY_BE_TRUE|MAY_BE_LONG|MAY_BE_DOUBLE|MAY_BE_STRING|MAY_BE_OBJECT|MAY_BE_RESOURCE|MAY_BE_REF)) {
 				return 1;
 			}
 			if (t2 & (MAY_BE_RESOURCE|MAY_BE_ARRAY|MAY_BE_OBJECT)) {

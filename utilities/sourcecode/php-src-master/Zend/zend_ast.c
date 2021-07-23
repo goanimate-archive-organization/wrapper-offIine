@@ -1480,9 +1480,7 @@ static ZEND_COLD void zend_ast_export_class_no_header(smart_str *str, zend_ast_d
 
 static ZEND_COLD void zend_ast_export_attribute_group(smart_str *str, zend_ast *ast, int indent) {
 	zend_ast_list *list = zend_ast_get_list(ast);
-	uint32_t i, j;
-
-	for (i = 0; i < list->children; i++) {
+	for (uint32_t i = 0; i < list->children; i++) {
 		zend_ast *attr = list->child[i];
 
 		if (i) {
@@ -1491,15 +1489,8 @@ static ZEND_COLD void zend_ast_export_attribute_group(smart_str *str, zend_ast *
 		zend_ast_export_ns_name(str, attr->child[0], 0, indent);
 
 		if (attr->child[1]) {
-			zend_ast_list *args = zend_ast_get_list(attr->child[1]);
-
 			smart_str_appendc(str, '(');
-			for (j = 0; j < args->children; j++) {
-				if (j) {
-					smart_str_appends(str, ", ");
-				}
-				zend_ast_export_ex(str, args->child[j], 0, indent);
-			}
+			zend_ast_export_ex(str, attr->child[1], 0, indent);
 			smart_str_appendc(str, ')');
 		}
 	}
@@ -1766,6 +1757,9 @@ simple_list:
 			if (ast->attr & ZEND_ACC_STATIC) {
 				smart_str_appends(str, "static ");
 			}
+			if (ast->attr & ZEND_ACC_READONLY) {
+				smart_str_appends(str, "readonly ");
+			}
 
 			if (type_ast) {
 				zend_ast_export_type(str, type_ast, indent);
@@ -1962,6 +1956,9 @@ simple_list:
 			smart_str_appendc(str, '(');
 			zend_ast_export_ex(str, ast->child[1], 0, indent);
 			smart_str_appendc(str, ')');
+			break;
+		case ZEND_AST_CALLABLE_CONVERT:
+			smart_str_appends(str, "...");
 			break;
 		case ZEND_AST_CLASS_CONST:
 			zend_ast_export_ns_name(str, ast->child[0], 0, indent);

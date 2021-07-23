@@ -410,13 +410,6 @@ void MainWindow::timeChangeFinished(void)
     this->setFocus(Qt::OtherFocusReason);
 }
 
-void MainWindow::currentFrameChanged(void)
-{
-//    sendAction(ACT_JumpToFrame);
-
-    this->setFocus(Qt::OtherFocusReason);
-}
-
 void MainWindow::currentTimeChanged(void)
 {
     sendAction(ACT_GotoTime);
@@ -448,6 +441,60 @@ void MainWindow::setRefreshCap(void)
 }
 
 /**
+    \fn busyTimerTimeout
+*/
+void MainWindow::busyTimerTimeout(void)
+{
+    if ((busyCntr == 0) && QApplication::overrideCursor())
+        QApplication::restoreOverrideCursor();
+}
+
+/**
+    \fn actionSlot
+*/
+void MainWindow::actionSlot(Action a)
+{
+    if(a==ACT_PlayAvi) // ugly
+    {
+        playing=1-playing;
+        setMenuItemsEnabledState();
+        playing=1-playing;
+    }
+    if(a>ACT_NAVIGATE_BEGIN && a<ACT_NAVIGATE_END)
+    {
+        busyTimer.stop();
+        busyCntr++;
+        if (!QApplication::overrideCursor())
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+    }
+    actionLock++;
+    HandleAction(a);
+    actionLock--;
+    setMenuItemsEnabledState();
+    if(a>ACT_NAVIGATE_BEGIN && a<ACT_NAVIGATE_END)
+    {
+        busyCntr--;
+        if (busyCntr==0)
+            busyTimer.start(100);
+    }
+}
+
+/**
+    \fn sendAction
+*/
+void MainWindow::sendAction(Action a)
+{
+    if(a>ACT_NAVIGATE_BEGIN && a<ACT_NAVIGATE_END && a!=ACT_Scale)
+    {
+        if (actionLock<=NAVIGATION_ACTION_LOCK_THRESHOLD)
+            emit actionSignal(a);
+    } else {
+        //printf("Sending internal event %d\n",(int)a);
+        emit actionSignal(a);
+    }
+}
+
+/**
     \fn ctor
 */
 MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEngines(scriptEngines), QMainWindow()
@@ -459,6 +506,8 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
     recentFiles = NULL;
     recentProjects = NULL;
     actionLock = 0;
+    busyCntr = 0;
+    busyTimer.setSingleShot(true);
 
 #if defined(__APPLE__) && defined(USE_SDL)
     //ui.actionAbout_avidemux->setMenuRole(QAction::NoRole);
@@ -497,6 +546,7 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
         connect( qslider,SIGNAL(sliderAction(int)),this,SLOT(sliderWheel(int)));
         
         connect( &dragTimer, SIGNAL(timeout()), this, SLOT(dragTimerTimeout()));
+        connect( &busyTimer, SIGNAL(timeout()), this, SLOT(busyTimerTimeout()));
     
 
    // Thumb slider
@@ -1456,6 +1506,7 @@ void MainWindow::restoreDefaultWidgetState(bool b)
     ui.selectionWidget->setVisible(true);
     ui.volumeWidget->setVisible(true);
     ui.audioMetreWidget->setVisible(true);
+    ui.toolBar->setVisible(true);
 
     syncToolbarsMenu();
 
@@ -1947,6 +1998,7 @@ void MainWindow::syncToolbarsMenu(void)
     CHECKMARK(2,navigation)
     CHECKMARK(3,selection)
     CHECKMARK(4,volume)
+    ui.menuToolbars->actions().at(5)->setChecked(ui.toolBar->isVisible());
 #undef CHECKMARK
 #undef EXPAND
 }
@@ -2649,6 +2701,27 @@ bool UI_setDisplayName(const char *name)
 {
     WIDGET(labelDisplay)->setText(name);
     return true;
+}
+
+/**
+    \fn UI_navigationButtonsPressed
+    \brief Allow to abstain from opening pop-up dialogs while
+           a button with auto-repeat enabled is pressed, else
+           the mouse release event gets eaten by the pop-up and
+           we keep firing the action assigned to the particular
+           button forever.
+*/
+bool UI_navigationButtonsPressed(void)
+{
+    if(WIDGET(toolButtonPreviousFrame)->isDown())
+        return true;
+    if(WIDGET(toolButtonNextFrame)->isDown())
+        return true;
+    if(WIDGET(toolButtonPreviousIntraFrame)->isDown())
+        return true;
+    if(WIDGET(toolButtonNextIntraFrame)->isDown())
+        return true;
+    return false;
 }
 
 /**

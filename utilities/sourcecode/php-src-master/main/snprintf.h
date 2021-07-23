@@ -66,12 +66,7 @@ Example:
 #ifndef SNPRINTF_H
 #define SNPRINTF_H
 
-typedef int bool_int;
-
-typedef enum {
-	NO = 0, YES = 1
-} boolean_e;
-
+#include <stdbool.h>
 
 BEGIN_EXTERN_C()
 PHPAPI int ap_php_slprintf(char *buf, size_t len, const char *format,...) ZEND_ATTRIBUTE_FORMAT(printf, 3, 4);
@@ -83,7 +78,7 @@ PHPAPI int ap_php_asprintf(char **buf, const char *format, ...) ZEND_ATTRIBUTE_F
 PHPAPI char * php_gcvt(double value, int ndigit, char dec_point, char exponent, char *buf);
 PHPAPI char * php_0cvt(double value, int ndigit, char dec_point, char exponent, char *buf);
 PHPAPI char * php_conv_fp(char format, double num,
-		 boolean_e add_dp, int precision, char dec_point, bool_int * is_negative, char *buf, size_t *len);
+		 bool add_dp, int precision, char dec_point, bool * is_negative, char *buf, size_t *len);
 
 END_EXTERN_C()
 
@@ -131,20 +126,10 @@ typedef enum {
 	LM_LONG_DOUBLE,
 } length_modifier_e;
 
-#ifdef PHP_WIN32
-# define WIDE_INT		__int64
-#elif SIZEOF_LONG_LONG
-# define WIDE_INT		long long
-#else
-# define WIDE_INT		long
-#endif
-typedef WIDE_INT wide_int;
-typedef unsigned WIDE_INT u_wide_int;
+PHPAPI char * ap_php_conv_10(int64_t num, bool is_unsigned,
+	   bool * is_negative, char *buf_end, size_t *len);
 
-PHPAPI char * ap_php_conv_10(wide_int num, bool_int is_unsigned,
-	   bool_int * is_negative, char *buf_end, size_t *len);
-
-PHPAPI char * ap_php_conv_p2(u_wide_int num, int nbits,
+PHPAPI char * ap_php_conv_p2(uint64_t num, int nbits,
 		 char format, char *buf_end, size_t *len);
 
 /* The maximum precision that's allowed for float conversion. Does not include

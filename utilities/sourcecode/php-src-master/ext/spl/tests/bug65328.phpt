@@ -65,7 +65,7 @@ class Tree
     /**
      * @return \RecursiveIteratorIterator
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new \RecursiveIteratorIterator(
             $this->head->getChildren(),
@@ -226,7 +226,7 @@ class Node extends \RecursiveArrayIterator implements \Countable
     /**
      * @return scalar
      */
-    public function key(): mixed
+    public function key(): string|int|null
     {
         return $this->index;
     }

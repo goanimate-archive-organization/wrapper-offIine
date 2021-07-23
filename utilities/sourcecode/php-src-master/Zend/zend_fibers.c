@@ -21,7 +21,6 @@
 #include "zend_API.h"
 #include "zend_ini.h"
 #include "zend_vm.h"
-#include "zend_interfaces.h"
 #include "zend_exceptions.h"
 #include "zend_builtin_functions.h"
 #include "zend_observer.h"
@@ -346,11 +345,15 @@ ZEND_API bool zend_fiber_init_context(zend_fiber_context *context, void *kind, z
 	// Set status in case memory has not been zeroed.
 	context->status = ZEND_FIBER_STATUS_INIT;
 
+	zend_observer_fiber_init_notify(context);
+
 	return true;
 }
 
 ZEND_API void zend_fiber_destroy_context(zend_fiber_context *context)
 {
+	zend_observer_fiber_destroy_notify(context);
+
 	zend_fiber_stack_free(context->stack);
 }
 
@@ -829,7 +832,7 @@ ZEND_METHOD(Fiber, getReturn)
 		} else if (fiber->flags & ZEND_FIBER_FLAG_BAILOUT) {
 			message = "The fiber exited with a fatal error";
 		} else {
-			RETURN_COPY(&fiber->result);
+			RETURN_COPY_DEREF(&fiber->result);
 		}
 	} else if (fiber->context.status == ZEND_FIBER_STATUS_INIT) {
 		message = "The fiber has not been started";
@@ -868,8 +871,6 @@ void zend_register_fiber_ce(void)
 {
 	zend_ce_fiber = register_class_Fiber();
 	zend_ce_fiber->create_object = zend_fiber_object_create;
-	zend_ce_fiber->serialize = zend_class_serialize_deny;
-	zend_ce_fiber->unserialize = zend_class_unserialize_deny;
 
 	zend_fiber_handlers = std_object_handlers;
 	zend_fiber_handlers.dtor_obj = zend_fiber_object_destroy;

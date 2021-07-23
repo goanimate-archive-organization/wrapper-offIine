@@ -47,7 +47,6 @@
 #include <inttypes.h>
 
 #include "libavutil/aes.h"
-#include "libavutil/avassert.h"
 #include "libavutil/mastering_display_metadata.h"
 #include "libavutil/mathematics.h"
 #include "libavcodec/bytestream.h"
@@ -622,7 +621,7 @@ static int mxf_decrypt_triplet(AVFormatContext *s, AVPacket *pkt, KLVPacket *klv
         return AVERROR_INVALIDDATA;
     // enc. code
     size = klv_decode_ber_length(pb);
-    if (size < 32 || size - 32 < orig_size)
+    if (size < 32 || size - 32 < orig_size || (int)orig_size != orig_size)
         return AVERROR_INVALIDDATA;
     avio_read(pb, ivec, 16);
     avio_read(pb, tmpbuf, 16);

@@ -19,12 +19,17 @@ class resizeWindow : public QDialog
 
 private:
     int lastPercentage;
+    int labelOutArFWidth,labelOutArFWidth10;
+
     void updateWidthHeightSpinners(bool useHeightAsRef = false);
     void updateSlider();
     void connectDimensionControls();
     void disconnectDimensionControls();
     void roundUp(int xx, int yy);
+    void printOutAR(int w, int h);
     void enableControls(bool enable);
+
+    void showEvent(QShowEvent *event);
 
 protected:
     resParam *_param;

@@ -154,6 +154,7 @@ class SimpleType {
             case "resource":
             case "mixed":
             case "static":
+            case "never":
                 return new SimpleType(strtolower($type), true);
             case "self":
                 throw new Exception('The exact class name must be used instead of "self"');
@@ -205,6 +206,8 @@ class SimpleType {
             return "IS_MIXED";
         case "static":
             return "IS_STATIC";
+        case "never":
+            return "IS_NEVER";
         default:
             throw new Exception("Not implemented: $this->name");
         }
@@ -235,6 +238,8 @@ class SimpleType {
             return "MAY_BE_ANY";
         case "static":
             return "MAY_BE_STATIC";
+        case "never":
+            return "MAY_BE_NEVER";
         default:
             throw new Exception("Not implemented: $this->name");
         }
@@ -1173,6 +1178,10 @@ class PropertyInfo
             $flags .= "|ZEND_ACC_STATIC";
         }
 
+        if ($this->flags & Class_::MODIFIER_READONLY) {
+            $flags .= "|ZEND_ACC_READONLY";
+        }
+
         return $flags;
     }
 }
@@ -1190,6 +1199,8 @@ class ClassInfo {
     public $isDeprecated;
     /** @var bool */
     public $isStrictProperties;
+    /** @var bool */
+    public $isNotSerializable;
     /** @var Name[] */
     public $extends;
     /** @var Name[] */
@@ -1212,6 +1223,7 @@ class ClassInfo {
         ?string $alias,
         bool $isDeprecated,
         bool $isStrictProperties,
+        bool $isNotSerializable,
         array $extends,
         array $implements,
         array $propertyInfos,
@@ -1223,6 +1235,7 @@ class ClassInfo {
         $this->alias = $alias;
         $this->isDeprecated = $isDeprecated;
         $this->isStrictProperties = $isStrictProperties;
+        $this->isNotSerializable = $isNotSerializable;
         $this->extends = $extends;
         $this->implements = $implements;
         $this->propertyInfos = $propertyInfos;
@@ -1311,6 +1324,10 @@ class ClassInfo {
 
         if ($this->isStrictProperties) {
             $flags[] = "ZEND_ACC_NO_DYNAMIC_PROPERTIES";
+        }
+
+        if ($this->isNotSerializable) {
+            $flags[] = "ZEND_ACC_NOT_SERIALIZABLE";
         }
 
         return implode("|", $flags);
@@ -1620,6 +1637,7 @@ function parseClass(Name $name, Stmt\ClassLike $class, array $properties, array 
     $alias = null;
     $isDeprecated = false;
     $isStrictProperties = false;
+    $isNotSerializable = false;
 
     if ($comment) {
         $tags = parseDocComment($comment);
@@ -1630,6 +1648,8 @@ function parseClass(Name $name, Stmt\ClassLike $class, array $properties, array 
                 $isDeprecated = true;
             } else if ($tag->name === 'strict-properties') {
                 $isStrictProperties = true;
+            } else if ($tag->name === 'not-serializable') {
+                $isNotSerializable = true;
             }
         }
     }
@@ -1653,6 +1673,7 @@ function parseClass(Name $name, Stmt\ClassLike $class, array $properties, array 
         $alias,
         $isDeprecated,
         $isStrictProperties,
+        $isNotSerializable,
         $extends,
         $implements,
         $properties,
@@ -1789,7 +1810,7 @@ function handleStatements(FileInfo $fileInfo, array $stmts, PrettyPrinterAbstrac
 }
 
 function parseStubFile(string $code): FileInfo {
-    $lexer = new PhpParser\Lexer();
+    $lexer = new PhpParser\Lexer\Emulative();
     $parser = new PhpParser\Parser\Php7($lexer);
     $nodeTraverser = new PhpParser\NodeTraverser;
     $nodeTraverser->addVisitor(new PhpParser\NodeVisitor\NameResolver);
@@ -2286,7 +2307,7 @@ function initPhpParser() {
     }
 
     $isInitialized = true;
-    $version = "4.9.0";
+    $version = "4.12.0";
     $phpParserDir = __DIR__ . "/PHP-Parser-$version";
     if (!is_dir($phpParserDir)) {
         installPhpParser($version, $phpParserDir);
