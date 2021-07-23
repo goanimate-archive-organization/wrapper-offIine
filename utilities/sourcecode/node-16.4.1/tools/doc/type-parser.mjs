@@ -97,7 +97,7 @@ const customTypesMap = {
   'EcKeyImportParams': 'webcrypto.html#webcrypto_class_eckeyimportparams',
   'HmacImportParams': 'webcrypto.html#webcrypto_class_hmacimportparams',
   'AesImportParams': 'webcrypto.html#webcrypto_class_aesimportparams',
-  'Pbkdf2ImportParams': 'webcrypto.html#webcrypto_class.pbkdf2importparams',
+  'Pbkdf2ImportParams': 'webcrypto.html#webcrypto_class_pbkdf2importparams',
   'HmacParams': 'webcrypto.html#webcrypto_class_hmacparams',
   'EcdsaParams': 'webcrypto.html#webcrypto_class_ecdsaparams',
   'RsaPssParams': 'webcrypto.html#webcrypto_class_rsapssparams',
@@ -253,6 +253,10 @@ const customTypesMap = {
     'webstreams.md#webstreamsapi_class_bytelengthqueuingstrategy',
   'CountQueuingStrategy':
     'webstreams.md#webstreamsapi_class_countqueuingstrategy',
+  'TextEncoderStream':
+    'webstreams.md#webstreamsapi_class_textencoderstream',
+  'TextDecoderStream':
+    'webstreams.md#webstreamsapi_class_textdecoderstream',
 };
 
 const arrayPart = /(?:\[])+$/;
