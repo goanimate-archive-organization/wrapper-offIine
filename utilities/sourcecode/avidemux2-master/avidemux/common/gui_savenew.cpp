@@ -115,9 +115,11 @@ int A_Save(const char *name)
             ADM_warning("Too much audio tracks, limiting to %d\n",ADM_MAX_AUDIO_STREAM);
             nbAudioTracks=ADM_MAX_AUDIO_STREAM;
         }
-        fileName=std::string(out);
-        logFileName=fileName;
-        logFileName+=std::string(".stats");
+        fileName = out;
+        logFileName = out;
+        logFileName += ".";
+        logFileName += videoEncoder6_GetCurrentEncoderName();
+        logFileName += ".stats";
         muxer=NULL;
         chain=NULL;
         audio=NULL;
@@ -206,7 +208,9 @@ bool abort=false;
             return NULL;
         }
         muxer->createUI(videoDuration);
-        muxer->getEncoding()->setPhasis("Pass 1"); // don't make it translatable here, this is done in the encoding dialog
+        muxer->getEncoding()->setFileName(logFileName.c_str()); // just being honest, the muxer will update it later
+        muxer->getEncoding()->setLogFileName(logFileName.c_str()); // needed for cleanup afterwards
+        muxer->getEncoding()->setPhase(ADM_ENC_PHASE_FIRST_PASS,NULL);
 
         ADMBitstream bitstream;
         uint8_t *buffer=new uint8_t[BUFFER_SIZE];

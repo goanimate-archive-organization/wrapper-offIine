@@ -241,7 +241,7 @@ typedef struct _zend_oparray_context {
 /* or IS_CONSTANT_VISITED_MARK                            |     |     |     */
 #define ZEND_CLASS_CONST_IS_CASE         (1 << 6)  /*     |     |     |  X  */
 /*                                                        |     |     |     */
-/* Class Flags (unused: 30...)                            |     |     |     */
+/* Class Flags (unused: 15,21,30,31)                      |     |     |     */
 /* ===========                                            |     |     |     */
 /*                                                        |     |     |     */
 /* Special class types                                    |     |     |     */
@@ -270,9 +270,6 @@ typedef struct _zend_oparray_context {
 /* User class has methods with static variables           |     |     |     */
 #define ZEND_HAS_STATIC_IN_METHODS       (1 << 14) /*  X  |     |     |     */
 /*                                                        |     |     |     */
-/* Whether all property types are resolved to CEs         |     |     |     */
-#define ZEND_ACC_PROPERTY_TYPES_RESOLVED (1 << 15) /*  X  |     |     |     */
-/*                                                        |     |     |     */
 /* Children must reuse parent get_iterator()              |     |     |     */
 #define ZEND_ACC_REUSE_GET_ITERATOR      (1 << 16) /*  X  |     |     |     */
 /*                                                        |     |     |     */
@@ -287,9 +284,6 @@ typedef struct _zend_oparray_context {
 /*                                                        |     |     |     */
 /* Class is linked apart from variance obligations.       |     |     |     */
 #define ZEND_ACC_NEARLY_LINKED           (1 << 20) /*  X  |     |     |     */
-/*                                                        |     |     |     */
-/* Whether this class was used in its unlinked state.     |     |     |     */
-#define ZEND_ACC_HAS_UNLINKED_USES       (1 << 21) /*  X  |     |     |     */
 /*                                                        |     |     |     */
 /* stored in opcache (may be partially)                   |     |     |     */
 #define ZEND_ACC_CACHED                  (1 << 22) /*  X  |     |     |     */
@@ -800,6 +794,8 @@ bool zend_handle_encoding_declaration(zend_ast *ast);
 /* parser-driven code generators */
 void zend_do_free(znode *op1);
 
+ZEND_API zend_class_entry *zend_bind_class_in_slot(
+		zval *class_table_slot, zval *lcname, zend_string *lc_parent_name);
 ZEND_API zend_result do_bind_function(zend_function *func, zval *lcname);
 ZEND_API zend_result do_bind_class(zval *lcname, zend_string *lc_parent_name);
 ZEND_API uint32_t zend_build_delayed_early_binding_list(const zend_op_array *op_array);
@@ -815,6 +811,7 @@ void zend_resolve_goto_label(zend_op_array *op_array, zend_op *opline);
 
 ZEND_API void function_add_ref(zend_function *function);
 void zend_init_static_variables_map_ptr(zend_op_array *op_array);
+zend_string *zval_make_interned_string(zval *zv);
 
 #define INITIAL_OP_ARRAY_SIZE 64
 
@@ -835,7 +832,6 @@ ZEND_API void zend_destroy_static_vars(zend_op_array *op_array);
 ZEND_API void zend_destroy_file_handle(zend_file_handle *file_handle);
 ZEND_API void zend_cleanup_mutable_class_data(zend_class_entry *ce);
 ZEND_API void zend_cleanup_internal_class_data(zend_class_entry *ce);
-ZEND_API void zend_cleanup_internal_classes(void);
 ZEND_API void zend_type_release(zend_type type, bool persistent);
 ZEND_API zend_string *zend_create_member_string(zend_string *class_name, zend_string *member_name);
 

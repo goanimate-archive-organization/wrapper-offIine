@@ -38,6 +38,7 @@ typedef enum
 
 #define ADM_EXTRA_PARAM_JS 0x100
 #define ADM_EXTRA_PARAM    0x200
+
 /**
     \struct COMPRES_PARAMS
     \brief Simple declaration of an encoder setting

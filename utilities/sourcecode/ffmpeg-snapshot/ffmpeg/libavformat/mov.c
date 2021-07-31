@@ -2856,7 +2856,7 @@ static int mov_read_stsz(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     if (!entries)
         return 0;
-    if (entries >= (UINT_MAX - 4) / field_size)
+    if (entries >= (INT_MAX - 4 - 8 * AV_INPUT_BUFFER_PADDING_SIZE) / field_size)
         return AVERROR_INVALIDDATA;
     if (sc->sample_sizes)
         av_log(c->fc, AV_LOG_WARNING, "Duplicated STSZ atom\n");
@@ -2884,7 +2884,7 @@ static int mov_read_stsz(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     init_get_bits(&gb, buf, 8*num_bytes);
 
-    for (i = 0; i < entries && !pb->eof_reached; i++) {
+    for (i = 0; i < entries; i++) {
         sc->sample_sizes[i] = get_bits_long(&gb, field_size);
         if (sc->sample_sizes[i] < 0) {
             av_free(buf);
@@ -2897,11 +2897,6 @@ static int mov_read_stsz(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     sc->sample_count = i;
 
     av_free(buf);
-
-    if (pb->eof_reached) {
-        av_log(c->fc, AV_LOG_WARNING, "reached eof, corrupted STSZ atom\n");
-        return AVERROR_EOF;
-    }
 
     return 0;
 }
@@ -5098,7 +5093,7 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         if (frag_stream_info)
             frag_stream_info->sidx_pts = timestamp;
 
-        if (av_sat_add64(offset, size) != offset + size ||
+        if (av_sat_add64(offset, size) != offset + (uint64_t)size ||
             av_sat_add64(pts, duration) != pts + (uint64_t)duration
         )
             return AVERROR_INVALIDDATA;

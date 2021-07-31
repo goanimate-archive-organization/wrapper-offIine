@@ -266,6 +266,12 @@ static HashTable *zend_persist_attributes(HashTable *attributes)
 		return attributes;
 	}
 
+	/* Attributes for trait properties may be shared if preloading is used. */
+	HashTable *xlat = zend_shared_alloc_get_xlat_entry(attributes);
+	if (xlat) {
+		return xlat;
+	}
+
 	zend_hash_persist(attributes);
 
 	ZEND_HASH_FOREACH_VAL(attributes, v) {
@@ -926,11 +932,7 @@ zend_class_entry *zend_persist_class_entry(zend_class_entry *orig_ce)
 				} else {
 					ZEND_MAP_PTR_INIT(ce->static_members_table, NULL);
 				}
-			} else {
-				ZEND_MAP_PTR_INIT(ce->static_members_table, &ce->default_static_members_table);
 			}
-		} else {
-			ZEND_MAP_PTR_INIT(ce->static_members_table, &ce->default_static_members_table);
 		}
 
 		zend_hash_persist(&ce->constants_table);

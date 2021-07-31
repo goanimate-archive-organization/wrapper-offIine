@@ -9,8 +9,14 @@ const {
 } = internalBinding('performance');
 
 const { PerformanceEntry } = require('internal/perf/performance_entry');
-const { PerformanceObserver } = require('internal/perf/observe');
-const { PerformanceMark } = require('internal/perf/usertiming');
+const {
+  PerformanceObserver,
+  PerformanceObserverEntryList,
+} = require('internal/perf/observe');
+const {
+  PerformanceMark,
+  PerformanceMeasure,
+} = require('internal/perf/usertiming');
 const { InternalPerformance } = require('internal/perf/performance');
 
 const {
@@ -22,7 +28,9 @@ const monitorEventLoopDelay = require('internal/perf/event_loop_delay');
 module.exports = {
   PerformanceEntry,
   PerformanceMark,
+  PerformanceMeasure,
   PerformanceObserver,
+  PerformanceObserverEntryList,
   monitorEventLoopDelay,
   createHistogram,
   performance: new InternalPerformance(),

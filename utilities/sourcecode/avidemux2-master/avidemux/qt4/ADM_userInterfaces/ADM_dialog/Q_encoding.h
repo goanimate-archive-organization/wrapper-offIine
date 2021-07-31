@@ -48,13 +48,19 @@ protected:
 
     bool                stopRequest;
     bool                stayOpen;
+    bool                deleteStats;
+    bool                multiPass;
     bool                firstPass;
     Ui_encodingDialog   *ui;    
     ADM_tray            *tray;
+    std::string         outputFileName;
+    std::string         logFileName;
 public:    
     void *WINDOW;
     
-    void setPhasis(const char *n);
+    void setPhase(ADM_ENC_PHASE_TYPE phase, const char *n = NULL);
+    void setFileName(const char *n);
+    void setLogFileName(const char *n);
     void setAudioCodec(const char *n);
     void setVideoCodec(const char *n);
     void setBitrate(uint32_t br,uint32_t globalbr);
@@ -68,6 +74,7 @@ public:
     void priorityChanged(int priorityLevel);
     void shutdownChanged(int state);
     void keepOpenChanged(int state);
+    void deleteStatsChanged(int state);
     void closeEvent(QCloseEvent *event);
     void reject(void);
 

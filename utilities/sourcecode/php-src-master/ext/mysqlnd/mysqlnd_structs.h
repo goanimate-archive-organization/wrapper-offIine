@@ -294,14 +294,10 @@ typedef enum_func_status  (*mysqlnd_fetch_row_func)(MYSQLND_RES *result,
 
 typedef struct st_mysqlnd_stats MYSQLND_STATS;
 
-typedef void (*mysqlnd_stat_trigger)(MYSQLND_STATS * stats, enum_mysqlnd_collected_stats stat, int64_t change);
-
 struct st_mysqlnd_stats
 {
 	uint64_t				*values;
-	mysqlnd_stat_trigger	*triggers;
 	size_t					count;
-	bool				in_trigger;
 #ifdef ZTS
 	MUTEX_T	LOCK_access;
 #endif
@@ -813,7 +809,6 @@ MYSQLND_CLASS_METHODS_TYPE(mysqlnd_stmt)
 	func_mysqlnd_stmt__bind_result bind_result;
 	func_mysqlnd_stmt__bind_one_result bind_one_result;
 	func_mysqlnd_stmt__send_long_data send_long_data;
-	func_mysqlnd_stmt__get_parameter_metadata get_parameter_metadata;
 	func_mysqlnd_stmt__get_result_metadata get_result_metadata;
 
 	func_mysqlnd_stmt__get_last_insert_id get_last_insert_id;

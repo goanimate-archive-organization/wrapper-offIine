@@ -4,10 +4,13 @@ const {
   ArrayFrom,
   ArrayIsArray,
   ArrayPrototypeFilter,
+  ArrayPrototypeFlatMap,
   ArrayPrototypeIncludes,
   ArrayPrototypePush,
+  ArrayPrototypePushApply,
   ArrayPrototypeSlice,
   ArrayPrototypeSort,
+  Error,
   ObjectDefineProperties,
   ObjectFreeze,
   ObjectKeys,
@@ -31,6 +34,7 @@ const {
 const {
   InternalPerformanceEntry,
   isPerformanceEntry,
+  kBufferNext,
 } = require('internal/perf/performance_entry');
 
 const {
@@ -49,6 +53,7 @@ const {
 const {
   customInspectSymbol: kInspect,
   deprecate,
+  lazyDOMException,
 } = require('internal/util');
 
 const {
@@ -83,6 +88,16 @@ const kSupportedEntryTypes = ObjectFreeze([
   'measure',
 ]);
 
+// Performance timeline entry Buffers
+const markEntryBuffer = createBuffer();
+const measureEntryBuffer = createBuffer();
+const kMaxPerformanceEntryBuffers = 1e6;
+const kClearPerformanceEntryBuffers = ObjectFreeze({
+  'mark': 'performance.clearMarks',
+  'measure': 'performance.clearMeasures',
+});
+const kWarnedEntryTypes = new SafeMap();
+
 const kObservers = new SafeSet();
 const kPending = new SafeSet();
 let isPending = false;
@@ -92,9 +107,10 @@ function queuePending() {
   isPending = true;
   setImmediate(() => {
     isPending = false;
-    for (const pending of kPending)
-      pending[kDispatch]();
+    const pendings = ArrayFrom(kPending.values());
     kPending.clear();
+    for (const pending of pendings)
+      pending[kDispatch]();
   });
 }
 
@@ -154,8 +170,13 @@ class PerformanceObserverEntryList {
       (entry) => entry.entryType === type);
   }
 
-  getEntriesByName(name) {
+  getEntriesByName(name, type) {
     name = `${name}`;
+    if (type != null /** not nullish */) {
+      return ArrayPrototypeFilter(
+        this[kBuffer],
+        (entry) => entry.name === name && entry.entryType === type);
+    }
     return ArrayPrototypeFilter(
       this[kBuffer],
       (entry) => entry.name === name);
@@ -190,9 +211,15 @@ class PerformanceObserver {
     const {
       entryTypes,
       type,
+      buffered,
     } = { ...options };
     if (entryTypes === undefined && type === undefined)
       throw new ERR_MISSING_ARGS('options.entryTypes', 'options.type');
+    if (entryTypes != null && type != null)
+      throw new ERR_INVALID_ARG_VALUE('options.entryTypes',
+                                      entryTypes,
+                                      'options.entryTypes can not set with ' +
+                                      'options.type together');
 
     switch (this[kType]) {
       case undefined:
@@ -201,11 +228,15 @@ class PerformanceObserver {
         break;
       case kTypeSingle:
         if (entryTypes !== undefined)
-          throw new ERR_INVALID_ARG_VALUE('options.entryTypes', entryTypes);
+          throw lazyDOMException(
+            'PerformanceObserver can not change to multiple observations',
+            'InvalidModificationError');
         break;
       case kTypeMultiple:
         if (type !== undefined)
-          throw new ERR_INVALID_ARG_VALUE('options.type', type);
+          throw lazyDOMException(
+            'PerformanceObserver can not change to single observation',
+            'InvalidModificationError');
         break;
     }
 
@@ -229,6 +260,13 @@ class PerformanceObserver {
         return;
       this[kEntryTypes].add(type);
       maybeIncrementObserverCount(type);
+      if (buffered) {
+        const entries = filterBufferMapByNameAndType(undefined, type);
+        ArrayPrototypePushApply(this[kBuffer], entries);
+        kPending.add(this);
+        if (kPending.size)
+          queuePending();
+      }
     }
 
     if (this[kEntryTypes].size)
@@ -249,7 +287,7 @@ class PerformanceObserver {
   takeRecords() {
     const list = this[kBuffer];
     this[kBuffer] = [];
-    return new PerformanceObserverEntryList(list);
+    return list;
   }
 
   static get supportedEntryTypes() {
@@ -265,7 +303,10 @@ class PerformanceObserver {
       queuePending();
   }
 
-  [kDispatch]() { this[kCallback](this.takeRecords(), this); }
+  [kDispatch]() {
+    this[kCallback](new PerformanceObserverEntryList(this.takeRecords()),
+                    this);
+  }
 
   [kInspect](depth, options) {
     if (depth < 0) return this;
@@ -291,6 +332,102 @@ function enqueue(entry) {
   for (const obs of kObservers) {
     obs[kMaybeBuffer](entry);
   }
+
+  const entryType = entry.entryType;
+  let buffer;
+  if (entryType === 'mark') {
+    buffer = markEntryBuffer;
+  } else if (entryType === 'measure') {
+    buffer = measureEntryBuffer;
+  } else {
+    return;
+  }
+
+  const count = buffer.count + 1;
+  buffer.count = count;
+  if (count === 1) {
+    buffer.head = entry;
+    buffer.tail = entry;
+    return;
+  }
+  buffer.tail[kBufferNext] = entry;
+  buffer.tail = entry;
+
+  if (count > kMaxPerformanceEntryBuffers &&
+    !kWarnedEntryTypes.has(entryType)) {
+    kWarnedEntryTypes.set(entryType, true);
+    // No error code for this since it is a Warning
+    // eslint-disable-next-line no-restricted-syntax
+    const w = new Error('Possible perf_hooks memory leak detected. ' +
+                        `${count} ${entryType} entries added to the global ` +
+                        'performance entry buffer. Use ' +
+                        `${kClearPerformanceEntryBuffers[entryType]} to ` +
+                        'clear the buffer.');
+    w.name = 'MaxPerformanceEntryBufferExceededWarning';
+    w.entryType = entryType;
+    w.count = count;
+    process.emitWarning(w);
+  }
+}
+
+function clearEntriesFromBuffer(type, name) {
+  let buffer;
+  if (type === 'mark') {
+    buffer = markEntryBuffer;
+  } else if (type === 'measure') {
+    buffer = measureEntryBuffer;
+  } else {
+    return;
+  }
+  if (name === undefined) {
+    resetBuffer(buffer);
+    return;
+  }
+
+  let head = null;
+  let tail = null;
+  let count = 0;
+  for (let entry = buffer.head; entry !== null; entry = entry[kBufferNext]) {
+    if (entry.name !== name) {
+      head = head ?? entry;
+      tail = entry;
+      continue;
+    }
+    if (tail === null) {
+      continue;
+    }
+    tail[kBufferNext] = entry[kBufferNext];
+    count++;
+  }
+  buffer.head = head;
+  buffer.tail = tail;
+  buffer.count = count;
+}
+
+function filterBufferMapByNameAndType(name, type) {
+  let bufferList;
+  if (type === 'mark') {
+    bufferList = [markEntryBuffer];
+  } else if (type === 'measure') {
+    bufferList = [measureEntryBuffer];
+  } else if (type !== undefined) {
+    // Unrecognized type;
+    return [];
+  } else {
+    bufferList = [markEntryBuffer, measureEntryBuffer];
+  }
+  return ArrayPrototypeFlatMap(bufferList,
+                               (buffer) => filterBufferByName(buffer, name));
+}
+
+function filterBufferByName(buffer, name) {
+  const arr = [];
+  for (let entry = buffer.head; entry !== null; entry = entry[kBufferNext]) {
+    if (name === undefined || entry.name === name) {
+      ArrayPrototypePush(arr, entry);
+    }
+  }
+  return arr;
 }
 
 function observerCallback(name, type, startTime, duration, details) {
@@ -338,8 +475,25 @@ function hasObserver(type) {
   return observerCounts[observerType] > 0;
 }
 
+function createBuffer() {
+  return {
+    head: null,
+    tail: null,
+    count: 0,
+  };
+}
+
+function resetBuffer(buffer) {
+  buffer.head = null;
+  buffer.tail = null;
+  buffer.count = 0;
+}
+
 module.exports = {
   PerformanceObserver,
+  PerformanceObserverEntryList,
   enqueue,
   hasObserver,
+  clearEntriesFromBuffer,
+  filterBufferMapByNameAndType,
 };

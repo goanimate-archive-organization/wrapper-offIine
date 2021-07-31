@@ -1050,12 +1050,7 @@ def is_arm_hard_float_abi():
 def host_arch_cc():
   """Host architecture check using the CC command."""
 
-  if sys.platform.startswith('aix'):
-    # we only support gcc at this point and the default on AIX
-    # would be xlc so hard code gcc
-    k = cc_macros('gcc')
-  else:
-    k = cc_macros(os.environ.get('CC_host'))
+  k = cc_macros(os.environ.get('CC_host'))
 
   matchup = {
     '__aarch64__' : 'arm64',
@@ -2009,6 +2004,10 @@ else:
 
 if options.compile_commands_json:
   gyp_args += ['-f', 'compile_commands_json']
+
+# override the variable `python` defined in common.gypi
+if bin_override is not None:
+  gyp_args += ['-Dpython=' + sys.executable]
 
 # pass the leftover positional arguments to GYP
 gyp_args += args

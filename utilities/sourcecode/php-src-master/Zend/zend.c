@@ -85,7 +85,6 @@ ZEND_API char *(*zend_getenv)(const char *name, size_t name_len);
 ZEND_API zend_string *(*zend_resolve_path)(zend_string *filename);
 ZEND_API zend_result (*zend_post_startup_cb)(void) = NULL;
 ZEND_API void (*zend_post_shutdown_cb)(void) = NULL;
-ZEND_API zend_result (*zend_preload_autoload)(zend_string *filename) = NULL;
 
 /* This callback must be signal handler safe! */
 void (*zend_on_timeout)(int seconds);
@@ -1050,7 +1049,6 @@ static void zend_resolve_property_types(void) /* {{{ */
 				} ZEND_TYPE_FOREACH_END();
 			} ZEND_HASH_FOREACH_END();
 		}
-		ce->ce_flags |= ZEND_ACC_PROPERTY_TYPES_RESOLVED;
 	} ZEND_HASH_FOREACH_END();
 }
 /* }}} */

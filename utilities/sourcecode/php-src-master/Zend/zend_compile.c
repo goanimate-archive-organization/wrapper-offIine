@@ -501,7 +501,7 @@ static int lookup_cv(zend_string *name) /* {{{ */{
 }
 /* }}} */
 
-static inline zend_string *zval_make_interned_string(zval *zv) /* {{{ */
+zend_string *zval_make_interned_string(zval *zv)
 {
 	ZEND_ASSERT(Z_TYPE_P(zv) == IS_STRING);
 	Z_STR_P(zv) = zend_new_interned_string(Z_STR_P(zv));
@@ -1100,6 +1100,43 @@ ZEND_API zend_result do_bind_function(zend_function *func, zval *lcname) /* {{{ 
 }
 /* }}} */
 
+ZEND_API zend_class_entry *zend_bind_class_in_slot(
+		zval *class_table_slot, zval *lcname, zend_string *lc_parent_name)
+{
+	zend_class_entry *ce = Z_PTR_P(class_table_slot);
+	bool is_preloaded =
+		(ce->ce_flags & ZEND_ACC_PRELOADED) && !(CG(compiler_options) & ZEND_COMPILE_PRELOAD);
+	bool success;
+	if (EXPECTED(!is_preloaded)) {
+		success = zend_hash_set_bucket_key(EG(class_table), (Bucket*) class_table_slot, Z_STR_P(lcname)) != NULL;
+	} else {
+		/* If preloading is used, don't replace the existing bucket, add a new one. */
+		success = zend_hash_add_ptr(EG(class_table), Z_STR_P(lcname), ce) != NULL;
+	}
+	if (UNEXPECTED(!success)) {
+		zend_error_noreturn(E_COMPILE_ERROR, "Cannot declare %s %s, because the name is already in use", zend_get_object_type(ce), ZSTR_VAL(ce->name));
+		return NULL;
+	}
+
+	if (ce->ce_flags & ZEND_ACC_LINKED) {
+		return ce;
+	}
+
+	ce = zend_do_link_class(ce, lc_parent_name, Z_STR_P(lcname));
+	if (ce) {
+		return ce;
+	}
+
+	if (!is_preloaded) {
+		/* Reload bucket pointer, the hash table may have been reallocated */
+		zval *zv = zend_hash_find(EG(class_table), Z_STR_P(lcname));
+		zend_hash_set_bucket_key(EG(class_table), (Bucket *) zv, Z_STR_P(lcname + 1));
+	} else {
+		zend_hash_del(EG(class_table), Z_STR_P(lcname));
+	}
+	return NULL;
+}
+
 ZEND_API zend_result do_bind_class(zval *lcname, zend_string *lc_parent_name) /* {{{ */
 {
 	zend_class_entry *ce;
@@ -1111,46 +1148,13 @@ ZEND_API zend_result do_bind_class(zval *lcname, zend_string *lc_parent_name) /*
 
 	if (UNEXPECTED(!zv)) {
 		ce = zend_hash_find_ptr(EG(class_table), Z_STR_P(lcname));
-		if (ce) {
-			zend_error_noreturn(E_COMPILE_ERROR, "Cannot declare %s %s, because the name is already in use", zend_get_object_type(ce), ZSTR_VAL(ce->name));
-			return FAILURE;
-		} else {
-			do {
-				ZEND_ASSERT(EG(current_execute_data)->func->op_array.fn_flags & ZEND_ACC_PRELOADED);
-				if (zend_preload_autoload
-				  && zend_preload_autoload(EG(current_execute_data)->func->op_array.filename) == SUCCESS) {
-					zv = zend_hash_find_known_hash(EG(class_table), Z_STR_P(rtd_key));
-					if (EXPECTED(zv != NULL)) {
-						break;
-					}
-				}
-				zend_error_noreturn(E_ERROR, "Class %s wasn't preloaded", Z_STRVAL_P(lcname));
-				return FAILURE;
-			} while (0);
-		}
-	}
-
-	/* Register the derived class */
-	ce = (zend_class_entry*)Z_PTR_P(zv);
-	zv = zend_hash_set_bucket_key(EG(class_table), (Bucket*)zv, Z_STR_P(lcname));
-	if (UNEXPECTED(!zv)) {
+		ZEND_ASSERT(ce);
 		zend_error_noreturn(E_COMPILE_ERROR, "Cannot declare %s %s, because the name is already in use", zend_get_object_type(ce), ZSTR_VAL(ce->name));
 		return FAILURE;
 	}
 
-	if (ce->ce_flags & ZEND_ACC_LINKED) {
-		return SUCCESS;
-	}
-
-	ce = zend_do_link_class(ce, lc_parent_name, Z_STR_P(lcname));
-	if (!ce) {
-		/* Reload bucket pointer, the hash table may have been reallocated */
-		zv = zend_hash_find(EG(class_table), Z_STR_P(lcname));
-		zend_hash_set_bucket_key(EG(class_table), (Bucket *) zv, Z_STR_P(rtd_key));
-		return FAILURE;
-	}
-
-	return SUCCESS;
+	/* Register the derived class */
+	return zend_bind_class_in_slot(zv, lcname, lc_parent_name) ? SUCCESS : FAILURE;
 }
 /* }}} */
 
@@ -1873,12 +1877,10 @@ ZEND_API void zend_initialize_class_data(zend_class_entry *ce, bool nullify_hand
 	zend_hash_init(&ce->constants_table, 8, NULL, NULL, persistent_hashes);
 	zend_hash_init(&ce->function_table, 8, NULL, ZEND_FUNCTION_DTOR, persistent_hashes);
 
-	if (ce->type == ZEND_INTERNAL_CLASS) {
-		ZEND_MAP_PTR_INIT(ce->static_members_table, NULL);
-	} else {
-		ZEND_MAP_PTR_INIT(ce->static_members_table, &ce->default_static_members_table);
+	if (ce->type == ZEND_USER_CLASS) {
 		ce->info.user.doc_comment = NULL;
 	}
+	ZEND_MAP_PTR_INIT(ce->static_members_table, NULL);
 	ZEND_MAP_PTR_INIT(ce->mutable_data, NULL);
 
 	ce->default_properties_count = 0;
@@ -6776,6 +6778,11 @@ void zend_compile_params(zend_ast *ast, zend_ast *return_type_ast, uint32_t fall
 			if (ZEND_TYPE_IS_SET(type)) {
 				ZVAL_UNDEF(&default_value);
 			} else {
+				if (property_flags & ZEND_ACC_READONLY) {
+					zend_error_noreturn(E_COMPILE_ERROR, "Readonly property %s::$%s must have type",
+						ZSTR_VAL(scope->name), ZSTR_VAL(name));
+				}
+
 				ZVAL_NULL(&default_value);
 			}
 
@@ -7684,6 +7691,7 @@ void zend_compile_class_decl(znode *result, zend_ast *ast, bool toplevel) /* {{{
 	if (CG(compiler_options) & ZEND_COMPILE_PRELOAD) {
 		ce->ce_flags |= ZEND_ACC_PRELOADED;
 		ZEND_MAP_PTR_NEW(ce->static_members_table);
+		ZEND_MAP_PTR_NEW(ce->mutable_data);
 	}
 
 	ce->ce_flags |= decl->flags;
@@ -7750,13 +7758,10 @@ void zend_compile_class_decl(znode *result, zend_ast *ast, bool toplevel) /* {{{
 				 && ((parent_ce->type != ZEND_INTERNAL_CLASS) || !(CG(compiler_options) & ZEND_COMPILE_IGNORE_INTERNAL_CLASSES))
 				 && ((parent_ce->type != ZEND_USER_CLASS) || !(CG(compiler_options) & ZEND_COMPILE_IGNORE_OTHER_FILES) || (parent_ce->info.user.filename == ce->info.user.filename))) {
 
-					CG(zend_lineno) = decl->end_lineno;
 					if (zend_try_early_bind(ce, parent_ce, lcname, NULL)) {
-						CG(zend_lineno) = ast->lineno;
 						zend_string_release(lcname);
 						return;
 					}
-					CG(zend_lineno) = ast->lineno;
 				}
 			} else if (EXPECTED(zend_hash_add_ptr(CG(class_table), lcname, ce) != NULL)) {
 				zend_string_release(lcname);

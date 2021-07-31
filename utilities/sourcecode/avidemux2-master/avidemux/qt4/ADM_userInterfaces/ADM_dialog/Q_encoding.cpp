@@ -108,12 +108,18 @@ void DIA_encodingQt4::keepOpenChanged(int state)
 #endif
 }
 
+void DIA_encodingQt4::deleteStatsChanged(int state)
+{
+    deleteStats=!!state;
+}
+
 static char stringMe[80];
 
 DIA_encodingQt4::DIA_encodingQt4(uint64_t duration) : DIA_encodingBase(duration)
 {
         stopRequest=false;
         stayOpen=false;
+        multiPass=false;
         firstPass=false;
         UI_getTaskBarProgress()->enable();
         ui=new Ui_encodingDialog;
@@ -133,8 +139,14 @@ DIA_encodingQt4::DIA_encodingQt4(uint64_t duration) : DIA_encodingBase(duration)
         }
         ui->checkBoxShutdown->setVisible(false);
 #endif
+
+        if(!prefs->get(DEFAULT_DELETE_FIRST_PASS_LOG_FILES,&deleteStats))
+            deleteStats = false;
+        ui->checkBoxDeleteStats->setChecked(deleteStats);
+
 	connect(ui->checkBoxShutdown, SIGNAL(stateChanged(int)), this, SLOT(shutdownChanged(int)));
 	connect(ui->checkBoxKeepOpen, SIGNAL(stateChanged(int)), this, SLOT(keepOpenChanged(int)));
+	connect(ui->checkBoxDeleteStats, SIGNAL(stateChanged(int)), this, SLOT(deleteStatsChanged(int)));
 	connect(ui->pushButton1, SIGNAL(pressed()), this, SLOT(useTrayButtonPressed()));
 	connect(ui->pushButton2, SIGNAL(pressed()), this, SLOT(pauseButtonPressed()));
 	connect(ui->comboBoxPriority, SIGNAL(currentIndexChanged(int)), this, SLOT(priorityChanged(int)));
@@ -199,27 +211,78 @@ DIA_encodingQt4::~DIA_encodingQt4( )
     }
 }
 /**
-    \fn setPhasis(const char *n)
-    \brief Display parameters as phasis
+    \fn setPhase
+    \brief Setup dialog for given phase, show its description
 */
-
-void DIA_encodingQt4::setPhasis(const char *n)
+void DIA_encodingQt4::setPhase(ADM_ENC_PHASE_TYPE phase, const char *n)
 {
     ADM_assert(ui);
-    if(!strcmp(n,"Pass 1"))
+    firstPass = false;
+    const char *description = n;
+    switch(phase)
     {
-        firstPass=true;
-        ui->tabWidget->setTabEnabled(1, false); // disable the "Advanced" tab
-        this->setWindowTitle(QString::fromUtf8(QT_TRANSLATE_NOOP("qencoding","First Pass")));
-        WRITEM(labelPhasis,QT_TRANSLATE_NOOP("qencoding","Pass 1"));
-    }else
-    {
-        firstPass=false;
-        this->setWindowTitle(QString::fromUtf8(QT_TRANSLATE_NOOP("qencoding","Encoding...")));
-        ui->tabWidget->setTabEnabled(1, true);
-        WRITEM(labelPhasis,n);
+        case ADM_ENC_PHASE_FIRST_PASS:
+        {
+            multiPass = firstPass = true;
+            if(!description)
+                description = QT_TRANSLATE_NOOP("qencoding","First Pass");
+            break;
+        }
+        case ADM_ENC_PHASE_LAST_PASS:
+        {
+            if(!description)
+                description = multiPass ?
+                    QT_TRANSLATE_NOOP("qencoding","Second Pass") :
+                    QT_TRANSLATE_NOOP("qencoding","Encoding...");
+            break;
+        }
+        case ADM_ENC_PHASE_OTHER:
+            break;
+        default:
+        {
+            ADM_warning("Invalid encoding phase value %d ignored.\n",(int)phase);
+            break;
+        }
     }
+    ui->tabWidget->setTabEnabled(1, !firstPass); // disable the "Advanced" tab during the first pass
+    WRITEM(labelPhase,description);
+    ui->checkBoxDeleteStats->setVisible(multiPass);
+    QCoreApplication::processEvents();
 }
+
+/**
+    \fn setFileName
+*/
+void DIA_encodingQt4::setFileName(const char *n)
+{
+    ui->lineEditFN->clear();
+    if(!n)
+    {
+        outputFileName.clear();
+        ui->labelFileName->setVisible(false);
+        ui->lineEditFN->setVisible(false);
+        return;
+    }
+    outputFileName = n;
+    ui->labelFileName->setVisible(true);
+    ui->lineEditFN->setVisible(true);
+    ui->lineEditFN->insert(QString::fromUtf8(outputFileName.c_str()));
+    ui->lineEditFN->setCursorPosition(0);
+}
+
+/**
+    \fn setLogFileName
+*/
+void DIA_encodingQt4::setLogFileName(const char *n)
+{
+    if(!n)
+    {
+        logFileName.clear();
+        return;
+    }
+    logFileName = n;
+}
+
 /**
     \fn    setFrameCount
     \brief display the # of processed frames
@@ -412,6 +475,24 @@ bool DIA_encodingQt4::isAlive( void )
     return false;
 }
 
+static bool tryDeleteLogFile(bool single, std::string fname)
+{
+    if(!ADM_fileExist(fname.c_str()))
+        return false;
+    if(single)
+    {
+        ADM_warning("Single pass operation, not deleting old first pass log file \"%s\"\n",fname.c_str());
+        return false;
+    }
+    if(ADM_eraseFile(fname.c_str()))
+    {
+        ADM_info("Deleting first pass log file \"%s\"\n",fname.c_str());
+        return true;
+    }
+    ADM_warning("Could not delete first pass log file \"%s\"\n",fname.c_str());
+    return false;
+}
+
 /**
     \fn keepOpen
     \brief Allow user to read the muxing stats calmly
@@ -439,6 +520,16 @@ void DIA_encodingQt4::keepOpen(void)
             ADM_usleep(100*1000);
             QCoreApplication::processEvents();
         }
+    }
+
+    if (deleteStats && !logFileName.empty())
+    {
+        // try to delete first pass log files
+        tryDeleteLogFile(!multiPass,logFileName);
+        // libx264 creates an additional log file with extension .mbtree appended
+        tryDeleteLogFile(!multiPass,logFileName + ".mbtree");
+        // libx265 creates an additional log file with extension .cutree appended
+        tryDeleteLogFile(!multiPass,logFileName + ".cutree");
     }
 }
 

@@ -34,6 +34,7 @@ public:
     
 protected:
     bool firstPass;
+    std::string logFileName;
 
     void setTotalSize(uint64_t size);
     void setAudioSize(uint64_t size);
@@ -49,7 +50,9 @@ protected:
 public:    
 
     
-    void setPhasis(const char *n);
+    void setPhase(ADM_ENC_PHASE_TYPE phase, const char *n);
+    void setFileName(const char *n) {};
+    void setLogFileName(const char *n);
     void setAudioCodec(const char *n);
     void setVideoCodec(const char *n);
     void setBitrate(uint32_t br,uint32_t globalbr);

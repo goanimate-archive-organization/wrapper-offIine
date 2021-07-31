@@ -73,6 +73,7 @@ uint64_t rescaleLavPts(uint64_t us, AVRational *scale)
     i*=scale->num;
     return i;
 }
+
 /**
     \fn     initUI
     \brief  initialize the progress bar
@@ -87,7 +88,8 @@ bool     ADM_muxer::initUI(const char *title)
             createUI(videoDuration);
         }
         // Set video stream etc...
-        encoding->setPhasis(title);
+        encoding->setPhase(ADM_ENC_PHASE_LAST_PASS,title);
+        encoding->setFileName(outputFileName.c_str());
         encoding->setVideoCodec(fourCC::tostring(vStream->getFCC()));
         
         if(!nbAStreams) encoding->setAudioCodec("None");

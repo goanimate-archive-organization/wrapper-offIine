@@ -340,6 +340,7 @@ bool MOVCLASS::open(const char *file, ADM_videoStream *s, uint32_t nbAudioTrack,
         vStream=s;
         aStreams=a;
         nbAStreams=nbAudioTrack;
+        setOutputFileName(file);
         initialized=true;
         return true;
 }
@@ -365,6 +366,8 @@ bool MOVCLASS::save(void)
 bool MOVCLASS::close(void)
 {
     printf("[MP4] Closing\n");
+    if(muxerConfig.optimize == MP4_MUXER_OPT_FASTSTART)
+        encoding->setPhase(ADM_ENC_PHASE_OTHER,QT_TRANSLATE_NOOP("mp4muxer","Optimizing..."));
     return closeMuxer();
 }
 

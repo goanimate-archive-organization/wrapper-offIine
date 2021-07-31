@@ -2937,20 +2937,6 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_DECLARE_ANON_CLASS_SPEC_HANDLE
 	if (UNEXPECTED(ce == NULL)) {
 		zend_string *rtd_key = Z_STR_P(RT_CONSTANT(opline, opline->op1));
 		zv = zend_hash_find_known_hash(EG(class_table), rtd_key);
-		if (UNEXPECTED(zv == NULL)) {
-			SAVE_OPLINE();
-			do {
-				ZEND_ASSERT(EX(func)->op_array.fn_flags & ZEND_ACC_PRELOADED);
-				if (zend_preload_autoload
-				  && zend_preload_autoload(EX(func)->op_array.filename) == SUCCESS) {
-					zv = zend_hash_find_known_hash(EG(class_table), rtd_key);
-					if (EXPECTED(zv != NULL)) {
-						break;
-					}
-				}
-				zend_error_noreturn(E_ERROR, "Anonymous class wasn't preloaded");
-			} while (0);
-		}
 		ZEND_ASSERT(zv != NULL);
 		ce = Z_CE_P(zv);
 		if (!(ce->ce_flags & ZEND_ACC_LINKED)) {
@@ -6924,7 +6910,7 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_INIT_USER_CALL_SPEC_CONST_CONS
 			init_func_run_time_cache(&func->op_array);
 		}
 	} else {
-		zend_type_error("%s(): Argument #1 ($function) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
+		zend_type_error("%s(): Argument #1 ($callback) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
 		efree(error);
 
 		HANDLE_EXCEPTION();
@@ -7355,27 +7341,16 @@ array_key_exists_array:
 static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_DECLARE_CLASS_DELAYED_SPEC_CONST_CONST_HANDLER(ZEND_OPCODE_HANDLER_ARGS)
 {
 	USE_OPLINE
-	zval *lcname, *zv;
-	zend_class_entry *ce;
 
-	ce = CACHED_PTR(opline->extended_value);
+	zend_class_entry *ce = CACHED_PTR(opline->extended_value);
 	if (ce == NULL) {
-		lcname = RT_CONSTANT(opline, opline->op1);
-		zv = zend_hash_find_known_hash(EG(class_table), Z_STR_P(lcname + 1));
+		zval *lcname = RT_CONSTANT(opline, opline->op1);
+		zval *zv = zend_hash_find_known_hash(EG(class_table), Z_STR_P(lcname + 1));
 		if (zv) {
 			SAVE_OPLINE();
-			ce = Z_CE_P(zv);
-			zv = zend_hash_set_bucket_key(EG(class_table), (Bucket*)zv, Z_STR_P(lcname));
-			if (UNEXPECTED(!zv)) {
-				zend_error_noreturn(E_COMPILE_ERROR, "Cannot declare %s %s, because the name is already in use", zend_get_object_type(ce), ZSTR_VAL(ce->name));
-			} else {
-				ce = zend_do_link_class(ce, Z_STR_P(RT_CONSTANT(opline, opline->op2)), Z_STR_P(lcname));
-				if (!ce) {
-					/* Reload bucket pointer, the hash table may have been reallocated */
-					zv = zend_hash_find(EG(class_table), Z_STR_P(lcname));
-					zend_hash_set_bucket_key(EG(class_table), (Bucket *) zv, Z_STR_P(lcname + 1));
-					HANDLE_EXCEPTION();
-				}
+			ce = zend_bind_class_in_slot(zv, lcname, Z_STR_P(RT_CONSTANT(opline, opline->op2)));
+			if (!ce) {
+				HANDLE_EXCEPTION();
 			}
 		}
 		CACHE_PTR(opline->extended_value, ce);
@@ -9253,7 +9228,7 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_INIT_USER_CALL_SPEC_CONST_TMPV
 			init_func_run_time_cache(&func->op_array);
 		}
 	} else {
-		zend_type_error("%s(): Argument #1 ($function) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
+		zend_type_error("%s(): Argument #1 ($callback) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
 		efree(error);
 		zval_ptr_dtor_nogc(EX_VAR(opline->op2.var));
 		HANDLE_EXCEPTION();
@@ -10567,7 +10542,7 @@ static ZEND_VM_COLD ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_COUNT_SPEC_CONST_
 			ZVAL_UNDEFINED_OP1();
 		}
 		count = 0;
-		zend_type_error("%s(): Argument #1 ($var) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
+		zend_type_error("%s(): Argument #1 ($value) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
 		break;
 	}
 
@@ -11604,7 +11579,7 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_INIT_USER_CALL_SPEC_CONST_CV_H
 			init_func_run_time_cache(&func->op_array);
 		}
 	} else {
-		zend_type_error("%s(): Argument #1 ($function) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
+		zend_type_error("%s(): Argument #1 ($callback) must be a valid callback, %s", Z_STRVAL_P(RT_CONSTANT(opline, opline->op1)), error);
 		efree(error);
 
 		HANDLE_EXCEPTION();
@@ -17822,7 +17797,7 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_COUNT_SPEC_TMPVAR_UNUSED_HANDL
 			ZVAL_UNDEFINED_OP1();
 		}
 		count = 0;
-		zend_type_error("%s(): Argument #1 ($var) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
+		zend_type_error("%s(): Argument #1 ($value) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
 		break;
 	}
 
@@ -47417,7 +47392,7 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_COUNT_SPEC_CV_UNUSED_HANDLER(Z
 			ZVAL_UNDEFINED_OP1();
 		}
 		count = 0;
-		zend_type_error("%s(): Argument #1 ($var) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
+		zend_type_error("%s(): Argument #1 ($value) must be of type Countable|array, %s given", opline->extended_value ? "sizeof" : "count", zend_zval_type_name(op1));
 		break;
 	}
 
@@ -50779,7 +50754,7 @@ ZEND_API void execute_ex(zend_execute_data *ex)
 {
 	DCL_OPLINE
 
-#if defined(ZEND_VM_IP_GLOBAL_REG) || defined(ZEND_VM_IP_GLOBAL_REG)
+#if defined(ZEND_VM_IP_GLOBAL_REG) || defined(ZEND_VM_FP_GLOBAL_REG)
 	struct {
 #ifdef ZEND_VM_IP_GLOBAL_REG
 		const zend_op *orig_opline;

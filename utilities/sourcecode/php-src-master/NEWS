@@ -2,10 +2,24 @@ PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ?? ??? ????, PHP 8.1.0beta2
 
+- Mbstring:
+  . Fixed bug #81298 (mb_detect_encoding() segfaults when 7bit encoding is
+    specified). (Nikita)
+
+- MySQLnd:
+  . Fixed bug #63327 (Crash (Bus Error) in mysqlnd due to wrong alignment).
+    (Nikita)
+
 - Opcache:
   . Fixed Bug #81255 (Memory leak in PHPUnit with functional JIT)
   . Fixed Bug #80959 (infinite loop in building cfg during JIT compilation)
     (Nikita, Dmitry)
+
+- Reflection:
+  . Fixed bug #80821 (ReflectionProperty::getDefaultValue() returns current
+    value for statics). (Nikita)
+  . Fixed bug #80564 (ReflectionProperty::__toString() renders current value,
+    not default value). (Nikita)
 
 22 Jul 2021, PHP 8.1.0beta1
 

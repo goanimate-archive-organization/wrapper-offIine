@@ -153,7 +153,7 @@ out/Makefile: config.gypi common.gypi node.gyp \
 # and included in config.gypi
 config.gypi: configure configure.py src/node_version.h
 	@if [ -x config.status ]; then \
-		./config.status; \
+		export PATH="$(NO_BIN_OVERRIDE_PATH)" && ./config.status; \
 	else \
 		echo Missing or stale $@, please run ./$<; \
 		exit 1; \
@@ -580,12 +580,10 @@ test-doc: doc-only lint-md ## Builds, lints, and verifies the docs.
 	else \
 		$(PYTHON) tools/test.py $(PARALLEL_ARGS) doctool; \
 	fi
-	$(NODE) tools/doc/checkLinks.mjs .
 
 .PHONY: test-doc-ci
 test-doc-ci: doc-only
 	$(PYTHON) tools/test.py --shell $(NODE) $(TEST_CI_ARGS) $(PARALLEL_ARGS) doctool
-	$(NODE) tools/doc/checkLinks.mjs .
 
 test-known-issues: all
 	$(PYTHON) tools/test.py $(PARALLEL_ARGS) known_issues

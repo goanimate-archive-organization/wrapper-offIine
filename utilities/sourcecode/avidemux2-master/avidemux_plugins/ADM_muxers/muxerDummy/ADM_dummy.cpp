@@ -25,7 +25,8 @@ bool muxerDummy::save(void)
     in.data=videoBuffer;
     ADM_info("[dummy]avg fps=%u\n",vStream->getAvgFps1000());
 
-    initUI("Saving dummy");
+    initUI(QT_TRANSLATE_NOOP("dummyMuxer","Simulated muxing"));
+    encoding->setFileName(QT_TRANSLATE_NOOP("dummyMuxer","(None)"));
     encoding->setContainer("dummy");
 
     while(1)
