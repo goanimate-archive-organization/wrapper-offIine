@@ -141,7 +141,7 @@
  * NUM_BUF_SIZE is the size of the buffer used for arithmetic conversions
  * which can be at most max length of double
  */
-#define NUM_BUF_SIZE PHP_DOUBLE_MAX_LENGTH
+#define NUM_BUF_SIZE ZEND_DOUBLE_MAX_LENGTH
 
 #define NUM(c) (c - '0')
 
@@ -289,10 +289,6 @@ static void xbuf_format_converter(void *xbuf, bool is_char, const char *fmt, va_
 							precision = -1;
 					} else
 						precision = 0;
-
-					if (precision > FORMAT_CONV_MAX_PRECISION) {
-						precision = FORMAT_CONV_MAX_PRECISION;
-					}
 				} else
 					adjust_precision = false;
 			} else
@@ -651,7 +647,7 @@ static void xbuf_format_converter(void *xbuf, bool is_char, const char *fmt, va_
 						lconv = localeconv();
 					}
 #endif
-					s = php_gcvt(fp_num, precision, (*fmt=='H' || *fmt == 'k') ? '.' : LCONV_DECIMAL_POINT, (*fmt == 'G' || *fmt == 'H')?'E':'e', &num_buf[1]);
+					s = zend_gcvt(fp_num, precision, (*fmt=='H' || *fmt == 'k') ? '.' : LCONV_DECIMAL_POINT, (*fmt == 'G' || *fmt == 'H')?'E':'e', &num_buf[1]);
 					if (*s == '-')
 						prefix_char = *s++;
 					else if (print_sign)

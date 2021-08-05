@@ -3213,7 +3213,7 @@ PHP_FUNCTION(openssl_csr_sign)
 		goto cleanup;
 	}
 
-#if PHP_OPENSSL_API_VERSION >= 0x10100
+#if PHP_OPENSSL_API_VERSION >= 0x10100 && !defined (LIBRESSL_VERSION_NUMBER)
 	ASN1_INTEGER_set_int64(X509_get_serialNumber(new_cert), serial);
 #else
 	ASN1_INTEGER_set(X509_get_serialNumber(new_cert), serial);
@@ -6137,10 +6137,6 @@ clean_exit:
 PHP_FUNCTION(openssl_private_encrypt)
 {
 	zval *key, *crypted;
-	EVP_PKEY *pkey;
-	int cryptedlen;
-	zend_string *cryptedbuf = NULL;
-	int successful = 0;
 	char * data;
 	size_t data_len;
 	zend_long padding = RSA_PKCS1_PADDING;
@@ -6149,12 +6145,7 @@ PHP_FUNCTION(openssl_private_encrypt)
 		RETURN_THROWS();
 	}
 
-	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(data_len, data, 1);
-
-	RETVAL_FALSE;
-
-	pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
-
+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
 	if (pkey == NULL) {
 		if (!EG(exception)) {
 			php_error_docref(NULL, E_WARNING, "key param is not a valid private key");
@@ -6162,33 +6153,31 @@ PHP_FUNCTION(openssl_private_encrypt)
 		RETURN_FALSE;
 	}
 
-	cryptedlen = EVP_PKEY_size(pkey);
-	cryptedbuf = zend_string_alloc(cryptedlen, 0);
-
-	switch (EVP_PKEY_id(pkey)) {
-		case EVP_PKEY_RSA:
-		case EVP_PKEY_RSA2:
-			successful = (RSA_private_encrypt((int)data_len,
-						(unsigned char *)data,
-						(unsigned char *)ZSTR_VAL(cryptedbuf),
-						EVP_PKEY_get0_RSA(pkey),
-						(int)padding) == cryptedlen);
-			break;
-		default:
-			php_error_docref(NULL, E_WARNING, "key type not supported in this PHP build!");
-	}
-
-	if (successful) {
-		ZSTR_VAL(cryptedbuf)[cryptedlen] = '\0';
-		ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, cryptedbuf);
-		cryptedbuf = NULL;
-		RETVAL_TRUE;
-	} else {
+	size_t out_len = 0;
+	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+	if (!ctx || EVP_PKEY_sign_init(ctx) <= 0 ||
+			EVP_PKEY_CTX_set_rsa_padding(ctx, padding) <= 0 ||
+			EVP_PKEY_sign(ctx, NULL, &out_len, (unsigned char *) data, data_len) <= 0) {
 		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
-	if (cryptedbuf) {
-		zend_string_release_ex(cryptedbuf, 0);
+
+	zend_string *out = zend_string_alloc(out_len, 0);
+	if (EVP_PKEY_sign(ctx, (unsigned char *) ZSTR_VAL(out), &out_len,
+			(unsigned char *) data, data_len) <= 0) {
+		zend_string_release(out);
+		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
+
+	ZSTR_VAL(out)[out_len] = '\0';
+	ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, out);
+	RETVAL_TRUE;
+
+cleanup:
+	EVP_PKEY_CTX_free(ctx);
 	EVP_PKEY_free(pkey);
 }
 /* }}} */
@@ -6197,11 +6186,6 @@ PHP_FUNCTION(openssl_private_encrypt)
 PHP_FUNCTION(openssl_private_decrypt)
 {
 	zval *key, *crypted;
-	EVP_PKEY *pkey;
-	int cryptedlen;
-	zend_string *cryptedbuf = NULL;
-	unsigned char *crypttemp;
-	int successful = 0;
 	zend_long padding = RSA_PKCS1_PADDING;
 	char * data;
 	size_t data_len;
@@ -6210,11 +6194,7 @@ PHP_FUNCTION(openssl_private_decrypt)
 		RETURN_THROWS();
 	}
 
-	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(data_len, data, 1);
-
-	RETVAL_FALSE;
-
-	pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 0, "", 0);
 	if (pkey == NULL) {
 		if (!EG(exception)) {
 			php_error_docref(NULL, E_WARNING, "key parameter is not a valid private key");
@@ -6222,42 +6202,33 @@ PHP_FUNCTION(openssl_private_decrypt)
 		RETURN_FALSE;
 	}
 
-	cryptedlen = EVP_PKEY_size(pkey);
-	crypttemp = emalloc(cryptedlen + 1);
-
-	switch (EVP_PKEY_id(pkey)) {
-		case EVP_PKEY_RSA:
-		case EVP_PKEY_RSA2:
-			cryptedlen = RSA_private_decrypt((int)data_len,
-					(unsigned char *)data,
-					crypttemp,
-					EVP_PKEY_get0_RSA(pkey),
-					(int)padding);
-			if (cryptedlen != -1) {
-				cryptedbuf = zend_string_alloc(cryptedlen, 0);
-				memcpy(ZSTR_VAL(cryptedbuf), crypttemp, cryptedlen);
-				successful = 1;
-			}
-			break;
-		default:
-			php_error_docref(NULL, E_WARNING, "key type not supported in this PHP build!");
-	}
-
-	efree(crypttemp);
-
-	if (successful) {
-		ZSTR_VAL(cryptedbuf)[cryptedlen] = '\0';
-		ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, cryptedbuf);
-		cryptedbuf = NULL;
-		RETVAL_TRUE;
-	} else {
+	size_t out_len = 0;
+	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+	if (!ctx || EVP_PKEY_decrypt_init(ctx) <= 0 ||
+			EVP_PKEY_CTX_set_rsa_padding(ctx, padding) <= 0 ||
+			EVP_PKEY_decrypt(ctx, NULL, &out_len, (unsigned char *) data, data_len) <= 0) {
 		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
 
-	EVP_PKEY_free(pkey);
-	if (cryptedbuf) {
-		zend_string_release_ex(cryptedbuf, 0);
+	zend_string *out = zend_string_alloc(out_len, 0);
+	if (EVP_PKEY_decrypt(ctx, (unsigned char *) ZSTR_VAL(out), &out_len,
+			(unsigned char *) data, data_len) <= 0) {
+		zend_string_release(out);
+		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
+
+	out = zend_string_truncate(out, out_len, 0);
+	ZSTR_VAL(out)[out_len] = '\0';
+	ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, out);
+	RETVAL_TRUE;
+
+cleanup:
+	EVP_PKEY_CTX_free(ctx);
+	EVP_PKEY_free(pkey);
 }
 /* }}} */
 
@@ -6265,10 +6236,6 @@ PHP_FUNCTION(openssl_private_decrypt)
 PHP_FUNCTION(openssl_public_encrypt)
 {
 	zval *key, *crypted;
-	EVP_PKEY *pkey;
-	int cryptedlen;
-	zend_string *cryptedbuf;
-	int successful = 0;
 	zend_long padding = RSA_PKCS1_PADDING;
 	char * data;
 	size_t data_len;
@@ -6277,11 +6244,7 @@ PHP_FUNCTION(openssl_public_encrypt)
 		RETURN_THROWS();
 	}
 
-	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(data_len, data, 1);
-
-	RETVAL_FALSE;
-
-	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
 	if (pkey == NULL) {
 		if (!EG(exception)) {
 			php_error_docref(NULL, E_WARNING, "key parameter is not a valid public key");
@@ -6289,35 +6252,32 @@ PHP_FUNCTION(openssl_public_encrypt)
 		RETURN_FALSE;
 	}
 
-	cryptedlen = EVP_PKEY_size(pkey);
-	cryptedbuf = zend_string_alloc(cryptedlen, 0);
-
-	switch (EVP_PKEY_id(pkey)) {
-		case EVP_PKEY_RSA:
-		case EVP_PKEY_RSA2:
-			successful = (RSA_public_encrypt((int)data_len,
-						(unsigned char *)data,
-						(unsigned char *)ZSTR_VAL(cryptedbuf),
-						EVP_PKEY_get0_RSA(pkey),
-						(int)padding) == cryptedlen);
-			break;
-		default:
-			php_error_docref(NULL, E_WARNING, "key type not supported in this PHP build!");
-
-	}
-
-	if (successful) {
-		ZSTR_VAL(cryptedbuf)[cryptedlen] = '\0';
-		ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, cryptedbuf);
-		cryptedbuf = NULL;
-		RETVAL_TRUE;
-	} else {
+	size_t out_len = 0;
+	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+	if (!ctx || EVP_PKEY_encrypt_init(ctx) <= 0 ||
+			EVP_PKEY_CTX_set_rsa_padding(ctx, padding) <= 0 ||
+			EVP_PKEY_encrypt(ctx, NULL, &out_len, (unsigned char *) data, data_len) <= 0) {
 		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
+
+	zend_string *out = zend_string_alloc(out_len, 0);
+	if (EVP_PKEY_encrypt(ctx, (unsigned char *) ZSTR_VAL(out), &out_len,
+			(unsigned char *) data, data_len) <= 0) {
+		zend_string_release(out);
+		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
+	}
+
+	ZSTR_VAL(out)[out_len] = '\0';
+	ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, out);
+	RETVAL_TRUE;
+
+cleanup:
+	EVP_PKEY_CTX_free(ctx);
 	EVP_PKEY_free(pkey);
-	if (cryptedbuf) {
-		zend_string_release_ex(cryptedbuf, 0);
-	}
 }
 /* }}} */
 
@@ -6325,11 +6285,6 @@ PHP_FUNCTION(openssl_public_encrypt)
 PHP_FUNCTION(openssl_public_decrypt)
 {
 	zval *key, *crypted;
-	EVP_PKEY *pkey;
-	int cryptedlen;
-	zend_string *cryptedbuf = NULL;
-	unsigned char *crypttemp;
-	int successful = 0;
 	zend_long padding = RSA_PKCS1_PADDING;
 	char * data;
 	size_t data_len;
@@ -6338,11 +6293,7 @@ PHP_FUNCTION(openssl_public_decrypt)
 		RETURN_THROWS();
 	}
 
-	PHP_OPENSSL_CHECK_SIZE_T_TO_INT(data_len, data, 1);
-
-	RETVAL_FALSE;
-
-	pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
+	EVP_PKEY *pkey = php_openssl_pkey_from_zval(key, 1, NULL, 0);
 	if (pkey == NULL) {
 		if (!EG(exception)) {
 			php_error_docref(NULL, E_WARNING, "key parameter is not a valid public key");
@@ -6350,43 +6301,32 @@ PHP_FUNCTION(openssl_public_decrypt)
 		RETURN_FALSE;
 	}
 
-	cryptedlen = EVP_PKEY_size(pkey);
-	crypttemp = emalloc(cryptedlen + 1);
-
-	switch (EVP_PKEY_id(pkey)) {
-		case EVP_PKEY_RSA:
-		case EVP_PKEY_RSA2:
-			cryptedlen = RSA_public_decrypt((int)data_len,
-					(unsigned char *)data,
-					crypttemp,
-					EVP_PKEY_get0_RSA(pkey),
-					(int)padding);
-			if (cryptedlen != -1) {
-				cryptedbuf = zend_string_alloc(cryptedlen, 0);
-				memcpy(ZSTR_VAL(cryptedbuf), crypttemp, cryptedlen);
-				successful = 1;
-			}
-			break;
-
-		default:
-			php_error_docref(NULL, E_WARNING, "key type not supported in this PHP build!");
-
-	}
-
-	efree(crypttemp);
-
-	if (successful) {
-		ZSTR_VAL(cryptedbuf)[cryptedlen] = '\0';
-		ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, cryptedbuf);
-		cryptedbuf = NULL;
-		RETVAL_TRUE;
-	} else {
+	size_t out_len = 0;
+	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new(pkey, NULL);
+	if (!ctx || EVP_PKEY_verify_recover_init(ctx) <= 0 ||
+			EVP_PKEY_CTX_set_rsa_padding(ctx, padding) <= 0 ||
+			EVP_PKEY_verify_recover(ctx, NULL, &out_len, (unsigned char *) data, data_len) <= 0) {
 		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
 
-	if (cryptedbuf) {
-		zend_string_release_ex(cryptedbuf, 0);
+	zend_string *out = zend_string_alloc(out_len, 0);
+	if (EVP_PKEY_verify_recover(ctx, (unsigned char *) ZSTR_VAL(out), &out_len,
+			(unsigned char *) data, data_len) <= 0) {
+		zend_string_release(out);
+		php_openssl_store_errors();
+		RETVAL_FALSE;
+		goto cleanup;
 	}
+
+	out = zend_string_truncate(out, out_len, 0);
+	ZSTR_VAL(out)[out_len] = '\0';
+	ZEND_TRY_ASSIGN_REF_NEW_STR(crypted, out);
+	RETVAL_TRUE;
+
+cleanup:
+	EVP_PKEY_CTX_free(ctx);
 	EVP_PKEY_free(pkey);
 }
 /* }}} */
@@ -6765,6 +6705,31 @@ PHP_FUNCTION(openssl_get_md_methods)
 }
 /* }}} */
 
+#if PHP_OPENSSL_API_VERSION >= 0x30000
+static void php_openssl_add_cipher_name(const char *name, void *arg)
+{
+	size_t len = strlen(name);
+	zend_string *str = zend_string_alloc(len, 0);
+	zend_str_tolower_copy(ZSTR_VAL(str), name, len);
+	add_next_index_str((zval*)arg, str);
+}
+
+static void php_openssl_add_cipher_or_alias(EVP_CIPHER *cipher, void *arg)
+{
+	EVP_CIPHER_names_do_all(cipher, php_openssl_add_cipher_name, arg);
+}
+
+static void php_openssl_add_cipher(EVP_CIPHER *cipher, void *arg)
+{
+	php_openssl_add_cipher_name(EVP_CIPHER_get0_name(cipher), arg);
+}
+
+static int php_openssl_compare_func(Bucket *a, Bucket *b)
+{
+	return string_compare_function(&a->val, &b->val);
+}
+#endif
+
 /* {{{ Return array of available cipher algorithms */
 PHP_FUNCTION(openssl_get_cipher_methods)
 {
@@ -6774,9 +6739,16 @@ PHP_FUNCTION(openssl_get_cipher_methods)
 		RETURN_THROWS();
 	}
 	array_init(return_value);
-	OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH,
-		aliases ? php_openssl_add_method_or_alias: php_openssl_add_method,
+#if PHP_OPENSSL_API_VERSION >= 0x30000
+	EVP_CIPHER_do_all_provided(NULL,
+		aliases ? php_openssl_add_cipher_or_alias : php_openssl_add_cipher,
 		return_value);
+	zend_hash_sort(Z_ARRVAL_P(return_value), php_openssl_compare_func, 1);
+#else
+	OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH,
+		aliases ? php_openssl_add_method_or_alias : php_openssl_add_method,
+		return_value);
+#endif
 }
 /* }}} */
 

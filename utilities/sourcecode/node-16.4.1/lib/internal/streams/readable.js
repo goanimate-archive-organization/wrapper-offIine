@@ -171,7 +171,7 @@ function ReadableState(options, stream, isDuplex) {
   // If true, a maybeReadMore has been scheduled.
   this.readingMore = false;
 
-  this.didRead = false;
+  this.dataEmitted = false;
 
   this.decoder = null;
   this.encoding = null;
@@ -316,6 +316,7 @@ function addChunk(stream, state, chunk, addToFront) {
     } else {
       state.awaitDrainWriters = null;
     }
+    state.dataEmitted = true;
     stream.emit('data', chunk);
   } else {
     // Update the buffer info.
@@ -541,10 +542,10 @@ Readable.prototype.read = function(n) {
       endReadable(this);
   }
 
-  if (ret !== null)
+  if (ret !== null) {
+    state.dataEmitted = true;
     this.emit('data', ret);
-
-  state.didRead = true;
+  }
 
   return ret;
 };
@@ -849,9 +850,7 @@ function pipeOnDrain(src, dest) {
 
     if ((!state.awaitDrainWriters || state.awaitDrainWriters.size === 0) &&
       EE.listenerCount(src, 'data')) {
-      // TODO(ronag): Call resume() instead?
       state.flowing = true;
-      state.didRead = true;
       flow(src);
     }
   };
@@ -999,7 +998,6 @@ Readable.prototype.resume = function() {
 function resume(stream, state) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
-    state.didRead = true;
     process.nextTick(resume_, stream, state);
   }
 }
@@ -1099,15 +1097,7 @@ Readable.prototype.iterator = function(options) {
 
 function streamToAsyncIterator(stream, options) {
   if (typeof stream.read !== 'function') {
-    // v1 stream
-    const src = stream;
-    stream = new Readable({
-      objectMode: true,
-      destroy(err, callback) {
-        destroyImpl.destroyer(src, err);
-        callback(err);
-      }
-    }).wrap(src);
+    stream = Readable.wrap(stream, { objectMode: true });
   }
 
   const iter = createAsyncIterator(stream, options);
@@ -1187,7 +1177,12 @@ ObjectDefineProperties(Readable.prototype, {
   readableDidRead: {
     enumerable: false,
     get: function() {
-      return this._readableState.didRead;
+      return (
+        this._readableState.dataEmitted ||
+        this._readableState.endEmitted ||
+        this._readableState.errorEmitted ||
+        this._readableState.closeEmitted
+      );
     }
   },
 
@@ -1387,4 +1382,15 @@ Readable.fromWeb = function(readableStream, options) {
 
 Readable.toWeb = function(streamReadable) {
   return lazyWebStreams().newReadableStreamFromStreamReadable(streamReadable);
+};
+
+Readable.wrap = function(src, options) {
+  return new Readable({
+    objectMode: src.readableObjectMode ?? src.objectMode ?? true,
+    ...options,
+    destroy(err, callback) {
+      destroyImpl.destroyer(src, err);
+      callback(err);
+    }
+  }).wrap(src);
 };

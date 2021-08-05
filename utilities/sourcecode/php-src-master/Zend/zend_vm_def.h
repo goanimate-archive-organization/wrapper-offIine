@@ -2527,8 +2527,8 @@ ZEND_VM_C_LABEL(try_assign_dim_array):
 			if (OP_DATA_TYPE == IS_CV || OP_DATA_TYPE == IS_VAR) {
 				ZVAL_DEREF(value);
 			}
-			variable_ptr = zend_hash_next_index_insert(Z_ARRVAL_P(object_ptr), value);
-			if (UNEXPECTED(variable_ptr == NULL)) {
+			value = zend_hash_next_index_insert(Z_ARRVAL_P(object_ptr), value);
+			if (UNEXPECTED(value == NULL)) {
 				zend_cannot_add_element();
 				ZEND_VM_C_GOTO(assign_dim_error);
 			} else if (OP_DATA_TYPE == IS_CV) {
@@ -2537,7 +2537,7 @@ ZEND_VM_C_LABEL(try_assign_dim_array):
 				}
 			} else if (OP_DATA_TYPE == IS_VAR) {
 				zval *free_op_data = EX_VAR((opline+1)->op1.var);
-				if (value != free_op_data) {
+				if (Z_ISREF_P(free_op_data)) {
 					if (Z_REFCOUNTED_P(value)) {
 						Z_ADDREF_P(value);
 					}
@@ -8921,7 +8921,7 @@ ZEND_VM_COLD_CONST_HANDLER(197, ZEND_MATCH_ERROR, CONST|TMPVARCV, UNUSED)
 
 	SAVE_OPLINE();
 	op = GET_OP1_ZVAL_PTR_UNDEF(BP_VAR_R);
-	zend_throw_exception_ex(zend_ce_unhandled_match_error, 0, "Unhandled match value of type %s", zend_zval_type_name(op));
+	zend_match_unhandled_error(op);
 	HANDLE_EXCEPTION();
 }
 

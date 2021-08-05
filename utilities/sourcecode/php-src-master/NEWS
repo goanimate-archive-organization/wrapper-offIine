@@ -1,6 +1,13 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-?? ??? ????, PHP 8.1.0beta2
+?? ??? ????, PHP 8.1.0beta3
+
+
+
+05 Aug 2021, PHP 8.1.0beta2
+
+- Core:
+  . Fixed bug #81303 (match error message improvements). (krakjoe)
 
 - Mbstring:
   . Fixed bug #81298 (mb_detect_encoding() segfaults when 7bit encoding is
@@ -20,6 +27,9 @@ PHP                                                                        NEWS
     value for statics). (Nikita)
   . Fixed bug #80564 (ReflectionProperty::__toString() renders current value,
     not default value). (Nikita)
+
+- SimpleXML:
+  . Fixed bug #81325 (Segfault in zif_simplexml_import_dom). (remi)
 
 22 Jul 2021, PHP 8.1.0beta1
 
