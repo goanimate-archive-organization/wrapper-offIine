@@ -276,6 +276,8 @@ function readableAddChunk(stream, chunk, encoding, addToFront) {
     if (addToFront) {
       if (state.endEmitted)
         errorOrDestroy(stream, new ERR_STREAM_UNSHIFT_AFTER_END_EVENT());
+      else if (state.destroyed || state.errored)
+        return false;
       else
         addChunk(stream, state, chunk, true);
     } else if (state.ended) {
@@ -316,6 +318,7 @@ function addChunk(stream, state, chunk, addToFront) {
     } else {
       state.awaitDrainWriters = null;
     }
+
     state.dataEmitted = true;
     stream.emit('data', chunk);
   } else {
@@ -542,7 +545,7 @@ Readable.prototype.read = function(n) {
       endReadable(this);
   }
 
-  if (ret !== null) {
+  if (ret !== null && !state.errorEmitted && !state.closeEmitted) {
     state.dataEmitted = true;
     this.emit('data', ret);
   }
@@ -1177,12 +1180,15 @@ ObjectDefineProperties(Readable.prototype, {
   readableDidRead: {
     enumerable: false,
     get: function() {
-      return (
-        this._readableState.dataEmitted ||
-        this._readableState.endEmitted ||
-        this._readableState.errorEmitted ||
-        this._readableState.closeEmitted
-      );
+      return this._readableState.dataEmitted;
+    }
+  },
+
+  readableAborted: {
+    enumerable: false,
+    get: function() {
+      return !!(this._readableState.destroyed || this._readableState.errored) &&
+        !this._readableState.endEmitted;
     }
   },
 
@@ -1328,13 +1334,13 @@ function endReadableNT(state, stream) {
   debug('endReadableNT', state.endEmitted, state.length);
 
   // Check that we didn't get one last unshift.
-  if (!state.errorEmitted && !state.closeEmitted &&
+  if (!state.errored && !state.closeEmitted &&
       !state.endEmitted && state.length === 0) {
     state.endEmitted = true;
     stream.emit('end');
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      process.nextTick(endWritableNT, state, stream);
+      process.nextTick(endWritableNT, stream);
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.
@@ -1353,7 +1359,7 @@ function endReadableNT(state, stream) {
   }
 }
 
-function endWritableNT(state, stream) {
+function endWritableNT(stream) {
   const writable = stream.writable && !stream.writableEnded &&
     !stream.destroyed;
   if (writable) {

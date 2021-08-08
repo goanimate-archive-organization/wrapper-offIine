@@ -13020,6 +13020,12 @@ Display video frame rate or sample rate in case of audio used by filter link.
 
 @item eof
 Display link output status.
+
+@item sample_count_in
+Display number of samples taken from filter.
+
+@item sample_count_out
+Display number of samples given out from filter.
 @end table
 
 @item rate, r
@@ -17155,7 +17161,7 @@ This filter supports the all above options as @ref{commands}.
 @item
 Output a csv with presentation time and the first two lines of identified EIA-608 captioning data.
 @example
-ffprobe -f lavfi -i movie=captioned_video.mov,readeia608 -show_entries frame=pkt_pts_time:frame_tags=lavfi.readeia608.0.cc,lavfi.readeia608.1.cc -of csv
+ffprobe -f lavfi -i movie=captioned_video.mov,readeia608 -show_entries frame=pts_time:frame_tags=lavfi.readeia608.0.cc,lavfi.readeia608.1.cc -of csv
 @end example
 @end itemize
 
@@ -26908,6 +26914,14 @@ Set upper frame rate limit. Default is @code{auto}, unlimited.
 
 @item legend
 Draw time and frequency axes and legends. Default is disabled.
+
+@item drange
+Set dynamic range used to calculate intensity color values. Default is 120 dBFS.
+Allowed range is from 10 to 200.
+
+@item limit
+Set upper limit of input audio samples volume in dBFS. Default is 0 dBFS.
+Allowed range is from -100 to 100.
 @end table
 
 The usage is very similar to the showwaves filter; see the examples in that
@@ -27081,6 +27095,14 @@ Set start frequency from which to display spectrogram. Default is @code{0}.
 
 @item stop
 Set stop frequency to which to display spectrogram. Default is @code{0}.
+
+@item drange
+Set dynamic range used to calculate intensity color values. Default is 120 dBFS.
+Allowed range is from 10 to 200.
+
+@item limit
+Set upper limit of input audio samples volume in dBFS. Default is 0 dBFS.
+Allowed range is from -100 to 100.
 @end table
 
 @subsection Examples

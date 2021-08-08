@@ -2032,7 +2032,7 @@ static void print_pkt_side_data(WriterContext *w,
             print_int("dv_bl_signal_compatibility_id", dovi->dv_bl_signal_compatibility_id);
         } else if (sd->type == AV_PKT_DATA_AUDIO_SERVICE_TYPE) {
             enum AVAudioServiceType *t = (enum AVAudioServiceType *)sd->data;
-            print_int("type", *t);
+            print_int("service_type", *t);
         } else if (sd->type == AV_PKT_DATA_MPEGTS_STREAM_ID) {
             print_int("id", *sd->data);
         } else if (sd->type == AV_PKT_DATA_CPB_PROPERTIES) {
@@ -2248,8 +2248,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     else   print_str_opt("media_type", "unknown");
     print_int("stream_index",           stream->index);
     print_int("key_frame",              frame->key_frame);
-    print_ts  ("pkt_pts",               frame->pts);
-    print_time("pkt_pts_time",          frame->pts, &stream->time_base);
+    print_ts  ("pts",                   frame->pts);
+    print_time("pts_time",              frame->pts, &stream->time_base);
     print_ts  ("pkt_dts",               frame->pkt_dts);
     print_time("pkt_dts_time",          frame->pkt_dts, &stream->time_base);
     print_ts  ("best_effort_timestamp", frame->best_effort_timestamp);
@@ -3721,7 +3721,6 @@ int main(int argc, char **argv)
     options = real_options;
     parse_loglevel(argc, argv, options);
     avformat_network_init();
-    init_opts();
 #if CONFIG_AVDEVICE
     avdevice_register_all();
 #endif

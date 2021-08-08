@@ -549,19 +549,8 @@ struct AVFilterLink {
     AVRational frame_rate;
 
     /**
-     * Buffer partially filled with samples to achieve a fixed/minimum size.
-     */
-    AVFrame *partial_buf;
-
-    /**
-     * Size of the partial buffer to allocate.
-     * Must be between min_samples and max_samples.
-     */
-    int partial_buf_size;
-
-    /**
      * Minimum number of samples to filter at once. If filter_frame() is
-     * called with fewer samples, it will accumulate them in partial_buf.
+     * called with fewer samples, it will accumulate them in fifo.
      * This field and the related ones must not be changed after filtering
      * has started.
      * If 0, all related fields are ignored.
@@ -583,6 +572,11 @@ struct AVFilterLink {
      * Number of past frames sent through the link.
      */
     int64_t frame_count_in, frame_count_out;
+
+    /**
+     * Number of past samples sent through the link.
+     */
+    int64_t sample_count_in, sample_count_out;
 
     /**
      * A pointer to a FFFramePool struct.

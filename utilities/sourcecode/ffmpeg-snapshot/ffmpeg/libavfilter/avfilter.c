@@ -177,7 +177,6 @@ void avfilter_link_free(AVFilterLink **link)
     if (!*link)
         return;
 
-    av_frame_free(&(*link)->partial_buf);
     ff_framequeue_free(&(*link)->fifo);
     ff_frame_pool_uninit((FFFramePool**)&(*link)->frame_pool);
 
@@ -1013,6 +1012,7 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
 
     link->frame_blocked_in = link->frame_wanted_out = 0;
     link->frame_count_in++;
+    link->sample_count_in += frame->nb_samples;
     filter_unblock(link->dst);
     ret = ff_framequeue_add(&link->fifo, frame);
     if (ret < 0) {
@@ -1372,6 +1372,7 @@ static void consume_update(AVFilterLink *link, const AVFrame *frame)
     ff_inlink_process_commands(link, frame);
     link->dst->is_disabled = !ff_inlink_evaluate_timeline_at_frame(link, frame);
     link->frame_count_out++;
+    link->sample_count_out += frame->nb_samples;
 }
 
 int ff_inlink_consume_frame(AVFilterLink *link, AVFrame **rframe)
