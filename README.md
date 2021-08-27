@@ -58,15 +58,13 @@ Wrapper: Offline credits:
 | NathanSaturnBOI                     | Logo                                                                                                                                                 |
 | w8.1 (C)                 | Text to speech voices, background importing, tons of bug fixes and more                                                                              |
 | clarramore (D) (B) 		   | Various bug fixes and development for some of the features                                                                                           |
-| xomdjl_ (D)         	   | Lead developer for v1.3.0 and onward, export script, pick a theme page, implementing the Flashpoint version of Basilisk browser, TTS voices and more |       
+| xomdjl_ (D)         	   | export script, pick a theme page, implementing the Flashpoint version of Basilisk browser, TTS voices and more |       
 | creepyjokes2000 (D)        	   | Waveform fix, improved actions                                                                                                                       |
-| JoshAnimate                 	   | Headgear fix                                                                                                                                         |
-| 2Epik4u (D) (B)                  | Discord RPC, maintainer of Wrapper: Offline and private GitHub repository creator                                                                    |
-| GoTest334 (B)                    | Maintainer of Wrapper: Offline Discord                                                                                                               |
+| JoshAnimate                 	   | Headgear fix                                                                                                                                         |                                                                  |
+| GoTest334 (D)                    | Leader of the Wrapper: Offline Team.                                                                                                           |
 | The Invincible Sphynx Cat (B)    | Beta testing, suggestions, remastered GoAnimate tracks (provided separately, not included)                                                           |	
 | MJ, The Spirit (D) (B)	   | Facial expression fix, video/imported asset backup tool, action pack tool creator, bug fixes                                                         |
-| MegaT (C)                        | CC browser code                                                                                                                                      |
-| narutofan420                     | Main developer of 1.3.1's base build, New CSS theme on video and theme lists, dark mode character creator                                                                                  |
+| MegaT (C)                        | CC browser code                                                                                                                                      |        
 | RegularSpark (D) (B)                    | Video list grid view, rewriting faq.html, other small tweaks, WOR stuff                                                                                        |
 | zoccorus (D)                   | Main of 1.3.3's developer, a new logo                                                                                  |
 
