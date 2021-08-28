@@ -1069,8 +1069,6 @@ PHPAPI PHP_FUNCTION(fgets)
 PHPAPI PHP_FUNCTION(fgetc)
 {
 	zval *res;
-	char buf[2];
-	int result;
 	php_stream *stream;
 
 	ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -1079,15 +1077,12 @@ PHPAPI PHP_FUNCTION(fgetc)
 
 	PHP_STREAM_TO_ZVAL(stream, res);
 
-	result = php_stream_getc(stream);
+	int result = php_stream_getc(stream);
 
 	if (result == EOF) {
 		RETVAL_FALSE;
 	} else {
-		buf[0] = result;
-		buf[1] = '\0';
-
-		RETURN_STRINGL(buf, 1);
+		RETURN_CHAR(result);
 	}
 }
 /* }}} */
@@ -2392,7 +2387,7 @@ php_meta_tags_token php_next_meta_token(php_meta_tags_data *md)
 				}
 
 				if (ch == '<' || ch == '>') {
-					/* Was just an apostrohpe */
+					/* Was just an apostrophe */
 					md->ulc = 1;
 					md->lc = ch;
 				}

@@ -260,35 +260,35 @@ static void *zend_file_cache_serialize_interned(zend_string              *str,
 			((_ZSTR_HEADER_SIZE + 1 + new_len + 4095) & ~0xfff) - (_ZSTR_HEADER_SIZE + 1),
 			0);
 	}
-	memcpy(ZSTR_VAL((zend_string*)ZCG(mem)) + info->str_size, str, len);
+
+	zend_string *new_str = (zend_string *) (ZSTR_VAL((zend_string*)ZCG(mem)) + info->str_size);
+	memcpy(new_str, str, len);
+	GC_ADD_FLAGS(new_str, IS_STR_INTERNED);
+	GC_DEL_FLAGS(new_str, IS_STR_PERMANENT|IS_STR_CLASS_NAME_MAP_PTR);
 	info->str_size += len;
 	return ret;
 }
 
 static void *zend_file_cache_unserialize_interned(zend_string *str, int in_shm)
 {
-	zend_string *ret;
-
 	str = (zend_string*)((char*)ZCG(mem) + ((size_t)(str) & ~Z_UL(1)));
-	if (in_shm) {
-		ret = accel_new_interned_string(str);
-		if (ret == str) {
-			/* We have to create new SHM allocated string */
-			size_t size = _ZSTR_STRUCT_SIZE(ZSTR_LEN(str));
-			ret = zend_shared_alloc(size);
-			if (!ret) {
-				zend_accel_schedule_restart_if_necessary(ACCEL_RESTART_OOM);
-				LONGJMP(*EG(bailout), FAILURE);
-			}
-			memcpy(ret, str, size);
-			/* String wasn't interned but we will use it as interned anyway */
-			GC_SET_REFCOUNT(ret, 1);
-			GC_TYPE_INFO(ret) = GC_STRING | ((IS_STR_INTERNED | IS_STR_PERSISTENT | IS_STR_PERMANENT) << GC_FLAGS_SHIFT);
+	if (!in_shm) {
+		return str;
+	}
+
+	zend_string *ret = accel_new_interned_string(str);
+	if (ret == str) {
+		/* We have to create new SHM allocated string */
+		size_t size = _ZSTR_STRUCT_SIZE(ZSTR_LEN(str));
+		ret = zend_shared_alloc(size);
+		if (!ret) {
+			zend_accel_schedule_restart_if_necessary(ACCEL_RESTART_OOM);
+			LONGJMP(*EG(bailout), FAILURE);
 		}
-	} else {
-		ret = str;
-		GC_ADD_FLAGS(ret, IS_STR_INTERNED);
-		GC_DEL_FLAGS(ret, IS_STR_PERMANENT);
+		memcpy(ret, str, size);
+		/* String wasn't interned but we will use it as interned anyway */
+		GC_SET_REFCOUNT(ret, 1);
+		GC_TYPE_INFO(ret) = GC_STRING | ((IS_STR_INTERNED | IS_STR_PERSISTENT | IS_STR_PERMANENT) << GC_FLAGS_SHIFT);
 	}
 	return ret;
 }
@@ -375,16 +375,6 @@ static void zend_file_cache_serialize_zval(zval                     *zv,
 				zend_file_cache_serialize_hash(ht, script, info, buf, zend_file_cache_serialize_zval);
 			}
 			break;
-		case IS_REFERENCE:
-			if (!IS_SERIALIZED(Z_REF_P(zv))) {
-				zend_reference *ref;
-
-				SERIALIZE_PTR(Z_REF_P(zv));
-				ref = Z_REF_P(zv);
-				UNSERIALIZE_PTR(ref);
-				zend_file_cache_serialize_zval(&ref->val, script, info, buf);
-			}
-			break;
 		case IS_CONSTANT_AST:
 			if (!IS_SERIALIZED(Z_AST_P(zv))) {
 				zend_ast_ref *ast;
@@ -398,6 +388,9 @@ static void zend_file_cache_serialize_zval(zval                     *zv,
 		case IS_INDIRECT:
 			/* Used by static properties. */
 			SERIALIZE_PTR(Z_INDIRECT_P(zv));
+			break;
+		default:
+			ZEND_ASSERT(Z_TYPE_P(zv) < IS_STRING);
 			break;
 	}
 }
@@ -440,10 +433,6 @@ static void zend_file_cache_serialize_type(
 		zend_string *type_name = ZEND_TYPE_NAME(*type);
 		SERIALIZE_STR(type_name);
 		ZEND_TYPE_SET_PTR(*type, type_name);
-	} else if (ZEND_TYPE_HAS_CE(*type)) {
-		zend_class_entry *ce = ZEND_TYPE_CE(*type);
-		SERIALIZE_PTR(ce);
-		ZEND_TYPE_SET_PTR(*type, ce);
 	}
 }
 
@@ -1161,7 +1150,9 @@ static void zend_file_cache_unserialize_zval(zval                    *zv,
 {
 	switch (Z_TYPE_P(zv)) {
 		case IS_STRING:
-			if (!IS_UNSERIALIZED(Z_STR_P(zv))) {
+			/* We can't use !IS_UNSERIALIZED here, because that does not recognize unserialized
+			 * interned strings in non-shm mode. */
+			if (IS_SERIALIZED(Z_STR_P(zv)) || IS_SERIALIZED_INTERNED(Z_STR_P(zv))) {
 				UNSERIALIZE_STR(Z_STR_P(zv));
 			}
 			break;
@@ -1175,15 +1166,6 @@ static void zend_file_cache_unserialize_zval(zval                    *zv,
 						script, buf, zend_file_cache_unserialize_zval, ZVAL_PTR_DTOR);
 			}
 			break;
-		case IS_REFERENCE:
-			if (!IS_UNSERIALIZED(Z_REF_P(zv))) {
-				zend_reference *ref;
-
-				UNSERIALIZE_PTR(Z_REF_P(zv));
-				ref = Z_REF_P(zv);
-				zend_file_cache_unserialize_zval(&ref->val, script, buf);
-			}
-			break;
 		case IS_CONSTANT_AST:
 			if (!IS_UNSERIALIZED(Z_AST_P(zv))) {
 				UNSERIALIZE_PTR(Z_AST_P(zv));
@@ -1193,6 +1175,9 @@ static void zend_file_cache_unserialize_zval(zval                    *zv,
 		case IS_INDIRECT:
 			/* Used by static properties. */
 			UNSERIALIZE_PTR(Z_INDIRECT_P(zv));
+			break;
+		default:
+			ZEND_ASSERT(Z_TYPE_P(zv) < IS_STRING);
 			break;
 	}
 }
@@ -1231,12 +1216,10 @@ static void zend_file_cache_unserialize_type(
 		UNSERIALIZE_STR(type_name);
 		ZEND_TYPE_SET_PTR(*type, type_name);
 		if (!script->corrupted) {
-			zend_accel_get_class_name_map_ptr(type_name, scope, /* have_xlat */ false);
+			zend_accel_get_class_name_map_ptr(type_name);
+		} else {
+			zend_alloc_ce_cache(type_name);
 		}
-	} else if (ZEND_TYPE_HAS_CE(*type)) {
-		zend_class_entry *ce = ZEND_TYPE_CE(*type);
-		UNSERIALIZE_PTR(ce);
-		ZEND_TYPE_SET_PTR(*type, ce);
 	}
 }
 
@@ -1497,9 +1480,12 @@ static void zend_file_cache_unserialize_class(zval                    *zv,
 	ce = Z_PTR_P(zv);
 
 	UNSERIALIZE_STR(ce->name);
-	if (!(ce->ce_flags & ZEND_ACC_ANON_CLASS)
-	 && !script->corrupted) {
-		zend_accel_get_class_name_map_ptr(ce->name, ce, /* have_xlat */ false);
+	if (!(ce->ce_flags & ZEND_ACC_ANON_CLASS)) {
+		if (!script->corrupted) {
+			zend_accel_get_class_name_map_ptr(ce->name);
+		} else {
+			zend_alloc_ce_cache(ce->name);
+		}
 	}
 	if (ce->parent) {
 		if (!(ce->ce_flags & ZEND_ACC_LINKED)) {

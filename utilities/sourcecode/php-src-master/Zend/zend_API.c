@@ -2978,29 +2978,27 @@ ZEND_API void zend_deactivate_modules(void) /* {{{ */
 {
 	EG(current_execute_data) = NULL; /* we're no longer executing anything */
 
-	zend_try {
-		if (EG(full_tables_cleanup)) {
-			zend_module_entry *module;
+	if (EG(full_tables_cleanup)) {
+		zend_module_entry *module;
 
-			ZEND_HASH_REVERSE_FOREACH_PTR(&module_registry, module) {
-				if (module->request_shutdown_func) {
-#if 0
-					zend_printf("%s: Request shutdown\n", module->name);
-#endif
+		ZEND_HASH_REVERSE_FOREACH_PTR(&module_registry, module) {
+			if (module->request_shutdown_func) {
+				zend_try {
 					module->request_shutdown_func(module->type, module->module_number);
-				}
-			} ZEND_HASH_FOREACH_END();
-		} else {
-			zend_module_entry **p = module_request_shutdown_handlers;
-
-			while (*p) {
-				zend_module_entry *module = *p;
-
-				module->request_shutdown_func(module->type, module->module_number);
-				p++;
+				} zend_end_try();
 			}
+		} ZEND_HASH_FOREACH_END();
+	} else {
+		zend_module_entry **p = module_request_shutdown_handlers;
+
+		while (*p) {
+			zend_module_entry *module = *p;
+			zend_try {
+				module->request_shutdown_func(module->type, module->module_number);
+			} zend_end_try();
+			p++;
 		}
-	} zend_end_try();
+	}
 }
 /* }}} */
 
@@ -3053,6 +3051,7 @@ static zend_class_entry *do_register_internal_class(zend_class_entry *orig_class
 
 	class_entry->type = ZEND_INTERNAL_CLASS;
 	zend_initialize_class_data(class_entry, 0);
+	zend_alloc_ce_cache(class_entry->name);
 	class_entry->ce_flags = orig_class_entry->ce_flags | ce_flags | ZEND_ACC_CONSTANTS_UPDATED | ZEND_ACC_LINKED | ZEND_ACC_RESOLVED_PARENT | ZEND_ACC_RESOLVED_INTERFACES;
 	class_entry->info.internal.module = EG(current_module);
 
@@ -4125,6 +4124,17 @@ ZEND_API zend_property_info *zend_declare_typed_property(zend_class_entry *ce, z
 	property_info->attributes = NULL;
 	property_info->ce = ce;
 	property_info->type = type;
+
+	if (is_persistent_class(ce)) {
+		zend_type *single_type;
+		ZEND_TYPE_FOREACH(property_info->type, single_type) {
+			if (ZEND_TYPE_HAS_NAME(*single_type)) {
+				zend_string *name = zend_new_interned_string(ZEND_TYPE_NAME(*single_type));
+				ZEND_TYPE_SET_PTR(*single_type, name);
+				zend_alloc_ce_cache(name);
+			}
+		} ZEND_TYPE_FOREACH_END();
+	}
 
 	zend_hash_update_ptr(&ce->properties_info, name, property_info);
 

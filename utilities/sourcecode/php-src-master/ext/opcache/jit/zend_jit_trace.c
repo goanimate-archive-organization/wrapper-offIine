@@ -795,7 +795,22 @@ static int zend_jit_trace_copy_ssa_var_info(const zend_op_array *op_array, const
 	return 0;
 }
 
-static int zend_jit_trace_copy_ssa_var_range(const zend_op_array *op_array, const zend_ssa *ssa, const zend_op **tssa_opcodes, zend_ssa *tssa, int ssa_var)
+static void zend_jit_trace_propagate_range(const zend_op_array *op_array, const zend_op **tssa_opcodes, zend_ssa *tssa, int ssa_var)
+{
+	zend_ssa_range tmp;
+	int def = tssa->vars[ssa_var].definition;
+
+	if (tssa->vars[ssa_var].alias == NO_ALIAS
+	 && zend_inference_propagate_range(op_array, tssa, (zend_op*)tssa_opcodes[def], (zend_ssa_op*)&tssa->ops[def], ssa_var, &tmp)) {
+		tssa->var_info[ssa_var].range.min = tmp.min;
+		tssa->var_info[ssa_var].range.max = tmp.max;
+		tssa->var_info[ssa_var].range.underflow = tmp.underflow;
+		tssa->var_info[ssa_var].range.overflow = tmp.overflow;
+		tssa->var_info[ssa_var].has_range = 1;
+	}
+}
+
+static void zend_jit_trace_copy_ssa_var_range(const zend_op_array *op_array, const zend_ssa *ssa, const zend_op **tssa_opcodes, zend_ssa *tssa, int ssa_var)
 {
 	int def;
 	zend_ssa_op *op;
@@ -821,11 +836,15 @@ static int zend_jit_trace_copy_ssa_var_range(const zend_op_array *op_array, cons
 			info = ssa->var_info + op->result_def;
 		} else {
 			assert(0);
-			return 0;
+			return;
 		}
 
 		tssa->vars[ssa_var].no_val = no_val;
 		tssa->vars[ssa_var].alias = alias;
+
+		if (!(info->type & MAY_BE_REF)) {
+			zend_jit_trace_propagate_range(op_array, tssa_opcodes, tssa, ssa_var);
+		}
 
 		if (info->has_range) {
 			if (tssa->var_info[ssa_var].has_range) {
@@ -838,9 +857,7 @@ static int zend_jit_trace_copy_ssa_var_range(const zend_op_array *op_array, cons
 				tssa->var_info[ssa_var].range = info->range;
 			}
 		}
-		return 1;
 	}
-	return 0;
 }
 
 static int zend_jit_trace_restrict_ssa_var_info(const zend_op_array *op_array, const zend_ssa *ssa, const zend_op **tssa_opcodes, zend_ssa *tssa, int ssa_var)
@@ -1507,7 +1524,6 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 //			zend_class_entry *op1_ce = NULL;
 			zend_class_entry *op2_ce = NULL;
 
-			// TODO: range inference ???
 			opline = p->opline;
 
 			op1_type = orig_op1_type = p->op1_type;
@@ -1570,6 +1586,20 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 							ADD_OP1_DATA_TRACE_GUARD();
 						}
 						ADD_OP2_TRACE_GUARD();
+					}
+					if (op1_type == IS_ARRAY
+					 && !(orig_op1_type & IS_TRACE_PACKED)
+					 && ((opline->op2_type == IS_CONST
+					   && Z_TYPE_P(RT_CONSTANT(opline, opline->op2)) == IS_LONG)
+					  || (opline->op2_type != IS_CONST
+					   && op2_type == IS_LONG))) {
+
+						zend_ssa_var_info *info = &tssa->var_info[tssa->ops[idx].op1_use];
+
+						if (MAY_BE_PACKED(info->type) && MAY_BE_HASH(info->type)) {
+							info->type |= MAY_BE_PACKED_GUARD;
+							info->type &= ~MAY_BE_ARRAY_PACKED;
+						}
 					}
 					break;
 				case ZEND_ASSIGN_OBJ_OP:
@@ -1718,8 +1748,8 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 					ADD_OP1_TRACE_GUARD();
 					ADD_OP2_TRACE_GUARD();
 
-					if (opline->op1_type != IS_CONST
-					 && op1_type == IS_ARRAY
+					if (op1_type == IS_ARRAY
+					 && opline->op1_type != IS_CONST
 					 && ((opline->op2_type == IS_CONST
 					   && Z_TYPE_P(RT_CONSTANT(opline, opline->op2)) == IS_LONG)
 					  || (opline->op2_type != IS_CONST
@@ -1727,13 +1757,10 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 
 						zend_ssa_var_info *info = &tssa->var_info[tssa->ops[idx].op1_use];
 
-						if ((info->type & MAY_BE_ARRAY_PACKED)
-						 && (info->type & MAY_BE_ARRAY_HASH)
-						 && orig_op1_type != IS_UNKNOWN
-						 && !(orig_op1_type & IS_TRACE_REFERENCE)) {
+						if (MAY_BE_PACKED(info->type) && MAY_BE_HASH(info->type)) {
 							info->type |= MAY_BE_PACKED_GUARD;
 							if (orig_op1_type & IS_TRACE_PACKED) {
-								info->type &= ~MAY_BE_ARRAY_HASH;
+								info->type &= ~(MAY_BE_ARRAY_NUMERIC_HASH|MAY_BE_ARRAY_STRING_HASH);
 							} else {
 								info->type &= ~MAY_BE_ARRAY_PACKED;
 							}
@@ -1751,6 +1778,20 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 					}
 					ADD_OP1_TRACE_GUARD();
 					ADD_OP2_TRACE_GUARD();
+					if (op1_type == IS_ARRAY
+					 && !(orig_op1_type & IS_TRACE_PACKED)
+					 && ((opline->op2_type == IS_CONST
+					   && Z_TYPE_P(RT_CONSTANT(opline, opline->op2)) == IS_LONG)
+					  || (opline->op2_type != IS_CONST
+					   && op2_type == IS_LONG))) {
+
+						zend_ssa_var_info *info = &tssa->var_info[tssa->ops[idx].op1_use];
+
+						if (MAY_BE_PACKED(info->type) && MAY_BE_HASH(info->type)) {
+							info->type |= MAY_BE_PACKED_GUARD;
+							info->type &= ~MAY_BE_ARRAY_PACKED;
+						}
+					}
 					break;
 				case ZEND_SEND_VAL_EX:
 				case ZEND_SEND_VAR_EX:
@@ -1896,6 +1937,11 @@ propagate_arg:
 						ADD_OP1_TRACE_GUARD();
 					}
 					break;
+				case ZEND_ROPE_INIT:
+				case ZEND_ROPE_ADD:
+				case ZEND_ROPE_END:
+					ADD_OP2_TRACE_GUARD();
+					break;
 				default:
 					break;
 			}
@@ -1925,22 +1971,40 @@ propagate_arg:
 			} else {
 				if (ssa_ops[idx].op1_def >= 0) {
 					ssa_vars[ssa_ops[idx].op1_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->op1.var));
+					if (ssa_ops[idx].op1_use < 0 || !(ssa_var_info[ssa_ops[idx].op1_use].type & MAY_BE_REF)) {
+						zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].op1_def);
+					}
 				}
 				if (ssa_ops[idx].op2_def >= 0) {
 					ssa_vars[ssa_ops[idx].op2_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->op2.var));
+					if (ssa_ops[idx].op2_use < 0 || !(ssa_var_info[ssa_ops[idx].op2_use].type & MAY_BE_REF)) {
+						zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].op2_def);
+					}
 				}
 				if (ssa_ops[idx].result_def >= 0) {
 					ssa_vars[ssa_ops[idx].result_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->result.var));
+					if (ssa_ops[idx].result_use < 0 || !(ssa_var_info[ssa_ops[idx].result_use].type & MAY_BE_REF)) {
+						zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].result_def);
+					}
 				}
 				if (len == 2 && (opline+1)->opcode == ZEND_OP_DATA) {
 					if (ssa_ops[idx+1].op1_def >= 0) {
 						ssa_vars[ssa_ops[idx+1].op1_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM((opline+1)->op1.var));
+						if (ssa_ops[idx+1].op1_use < 0 || !(ssa_var_info[ssa_ops[idx+1].op1_use].type & MAY_BE_REF)) {
+							zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx+1].op1_def);
+						}
 					}
 					if (ssa_ops[idx+1].op2_def >= 0) {
 						ssa_vars[ssa_ops[idx+1].op2_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM((opline+1)->op2.var));
+						if (ssa_ops[idx+1].op2_use < 0 || !(ssa_var_info[ssa_ops[idx+1].op2_use].type & MAY_BE_REF)) {
+							zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx+1].op2_def);
+						}
 					}
 					if (ssa_ops[idx+1].result_def >= 0) {
 						ssa_vars[ssa_ops[idx+1].result_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM((opline+1)->result.var));
+						if (ssa_ops[idx+1].result_use < 0 || !(ssa_var_info[ssa_ops[idx+1].result_use].type & MAY_BE_REF)) {
+							zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx+1].result_def);
+						}
 					}
 				}
 			}
@@ -2004,12 +2068,21 @@ propagate_arg:
 					} else {
 						if (ssa_ops[idx].op1_def >= 0) {
 							ssa_vars[ssa_ops[idx].op1_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->op1.var));
+							if (ssa_ops[idx].op1_use < 0 || !(ssa_var_info[ssa_ops[idx].op1_use].type & MAY_BE_REF)) {
+								zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].op1_def);
+							}
 						}
 						if (ssa_ops[idx].op2_def >= 0) {
 							ssa_vars[ssa_ops[idx].op2_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->op2.var));
+							if (ssa_ops[idx].op2_use < 0 || !(ssa_var_info[ssa_ops[idx].op2_use].type & MAY_BE_REF)) {
+								zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].op2_def);
+							}
 						}
 						if (ssa_ops[idx].result_def >= 0) {
 							ssa_vars[ssa_ops[idx].result_def].alias = zend_jit_var_may_alias(op_array, ssa, EX_VAR_TO_NUM(opline->result.var));
+							if (ssa_ops[idx].result_use < 0 || !(ssa_var_info[ssa_ops[idx].result_use].type & MAY_BE_REF)) {
+								zend_jit_trace_propagate_range(op_array, ssa_opcodes, tssa, ssa_ops[idx].result_def);
+							}
 						}
 					}
 					if (opline->opcode == ZEND_RECV_INIT
@@ -2250,14 +2323,13 @@ propagate_arg:
 		ssa = &jit_extension->func_info.ssa;
 
 		while (phi) {
-			uint32_t t  = ssa_var_info[phi->ssa_var].type;
-			uint32_t t0 = ssa_var_info[phi->sources[0]].type;
-			uint32_t t1 = ssa_var_info[phi->sources[1]].type;
+			uint32_t t = ssa_var_info[phi->ssa_var].type;
 
-			if (t & MAY_BE_GUARD) {
-				if (tssa->vars[phi->ssa_var].alias != NO_ALIAS) {
-					/* pass */
-				} else if (((t0 | t1) & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) == (t & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF))) {
+			if ((t & MAY_BE_GUARD) && tssa->vars[phi->ssa_var].alias == NO_ALIAS) {
+				uint32_t t0 = ssa_var_info[phi->sources[0]].type;
+				uint32_t t1 = ssa_var_info[phi->sources[1]].type;
+
+				if (((t0 | t1) & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) == (t & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF))) {
 					if (!((t0 | t1) & MAY_BE_GUARD)) {
 						ssa_var_info[phi->ssa_var].type = t & ~MAY_BE_GUARD;
 					}
@@ -2265,18 +2337,64 @@ propagate_arg:
 					if (!(t1 & MAY_BE_GUARD)
 					 || is_checked_guard(tssa, ssa_opcodes, phi->sources[1], phi->ssa_var)) {
 						ssa_var_info[phi->ssa_var].type = t & ~MAY_BE_GUARD;
-						ssa_var_info[phi->sources[0]].type = t | MAY_BE_GUARD;
+						t0 = (t & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+							(t0 & ~(MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+							MAY_BE_GUARD;
+						if (!(t0 & MAY_BE_ARRAY)) {
+							t0 &= ~(MAY_BE_ARRAY_OF_ANY|MAY_BE_ARRAY_OF_REF|MAY_BE_ARRAY_KEY_ANY);
+						}
+						if (!(t0 & (MAY_BE_STRING|MAY_BE_ARRAY|MAY_BE_OBJECT|MAY_BE_RESOURCE))) {
+							t0 &= ~(MAY_BE_RC1|MAY_BE_RCN);
+						}
+						ssa_var_info[phi->sources[0]].type = t0;
+						ssa_var_info[phi->sources[0]].type = t0;
 					}
 				} else {
 					if ((t0 & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) != (t & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF))) {
-						ssa_var_info[phi->sources[0]].type = MAY_BE_GUARD | (t & t0);
+						t0 = (t & t0 & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+							(t0 & ~(MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+							MAY_BE_GUARD;
+						if (!(t0 & MAY_BE_ARRAY)) {
+							t0 &= ~(MAY_BE_ARRAY_OF_ANY|MAY_BE_ARRAY_OF_REF|MAY_BE_ARRAY_KEY_ANY);
+						}
+						if (!(t0 & (MAY_BE_STRING|MAY_BE_ARRAY|MAY_BE_OBJECT|MAY_BE_RESOURCE))) {
+							t0 &= ~(MAY_BE_RC1|MAY_BE_RCN);
+						}
+						ssa_var_info[phi->sources[0]].type = t0;
 					}
 					if ((t1 & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) != (t & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF))) {
 						if (((t & t1) & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) != 0
 						 && is_checked_guard(tssa, ssa_opcodes, phi->sources[1], phi->ssa_var)) {
-							ssa_var_info[phi->sources[1]].type = MAY_BE_GUARD | (t & t1);
+							t1 = (t & t1 & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+								(t1 & ~(MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) |
+								MAY_BE_GUARD;
+							if (!(t1 & MAY_BE_ARRAY)) {
+								t1 &= ~(MAY_BE_ARRAY_OF_ANY|MAY_BE_ARRAY_OF_REF|MAY_BE_ARRAY_KEY_ANY);
+							}
+							if (!(t1 & (MAY_BE_STRING|MAY_BE_ARRAY|MAY_BE_OBJECT|MAY_BE_RESOURCE))) {
+								t1 &= ~(MAY_BE_RC1|MAY_BE_RCN);
+							}
+							ssa_var_info[phi->sources[1]].type = t1;
 							ssa_var_info[phi->ssa_var].type = t & ~MAY_BE_GUARD;
 						}
+					}
+				}
+				t = ssa_var_info[phi->ssa_var].type;
+			}
+
+			if ((t & MAY_BE_PACKED_GUARD) && tssa->vars[phi->ssa_var].alias == NO_ALIAS) {
+				uint32_t t0 = ssa_var_info[phi->sources[0]].type;
+				uint32_t t1 = ssa_var_info[phi->sources[1]].type;
+
+				if (((t0 | t1) & MAY_BE_ARRAY_KEY_ANY) == (t & MAY_BE_ARRAY_KEY_ANY)) {
+					if (!((t0 | t1) & MAY_BE_PACKED_GUARD)) {
+						ssa_var_info[phi->ssa_var].type = t & ~MAY_BE_PACKED_GUARD;
+					}
+				} else if ((t1 & MAY_BE_ARRAY_KEY_ANY) == (t & MAY_BE_ARRAY_KEY_ANY)) {
+					if (!(t1 & MAY_BE_PACKED_GUARD)) {
+						ssa_var_info[phi->ssa_var].type = t & ~MAY_BE_PACKED_GUARD;
+						ssa_var_info[phi->sources[0]].type =
+							(t0 & ~MAY_BE_ARRAY_KEY_ANY) | (t & MAY_BE_ARRAY_KEY_ANY) | MAY_BE_PACKED_GUARD;
 					}
 				}
 			}
@@ -3638,7 +3756,8 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 	zend_uchar res_type = IS_UNKNOWN;
 	const zend_op *opline, *orig_opline;
 	const zend_ssa_op *ssa_op, *orig_ssa_op;
-	int used_stack;
+	int checked_stack;
+	int peek_checked_stack;
 	uint32_t frame_flags = 0;
 
 	JIT_G(current_trace) = trace_buffer;
@@ -3652,7 +3771,6 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 	}
 
 	ssa_opcodes = ((zend_tssa*)ssa)->tssa_opcodes;
-	used_stack = ((zend_tssa*)ssa)->used_stack;
 
 	/* Register allocation */
 	if ((JIT_G(opt_flags) & (ZEND_JIT_REG_ALLOC_LOCAL|ZEND_JIT_REG_ALLOC_GLOBAL))
@@ -3666,6 +3784,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 	frame = JIT_G(current_frame);
 	top = zend_jit_trace_call_frame(frame, op_array);
 	TRACE_FRAME_INIT(frame, op_array, TRACE_FRAME_MASK_UNKNOWN_RETURN, -1);
+	frame->used_stack = checked_stack = peek_checked_stack = 0;
 	stack = frame->stack;
 	for (i = 0; i < op_array->last_var + op_array->T; i++) {
 		SET_STACK_TYPE(stack, i, IS_UNKNOWN, 1);
@@ -3708,8 +3827,10 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 		int last_var;
 		int parent_vars_count = 0;
 		zend_jit_trace_stack *parent_stack = NULL;
+		int used_stack = ((zend_tssa*)ssa)->used_stack;
 
 		if (used_stack > 0) {
+			peek_checked_stack = used_stack;
 			if (!zend_jit_stack_check(&dasm_state, opline, used_stack)) {
 				goto jit_failure;
 			}
@@ -3782,7 +3903,9 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 			 && (trace_buffer->stop == ZEND_JIT_TRACE_STOP_LOOP
 			  || trace_buffer->stop == ZEND_JIT_TRACE_STOP_RECURSIVE_CALL
 			  || trace_buffer->stop == ZEND_JIT_TRACE_STOP_RECURSIVE_RET)
-			 && ssa->vars[i].use_chain != -1) {
+			 && (ssa->vars[i].use_chain != -1
+			  || (ssa->vars[i].phi_use_chain
+			   && !(ssa->var_info[ssa->vars[i].phi_use_chain->ssa_var].type & MAY_BE_PACKED_GUARD)))) {
 				if (!zend_jit_packed_guard(&dasm_state, opline, EX_NUM_TO_VAR(i), info)) {
 					goto jit_failure;
 				}
@@ -4583,7 +4706,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 					case ZEND_INIT_FCALL_BY_NAME:
 					case ZEND_INIT_NS_FCALL_BY_NAME:
 						frame_flags = TRACE_FRAME_MASK_NESTED;
-						if (!zend_jit_init_fcall(&dasm_state, opline, op_array_ssa->cfg.map ? op_array_ssa->cfg.map[opline - op_array->opcodes] : -1, op_array, ssa, ssa_op, frame->call_level, p + 1, used_stack < 0)) {
+						if (!zend_jit_init_fcall(&dasm_state, opline, op_array_ssa->cfg.map ? op_array_ssa->cfg.map[opline - op_array->opcodes] : -1, op_array, ssa, ssa_op, frame->call_level, p + 1, peek_checked_stack - checked_stack)) {
 							goto jit_failure;
 						}
 						goto done;
@@ -5127,12 +5250,12 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							ssa->var_info[ssa_op->op1_use].type &= ~MAY_BE_PACKED_GUARD;
 						} else if ((op2_info & (MAY_BE_ANY|MAY_BE_UNDEF)) == MAY_BE_LONG
 								&& (op1_info & (MAY_BE_ANY|MAY_BE_UNDEF)) == MAY_BE_ARRAY
-								&& (op1_info & MAY_BE_ARRAY_PACKED)
-								&& (op1_info & MAY_BE_ARRAY_HASH)
+								&& MAY_BE_PACKED(op1_info)
+								&& MAY_BE_HASH(op1_info)
 								&& orig_op1_type != IS_UNKNOWN) {
 							op1_info |= MAY_BE_PACKED_GUARD;
 							if (orig_op1_type & IS_TRACE_PACKED) {
-								op1_info &= ~MAY_BE_ARRAY_HASH;
+								op1_info &= ~(MAY_BE_ARRAY_NUMERIC_HASH|MAY_BE_ARRAY_STRING_HASH);
 							} else {
 								op1_info &= ~MAY_BE_ARRAY_PACKED;
 							}
@@ -5270,12 +5393,12 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							ssa->var_info[ssa_op->op1_use].type &= ~MAY_BE_PACKED_GUARD;
 						} else if ((op2_info & (MAY_BE_ANY|MAY_BE_UNDEF)) == MAY_BE_LONG
 								&& (op1_info & (MAY_BE_ANY|MAY_BE_UNDEF)) == MAY_BE_ARRAY
-								&& (op1_info & MAY_BE_ARRAY_PACKED)
-								&& (op1_info & MAY_BE_ARRAY_HASH)
+								&& MAY_BE_PACKED(op1_info)
+								&& MAY_BE_HASH(op1_info)
 								&& orig_op1_type != IS_UNKNOWN) {
 							op1_info |= MAY_BE_PACKED_GUARD;
 							if (orig_op1_type & IS_TRACE_PACKED) {
-								op1_info &= ~MAY_BE_ARRAY_HASH;
+								op1_info &= ~(MAY_BE_ARRAY_NUMERIC_HASH|MAY_BE_ARRAY_STRING_HASH);
 							} else {
 								op1_info &= ~MAY_BE_ARRAY_PACKED;
 							}
@@ -5620,7 +5743,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 								op_array_ssa->cfg.map ? op_array_ssa->cfg.map[opline - op_array->opcodes] : -1,
 								op_array, ssa, ssa_op, frame->call_level,
 								op1_info, op1_addr, ce, ce_is_instanceof, delayed_fetch_this, op1_ce,
-								p + 1, used_stack < 0, polymorphic_side_trace)) {
+								p + 1, peek_checked_stack - checked_stack, polymorphic_side_trace)) {
 							goto jit_failure;
 						}
 						goto done;
@@ -5631,7 +5754,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						op2_info = OP2_INFO();
 						CHECK_OP2_TRACE_TYPE();
 						frame_flags = TRACE_FRAME_MASK_NESTED;
-						if (!zend_jit_init_closure_call(&dasm_state, opline, op_array_ssa->cfg.map ? op_array_ssa->cfg.map[opline - op_array->opcodes] : -1, op_array, ssa, ssa_op, frame->call_level, p + 1, used_stack < 0)) {
+						if (!zend_jit_init_closure_call(&dasm_state, opline, op_array_ssa->cfg.map ? op_array_ssa->cfg.map[opline - op_array->opcodes] : -1, op_array, ssa, ssa_op, frame->call_level, p + 1, peek_checked_stack - checked_stack)) {
 							goto jit_failure;
 						}
 						goto done;
@@ -5679,6 +5802,18 @@ generic_dynamic_call:
 							TRACE_FRAME_SET_UNKNOWN_NUM_ARGS(JIT_G(current_frame)->call);
 						}
 						break;
+					case ZEND_ROPE_INIT:
+					case ZEND_ROPE_ADD:
+					case ZEND_ROPE_END:
+						op2_info = OP2_INFO();
+						CHECK_OP2_TRACE_TYPE();
+						if ((op2_info & (MAY_BE_UNDEF|MAY_BE_ANY|MAY_BE_REF)) != MAY_BE_STRING) {
+							break;
+						}
+						if (!zend_jit_rope(&dasm_state, opline, op2_info)) {
+							goto jit_failure;
+						}
+						goto done;
 					default:
 						break;
 				}
@@ -6051,12 +6186,14 @@ done:
 			op_array_ssa = &jit_extension->func_info.ssa;
 			top = frame;
 			if (frame->prev) {
+				checked_stack -= frame->used_stack;
 				frame = frame->prev;
 				stack = frame->stack;
 				ZEND_ASSERT(&frame->func->op_array == op_array);
 			} else {
 				frame = zend_jit_trace_ret_frame(frame, op_array);
 				TRACE_FRAME_INIT(frame, op_array, TRACE_FRAME_MASK_UNKNOWN_RETURN, -1);
+				frame->used_stack = checked_stack = peek_checked_stack = 0;
 				stack = frame->stack;
 				if (JIT_G(opt_level) >= ZEND_JIT_LEVEL_INLINE) {
 					uint32_t j = ZEND_JIT_TRACE_GET_FIRST_SSA_VAR(p->info);
@@ -6205,10 +6342,22 @@ done:
 			}
 			if (p->info & ZEND_JIT_TRACE_FAKE_INIT_CALL) {
 				frame->call_level++;
+				call->used_stack = 0;
+			} else {
+				if (p->func) {
+					call->used_stack = zend_vm_calc_used_stack(init_opline->extended_value, (zend_function*)p->func);
+				} else {
+					call->used_stack = (ZEND_CALL_FRAME_SLOT + init_opline->extended_value) * sizeof(zval);
+				}
+				checked_stack += call->used_stack;
+				if (checked_stack > peek_checked_stack) {
+					peek_checked_stack = checked_stack;
+				}
 			}
 		} else if (p->op == ZEND_JIT_TRACE_DO_ICALL) {
 			call = frame->call;
 			if (call) {
+				checked_stack -= call->used_stack;
 				top = call;
 				frame->call = call->prev;
 			}

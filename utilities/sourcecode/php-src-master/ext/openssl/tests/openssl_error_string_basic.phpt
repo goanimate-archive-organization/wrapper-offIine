@@ -1,7 +1,11 @@
 --TEST--
-openssl_error_string() tests
+openssl_error_string() tests (OpenSSL < 3.0)
 --EXTENSIONS--
 openssl
+--SKIPIF--
+<?php
+if (OPENSSL_VERSION_NUMBER >= 0x30000000) die('skip For OpenSSL < 3.0');
+?>
 --FILE--
 <?php
 // helper function to check openssl errors

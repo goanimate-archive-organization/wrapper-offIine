@@ -56,6 +56,7 @@ interface DOMChildNode
     public function replaceWith(...$nodes): void;
 }
 
+/** @not-serializable */
 class DOMNode
 {
     /** @readonly */
@@ -155,6 +156,7 @@ class DOMNode
     public function replaceChild(DOMNode $node, DOMNode $child) {}
 }
 
+/** @not-serializable */
 class DOMNameSpaceNode
 {
     /** @readonly */
@@ -236,7 +238,6 @@ class DOMNodeList implements IteratorAggregate, Countable
 
 class DOMCharacterData extends DOMNode implements DOMChildNode
 {
-    /** @readonly */
     public string $data;
 
     /** @readonly */
@@ -283,7 +284,6 @@ class DOMAttr extends DOMNode
     /** @readonly */
     public bool $specified = true;
 
-    /** @readonly */
     public string $value;
 
     /** @readonly */
@@ -619,14 +619,23 @@ class DOMEntity extends DOMNode
     /** @readonly */
     public ?string $notationName;
 
-    /** @readonly */
-    public mixed $actualEncoding = null;
+    /**
+     * @readonly
+     * @deprecated
+     */
+    public ?string $actualEncoding = null;
 
-    /** @readonly */
-    public mixed $encoding = null;
+    /**
+     * @readonly
+     * @deprecated
+     */
+    public ?string $encoding = null;
 
-    /** @readonly */
-    public mixed $version = null;
+    /**
+     * @readonly
+     * @deprecated
+     */
+    public ?string $version = null;
 }
 
 class DOMEntityReference extends DOMNode
@@ -654,6 +663,7 @@ class DOMProcessingInstruction extends DOMNode
 }
 
 #ifdef LIBXML_XPATH_ENABLED
+/** @not-serializable */
 class DOMXPath
 {
     /** @readonly */

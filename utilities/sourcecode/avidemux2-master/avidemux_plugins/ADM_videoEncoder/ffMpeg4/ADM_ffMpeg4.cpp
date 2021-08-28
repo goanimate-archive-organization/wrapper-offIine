@@ -100,21 +100,27 @@ ADM_ffMpeg4Encoder::~ADM_ffMpeg4Encoder()
 */
 bool         ADM_ffMpeg4Encoder::encode (ADMBitstream * out)
 {
-int sz,q,r,gotData;
+int sz,q,r;
 again:
     sz=0;
     if(false==preEncode()) // Pop - out the frames stored in the queue due to B-frames
     {
         r=encodeWrapper(NULL,out);
+
+        if(encoderState == ADM_ENCODER_STATE_FLUSHED)
+        {
+            ADM_info("[ffMpeg4] End of stream.\n");
+            return false;
+        }
         if(r<0)
         {
             ADM_warning("[ffMpeg4] Error %d encoding video\n",r);
             return false;
         }
         sz=r;
+        if(!sz) return false;
         printf("[ffmpeg4] Popping delayed bframes (%d)\n",sz);
         goto link;
-        return false;
     }
     q=image->_Qp;
 
@@ -153,6 +159,11 @@ again:
 
     _frame->reordered_opaque=image->Pts;
     r=encodeWrapper(_frame,out);
+    if(encoderState == ADM_ENCODER_STATE_FLUSHED)
+    {
+        ADM_info("[ffMpeg4] End of stream.\n");
+        return false;
+    }
     if(r<0)
     {
         ADM_warning("[ffMpeg4] Error %d encoding video\n",r);
@@ -184,20 +195,20 @@ bool         ADM_ffMpeg4Encoder::isDualPass(void)
 bool         ffMpeg4Configure(void)
 {
 diaMenuEntry qzE[]={
-  {0,QT_TRANSLATE_NOOP("ffmpeg4","H.263")},
-  {1,QT_TRANSLATE_NOOP("ffmpeg4","MPEG")}
+  {0,QT_TRANSLATE_NOOP("ffmpeg4","H.263"),NULL},
+  {1,QT_TRANSLATE_NOOP("ffmpeg4","MPEG"),NULL}
 };
 
 diaMenuEntry rdE[]={
-  {0,QT_TRANSLATE_NOOP("ffmpeg4","MB comparison")},
-  {1,QT_TRANSLATE_NOOP("ffmpeg4","Fewest bits (vhq)")},
-  {2,QT_TRANSLATE_NOOP("ffmpeg4","Rate distortion")}
+  {0,QT_TRANSLATE_NOOP("ffmpeg4","MB comparison"),NULL},
+  {1,QT_TRANSLATE_NOOP("ffmpeg4","Fewest bits (vhq)"),NULL},
+  {2,QT_TRANSLATE_NOOP("ffmpeg4","Rate distortion"),NULL}
 };
 diaMenuEntry threads[]={
-  {0,QT_TRANSLATE_NOOP("ffmpeg4","One thread")},
-  {2,QT_TRANSLATE_NOOP("ffmpeg4","Two threads)")},
-  {3,QT_TRANSLATE_NOOP("ffmpeg4","Three threads")},
-  {99,QT_TRANSLATE_NOOP("ffmpeg4","Auto (#cpu)")}
+  {0,QT_TRANSLATE_NOOP("ffmpeg4","One thread"),NULL},
+  {2,QT_TRANSLATE_NOOP("ffmpeg4","Two threads)"),NULL},
+  {3,QT_TRANSLATE_NOOP("ffmpeg4","Three threads"),NULL},
+  {99,QT_TRANSLATE_NOOP("ffmpeg4","Auto (#cpu)"),NULL}
 };
 
 

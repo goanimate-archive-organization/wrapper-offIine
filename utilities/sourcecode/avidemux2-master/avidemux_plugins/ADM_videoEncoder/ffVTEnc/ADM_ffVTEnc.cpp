@@ -101,14 +101,16 @@ again:
     if(false==preEncode()) // Pop out the frames stored in the queue due to B-frames
     {
         sz=encodeWrapper(NULL,out);
-        if (sz<= 0)
+
+        if (sz == 0)
+            return false;
+        if (sz < 0)
         {
             ADM_info("[ffvtenc] Error %d encoding video\n",sz);
             return false;
         }
         ADM_info("[ffvtenc] Popping delayed bframes (%d)\n",sz);
         goto link;
-        return false;
     }
     q = image->_Qp;
 
@@ -152,9 +154,9 @@ bool ffVTEncConfigure(void)
     ffvtenc *conf=&VTEncSettings;
 
     diaMenuEntry vtProfile[]={
-        {FF_VT_PROFILE_BASELINE,QT_TRANSLATE_NOOP("ffvtenc","Baseline")},
-        {FF_VT_PROFILE_MAIN,QT_TRANSLATE_NOOP("ffvtenc","Main")},
-        {FF_VT_PROFILE_HIGH,QT_TRANSLATE_NOOP("ffvtenc","High")}
+        {FF_VT_PROFILE_BASELINE,QT_TRANSLATE_NOOP("ffvtenc","Baseline"),NULL},
+        {FF_VT_PROFILE_MAIN,QT_TRANSLATE_NOOP("ffvtenc","Main"),NULL},
+        {FF_VT_PROFILE_HIGH,QT_TRANSLATE_NOOP("ffvtenc","High"),NULL}
 };
 
 #define PX(x) &(conf->x)

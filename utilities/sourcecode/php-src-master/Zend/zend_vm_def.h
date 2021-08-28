@@ -407,6 +407,9 @@ ZEND_VM_HANDLER(8, ZEND_CONCAT, CONST|TMPVAR|CV, CONST|TMPVAR|CV, SPEC(NO_CONST_
 		    !ZSTR_IS_INTERNED(op1_str) && GC_REFCOUNT(op1_str) == 1) {
 		    size_t len = ZSTR_LEN(op1_str);
 
+			if (UNEXPECTED(len > ZSTR_MAX_LEN - ZSTR_LEN(op2_str))) {
+				zend_error_noreturn(E_ERROR, "Integer overflow in memory allocation");
+			}
 			str = zend_string_extend(op1_str, len + ZSTR_LEN(op2_str), 0);
 			memcpy(ZSTR_VAL(str) + len, ZSTR_VAL(op2_str), ZSTR_LEN(op2_str)+1);
 			ZVAL_NEW_STR(EX_VAR(opline->result.var), str);
@@ -1727,7 +1730,7 @@ ZEND_VM_C_LABEL(fetch_this):
 		}
 		if (type == BP_VAR_W) {
 			retval = zend_hash_add_new(target_symbol_table, name, &EG(uninitialized_zval));
-		} else if (type == BP_VAR_IS) {
+		} else if (type == BP_VAR_IS || type == BP_VAR_UNSET) {
 			retval = &EG(uninitialized_zval);
 		} else {
 			zend_error(E_WARNING, "Undefined %svariable $%s",
@@ -1747,7 +1750,7 @@ ZEND_VM_C_LABEL(fetch_this):
 			}
 			if (type == BP_VAR_W) {
 				ZVAL_NULL(retval);
-			} else if (type == BP_VAR_IS) {
+			} else if (type == BP_VAR_IS || type == BP_VAR_UNSET) {
 				retval = &EG(uninitialized_zval);
 			} else {
 				zend_error(E_WARNING, "Undefined %svariable $%s",

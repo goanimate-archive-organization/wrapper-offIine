@@ -33,7 +33,6 @@ struct php_user_filter_data {
 };
 
 /* to provide context for calling into the next filter from user-space */
-static int le_userfilters;
 static int le_bucket_brigade;
 static int le_bucket;
 
@@ -77,14 +76,6 @@ PHP_MINIT_FUNCTION(user_filters)
 {
 	/* init the filter class ancestor */
 	user_filter_class_entry = register_class_php_user_filter();
-
-	/* init the filter resource; it has no dtor, as streams will always clean it up
-	 * at the correct time */
-	le_userfilters = zend_register_list_destructors_ex(NULL, NULL, PHP_STREAM_FILTER_RES_NAME, 0);
-
-	if (le_userfilters == FAILURE) {
-		return FAILURE;
-	}
 
 	/* Filters will dispose of their brigades */
 	le_bucket_brigade = zend_register_list_destructors_ex(NULL, NULL, PHP_STREAM_BRIGADE_RES_NAME, module_number);
@@ -157,7 +148,6 @@ php_stream_filter_status_t userfilter_filter(
 	zval func_name;
 	zval retval;
 	zval args[4];
-	zend_string *propname;
 	int call_result;
 
 	/* the userfilter object probably doesn't exist anymore */
@@ -165,15 +155,12 @@ php_stream_filter_status_t userfilter_filter(
 		return ret;
 	}
 
-	if (!zend_hash_str_exists_ind(Z_OBJPROP_P(obj), "stream", sizeof("stream")-1)) {
-		zval tmp;
-
+	zval *stream_prop = zend_hash_str_find_ind(Z_OBJPROP_P(obj), "stream", sizeof("stream")-1);
+	if (stream_prop) {
 		/* Give the userfilter class a hook back to the stream */
-		php_stream_to_zval(stream, &tmp);
-		Z_ADDREF(tmp);
-		add_property_zval(obj, "stream", &tmp);
-		/* add_property_zval increments the refcount which is unwanted here */
-		zval_ptr_dtor(&tmp);
+		zval_ptr_dtor(stream_prop);
+		php_stream_to_zval(stream, stream_prop);
+		Z_ADDREF_P(stream_prop);
 	}
 
 	ZVAL_STRINGL(&func_name, "filter", sizeof("filter")-1);
@@ -232,9 +219,9 @@ php_stream_filter_status_t userfilter_filter(
 	/* filter resources are cleaned up by the stream destructor,
 	 * keeping a reference to the stream resource here would prevent it
 	 * from being destroyed properly */
-	propname = zend_string_init("stream", sizeof("stream")-1, 0);
-	Z_OBJ_HANDLER_P(obj, unset_property)(Z_OBJ_P(obj), propname, NULL);
-	zend_string_release_ex(propname, 0);
+	if (stream_prop) {
+		convert_to_null(stream_prop);
+	}
 
 	zval_ptr_dtor(&args[3]);
 	zval_ptr_dtor(&args[2]);
@@ -255,7 +242,7 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 {
 	struct php_user_filter_data *fdat = NULL;
 	php_stream_filter *filter;
-	zval obj, zfilter;
+	zval obj;
 	zval func_name;
 	zval retval;
 	size_t len;
@@ -360,12 +347,7 @@ static php_stream_filter *user_filter_factory_create(const char *filtername,
 		zval_ptr_dtor(&retval);
 	}
 
-	/* set the filter property, this will be used during cleanup */
-	ZVAL_RES(&zfilter, zend_register_resource(filter, le_userfilters));
 	ZVAL_OBJ(&filter->abstract, Z_OBJ(obj));
-	add_property_zval(&obj, "filter", &zfilter);
-	/* add_property_zval increments the refcount which is unwanted here */
-	zval_ptr_dtor(&zfilter);
 
 	return filter;
 }

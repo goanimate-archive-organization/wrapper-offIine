@@ -14,7 +14,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <algorithm> 
+#include <algorithm>
+#include <map>
 #include "ADM_cpp.h"
 #include "ADM_default.h"
 #include "A_functions.h"
@@ -129,31 +130,35 @@ bool ADM_Composer::checkForValidPts (_SEGMENT *seg)
             vid->dontTrustBFramePts=true;
         }else
         {
-            std::vector<uint64_t> ListOfDts; // future PTS values
-            std::vector<uint64_t> ListOfPts; // identify the frame for a PTS from above
             goToTimeVideo(from);
             vid->lastSentFrame=0;
-            uint64_t bfdelay=2*inc; // FIXME B-frame delay
+
+            if(false == ADM_verifyDts(hdr,inc))
+                return false;
+            if(false == setPtsEqualDts(hdr,inc))
+                return false;
+
+            std::map<uint64_t,uint32_t> timing;
+            std::vector<uint64_t> ListOfPts,ListOfDts;
+
             for(int i=0;i<totalFrames;i++)
             {
                 uint64_t pts,dts;
                 hdr->getPtsDts(i,&pts,&dts);
-                if(dts==ADM_NO_PTS)
-                {
-                    if(!i)
-                        dts=0;
-                    else
-                    {
-                        hdr->getPtsDts(i-1,&pts,&dts);
-                        dts+=inc;
-                    }
-                }
-                pts=dts;
-                hdr->setPtsDts(i,pts,dts);
+                timing.insert({dts,i});
             }
 
+            EditorCache *cache = vid->_videoCache;
+            ADM_assert(cache);
+            cache->flush();
+
+            bool interlaced = false; // when true and less than ~ 2/3 of frames produce pics => field-encoded
+            uint64_t bfdelay = 0;
+            std::map<uint64_t,uint32_t>::iterator it = timing.begin();
+
             DIA_workingBase *decoding=createWorking(QT_TRANSLATE_NOOP("ADM_Composer","Decoding video..."));
-            for(int i=0;i<totalFrames;i++)
+
+            while(!vid->decoder->endOfStreamReached())
             {
                 if(false==decoding->isAlive())
                 {
@@ -162,90 +167,137 @@ bool ADM_Composer::checkForValidPts (_SEGMENT *seg)
                     delete decoding;
                     return true;
                 }
-                decoding->update(i,totalFrames);
+                decoding->update(vid->lastSentFrame,totalFrames);
 
-                EditorCache *cache;
-                uint64_t pts,dts;
-                hdr->getPtsDts(i,&pts,&dts);
-                ListOfDts.push_back(dts);
-                //printf("adding %" PRIu64" ms to the list of DTS\n",dts/1000);
-
-                cache=vid->_videoCache;
                 ADMCompressedImage img;
-
-                img.data=compBuffer;
+                img.data = compBuffer;
                 img.cleanup(vid->lastSentFrame);
+                img.dataLength = 0;
 
-                uint32_t frame=vid->lastSentFrame;
-                vid->lastSentFrame++;
-                if(!hdr->getFrame(frame,&img))
+                if(!vid->decoder->getDrainingState())
                 {
-                    ADM_warning("getFrame failed for frame %" PRIu32"\n",frame);
-                    break;
-                }
-
-                ADMImage *pic;
-                pic=cache->getFreeImage(seg->_reference);
-                if(!decompressImage(pic,&img,seg->_reference))
-                {
-                    ADM_info("Decoding error for frame %" PRIu32"\n",frame);
-                }
-                if(dts!=ADM_NO_PTS && dts>vid->lastDecodedPts)
-                    vid->lastDecodedPts=dts;
-                pts=pic->Pts; // used only to match the decoded frame to its source
-                if(pts==ADM_NO_PTS)
-                    pts=vid->lastDecodedPts;
-                cache->invalidate(pic);
-                //printf("adding PTS %" PRIu64" ms to the list of reordered PTS\n",pts/1000);
-                ListOfPts.push_back(pts);
-            }
-            delete decoding;
-
-            uint32_t size=ListOfPts.size();
-            if(ListOfDts.size()<size)
-                size=ListOfDts.size();
-            for(uint32_t i=0; i<size; i++)
-            { // look up a nearby frame with matching DTS
-                uint64_t pts,dts;
-                int match=-1;
-                uint32_t lower=0;
-                if(i>16)
-                    lower=i-16;
-                uint32_t upper=size;
-                if(size-i>16)
-                    upper=i+16;
-                for(uint32_t j=lower;j<upper;j++)
-                {
-                    hdr->getPtsDts(j,&pts,&dts);
-                    if(dts==ADM_NO_PTS)
+                    if(!hdr->getFrame(vid->lastSentFrame,&img))
                     {
-                        //printf("skipping frame %d\n",(int)j);
+                        ADM_warning("getFrame failed for frame %" PRIu32"\n",vid->lastSentFrame);
+                        img.dataLength = 0;
+                        vid->decoder->setDrainingState(true);
+                    }else
+                    {
+                        vid->lastSentFrame++;
+                    }
+                }
+
+                ADMImage *pic = cache->getFreeImage(seg->_reference);
+                if(!pic)
+                {
+                    ADM_warning("Cannot find free image in cache, aborting PTS reconstruction.\n");
+                    rewind();
+                    delete decoding;
+                    return false;
+                }
+                if(false == decompressImage(pic,&img,seg->_reference))
+                {
+                    if(vid->decoder->keepFeeding())
+                    {
+                        //printf("[checkForValidPts] No pic for frame %u yet.\n",vid->lastSentFrame);
                         continue;
                     }
-                    if(dts==ListOfPts.at(i))
+                    if(vid->decoder->endOfStreamReached())
                     {
-                        match=j; // found the frame
-                        //printf("frame %d matches %d, dts=%" PRIu64" ms\n",(int)i,match,dts/1000);
+                        //printf("[checkForValidPts] End of stream\n");
                         break;
                     }
-                }
-                if(match==-1)
-                {
-                    ADM_warning("No match for PTS %" PRIu64" ms\n",ListOfPts.at(i)/1000);
+                    ADM_warning("Decoding error for frame %d\n",vid->lastSentFrame);
                     continue;
                 }
-                hdr->getPtsDts(match,&pts,&dts);
-                pts=ListOfDts.at(i);
-                hdr->setPtsDts(match,pts,dts);
+                if(pic->Pts == ADM_NO_PTS)
+                {
+                    //printf("[checkForValidPts] No PTS out of decoder, last frame: %d\n",vid->lastSentFrame);
+                    cache->invalidate(pic);
+                    continue;
+                }
+                uint64_t pts = pic->Pts; // used only to match the decoded frame to its source
+                if(pic->flags & AVI_FIELD_STRUCTURE)
+                    interlaced = true;
+                cache->invalidate(pic);
+
+                ListOfPts.push_back(pts);
+                ListOfDts.push_back(pts);
+            }
+            delete decoding;
+            decoding = NULL;
+
+            // invalidate pts in the index
+            it = timing.begin();
+            hdr->setPtsDts(0,0,it->first);
+            it++;
+            for(int i=1;i<totalFrames;i++)
+            {
+                if(it == timing.end())
+                    break;
+                hdr->setPtsDts(i,ADM_NO_PTS,it->first);
+                it++;
+            }
+            // now set pts for all frames which produced output
+            std::sort(ListOfDts.begin(),ListOfDts.end());
+            int nbValid = ListOfDts.size();
+            //printf("[checkForValidPts] We have %d pics out of %d frames.\n",nbValid,totalFrames);
+            if(interlaced && nbValid < totalFrames*2/3) // arbitrary threshold
+            {
+                ADM_info("Video seems to be field-encoded.\n");
+                vid->fieldEncoded = true;
+                inc *= 2;
+            }
+            {
+            int frame = 0;
+            for(std::vector<uint64_t>::iterator t = ListOfPts.begin(); t != ListOfPts.end(); t++)
+            {
+                if(frame >= nbValid)
+                    break;
+                it = timing.find(*t);
+                if(it == timing.end())
+                {
+                    ADM_warning("Timestamp %s not found!\n",ADM_us2plain(*t));
+                    continue;
+                }
+                uint64_t pts = ListOfDts.at(frame);
+                uint64_t dts = it->first;
+                // calculate B-frame delay
+                if(pts != ADM_NO_PTS && dts != ADM_NO_PTS && dts > pts && bfdelay < dts-pts)
+                    bfdelay = dts-pts;
+#if 0
+                printf("adding entry %d for frame %u with PTS %s ",frame,it->second,ADM_us2plain(pts));
+                printf("DTS %s\n",ADM_us2plain(dts));
+#endif
+                hdr->setPtsDts(it->second,pts,dts);
+                frame++;
+            }
             }
 
+            ADM_info("B-frame delay set to %" PRIu64" ms\n",bfdelay/1000);
+
+            uint64_t maxPts = ADM_NO_PTS;
             for(int i=0;i<totalFrames;i++)
             { // add B-frame delay
                 uint64_t pts,dts;
                 hdr->getPtsDts(i,&pts,&dts);
-                if(pts!=ADM_NO_PTS)
-                    pts+=bfdelay;
+                if(pts == ADM_NO_PTS)
+                    continue;
+                pts += bfdelay;
+                if(maxPts == ADM_NO_PTS || maxPts < pts)
+                    maxPts = pts;
                 hdr->setPtsDts(i,pts,dts);
+            }
+            // update segment duration
+            if(maxPts != ADM_NO_PTS)
+            {
+                maxPts += inc;
+                if(maxPts > seg->_durationUs)
+                {
+                    printf("[checkForValidPts] Increasing segment duration from %s \n",ADM_us2plain(seg->_durationUs));
+                    printf("to %s\n",ADM_us2plain(maxPts));
+                    seg->_durationUs = maxPts;
+                }
             }
 
             _segments.updateRefVideo();
