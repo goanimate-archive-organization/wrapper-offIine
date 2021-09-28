@@ -640,7 +640,7 @@
         <selection type="facedecoration" state_id="default"/>
         <selection type="faceshape" state_id="default"/>
         <selection type="glasses" state_id="default"/>
-        <selection type="hair" state_id="default"/>
+        <selection type="hair" state_d="default"/>
         <selection type="mouth" state_id="sad"/>
         <selection type="mustache" state_id="default"/>
         <selection type="nose" state_id="default"/>
@@ -827,7 +827,7 @@
         <selection type="mustache" state_id="default"/>
         <selection type="nose" state_id="default"/>
     </facial>
-	<facial id="head_cry_d" name="Crying d" enable="Y">
+    <facial id="head_cry_d" name="Crying d" enable="Y">
 		<selection type="beard" state_id="default"/>
 		<selection type="ear" state_id="default"/>
 		<selection type="eye" state_id="cry"/>
@@ -2628,24 +2628,6 @@
             <selection type="skeleton" state_id="sad"/>
             <selection type="upper_body" state_id="sad"/>
         </action>
-        <action id="talk_phone" name="Talk on phone" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="talk_on_phone"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
-        <action id="talk_phone_legs_bent" name="Talk on phone - legs bent" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="laugh"/>
-            <selection type="skeleton" state_id="talk_on_phone"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
-        <action id="talk_phone_twitch" name="Talk on phone - twitch legs" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="excited"/>
-            <selection type="skeleton" state_id="talk_on_phone"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
         <action id="dance" name="Dance" loop="Y" totalframe="23" enable="Y" category="dancing" is_motion="N">
             <selection type="facial" facial_id="head_happy"/>
             <selection type="lower_body" state_id="dance"/>
@@ -3036,12 +3018,6 @@
             <selection type="skeleton" state_id="lie_down"/>
             <selection type="upper_body" state_id="lie_down"/>
         </action>
-        <action id="kneel_phone" name="Kneel down - talk on phone" loop="Y" totalframe="1" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="kneel_down"/>
-            <selection type="skeleton" state_id="stand"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
         <action id="bend" name="Bend" loop="Y" totalframe="80" enable="Y" category="poses" is_motion="N">
             <selection type="facial" facial_id="head_neutral"/>
             <selection type="lower_body" state_id="default"/>
@@ -3139,19 +3115,19 @@
             <selection type="upper_body" state_id="kneel_down"/>
         </action>
         <action id="disagree" name="Disagree" loop="Y" totalframe="80" enable="Y" category="emotion" is_motion="N">
-            <selection type="facial" facial_id="head_disgusted"/>
+            <selection type="facial" facial_id="head_angry"/>
             <selection type="lower_body" state_id="default"/>
             <selection type="skeleton" state_id="disagree"/>
             <selection type="upper_body" state_id="default"/>
         </action>
         <action id="sit_disagree" name="Sit - disagree" loop="Y" totalframe="80" enable="Y" category="emotion" is_motion="N">
-            <selection type="facial" facial_id="head_disgusted"/>
+            <selection type="facial" facial_id="head_angry"/>
             <selection type="lower_body" state_id="sit"/>
             <selection type="skeleton" state_id="disagree"/>
             <selection type="upper_body" state_id="sit"/>
         </action>
         <action id="kneel_disagree" name="Kneel down - disagree" loop="Y" totalframe="80" enable="Y" category="emotion" is_motion="N">
-            <selection type="facial" facial_id="head_disgusted"/>
+            <selection type="facial" facial_id="head_angry"/>
             <selection type="lower_body" state_id="kneel_down"/>
             <selection type="skeleton" state_id="disagree"/>
             <selection type="upper_body" state_id="kneel_down"/>
@@ -3161,18 +3137,6 @@
             <selection type="lower_body" state_id="laugh"/>
             <selection type="skeleton" state_id="excited"/>
             <selection type="upper_body" state_id="excited"/>
-        </action>
-        <action id="furious_kenny_animate" name="Furious - Kenny Animate's version" loop="Y" totalframe="80" enable="Y" category="emotion" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="laugh"/>
-            <selection type="skeleton" state_id="bend"/>
-            <selection type="upper_body" state_id="excited"/>
-        </action>
-        <action id="use_item" name="Use item" loop="Y" totalframe="80" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="laugh"/>
-            <selection type="skeleton" state_id="bend"/>
-            <selection type="upper_body" state_id="point_at"/>
         </action>
         <action id="twitch" name="Twitch legs" loop="Y" totalframe="80" enable="Y" category="poses" is_motion="N">
             <selection type="facial" facial_id="head_neutral"/>
@@ -3438,30 +3402,6 @@
             <selection type="skeleton" state_id="turn_head"/>
             <selection type="upper_body" state_id="point_at"/>
         </action>
-        <action id="head_beat_box" name="Head beat box" loop="Y" totalframe="60" enable="Y" category="Random" is_motion="N">
-            <selection type="facial" facial_id="head_noticed"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="excited"/>
-            <selection type="upper_body" state_id="default"/>
-        </action>
-        <action id="head_explode" name="Head explosion" loop="Y" totalframe="60" enable="Y" category="Random" is_motion="N">
-            <selection type="facial" facial_id="head_shocked"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="explode"/>
-            <selection type="upper_body" state_id="default"/>
-        </action>
-        <action id="hold_head" name="Hold head" loop="Y" totalframe="60" enable="Y" category="Random" is_motion="N">
-            <selection type="facial" facial_id="head_asleep"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="sad"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
-        <action id="head_come_off" name="Head come off" loop="Y" totalframe="60" enable="Y" category="Random" is_motion="N">
-            <selection type="facial" facial_id="head_asleep"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="fearful"/>
-            <selection type="upper_body" state_id="default"/>
-        </action>
         <action id="throw_tantrum" name="Throw tantrum" loop="Y" totalframe="60" enable="Y" category="emotion" is_motion="N">
             <selection type="facial" facial_id="head_cry"/>
             <selection type="lower_body" state_id="default"/>
@@ -3479,12 +3419,6 @@
             <selection type="lower_body" state_id="run"/>
             <selection type="skeleton" state_id="lie_down"/>
             <selection type="upper_body" state_id="laugh"/>
-        </action>
-        <action id="talk_phone_body_still" name="Talk on phone - body still" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="stand"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
         </action>
         <action id="look_slightly_up" name="Look slightly up" loop="Y" totalframe="1" enable="Y" category="poses" is_motion="N">
             <selection type="facial" facial_id="head_neutral"/>
@@ -3594,54 +3528,13 @@
             <selection type="skeleton" state_id="hunch"/>
             <selection type="upper_body" state_id="default"/>
         </action>
-        <action id="sit_phone" name="Sit - talk on phone" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="sit"/>
-            <selection type="skeleton" state_id="talk_on_phone"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
-        <action id="sit_still_phone" name="Sit still - talk on phone" loop="Y" totalframe="115" enable="Y" category="mobile devices" is_motion="N">
-            <selection type="facial" facial_id="head_talk_a"/>
-            <selection type="lower_body" state_id="sit"/>
-            <selection type="skeleton" state_id="sit"/>
-            <selection type="upper_body" state_id="talk_on_phone"/>
-        </action>
         <action id="walk_phone" name="Walk - talk on phone" loop="Y" totalframe="115" enable="Y" category="travelling" is_motion="Y">
             <selection type="facial" facial_id="head_neutral"/>
             <selection type="lower_body" state_id="walk"/>
             <selection type="skeleton" state_id="walk"/>
             <selection type="upper_body" state_id="talk_on_phone"/>
         </action>
-        <action id="punch" name="Punch" loop="Y" totalframe="20" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="punch"/>
-            <selection type="upper_body" state_id="run"/>
-        </action>
-        <action id="punch_move" name="Punch - moving" loop="Y" totalframe="20" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="punch2"/>
-            <selection type="upper_body" state_id="run"/>
-        </action>
-        <action id="collapse" name="Collapse" loop="Y" totalframe="20" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_shocked"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="collapse"/>
             <selection type="upper_body" state_id="default"/>
-        </action>
-        <action id="double_kick" name="Double kick" loop="Y" totalframe="20" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="double_kick"/>
-            <selection type="upper_body" state_id="default"/>
-        </action>
-        <action id="get_beheaded" name="Get beheaded" loop="Y" totalframe="20" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_shocked"/>
-            <selection type="lower_body" state_id="default"/>
-            <selection type="skeleton" state_id="get_beheaded"/>
-            <selection type="upper_body" state_id="default"/>
-        </action>
         <action id="dance_b" name="Dance b" loop="Y" totalframe="23" enable="Y" category="dancing" is_motion="N">
             <selection type="facial" facial_id="head_happy"/>
             <selection type="lower_body" state_id="laugh"/>
@@ -3660,21 +3553,9 @@
             <selection type="skeleton" state_id="run"/>
             <selection type="upper_body" state_id="run"/>
         </action>
-        <action id="punch_twitch" name="Punch - twitch legs" loop="Y" totalframe="23" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="excited"/>
-            <selection type="skeleton" state_id="punch"/>
-            <selection type="upper_body" state_id="run"/>
-        </action>
         <action id="dance_b_move" name="Dance b - moving" loop="Y" totalframe="23" enable="Y" category="dancing" is_motion="N">
             <selection type="facial" facial_id="head_happy"/>
             <selection type="lower_body" state_id="laugh"/>
-            <selection type="skeleton" state_id="punch2"/>
-            <selection type="upper_body" state_id="run"/>
-        </action>
-        <action id="punch_twitch_move" name="Punch - twitch legs - move" loop="Y" totalframe="23" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="excited"/>
             <selection type="skeleton" state_id="punch2"/>
             <selection type="upper_body" state_id="run"/>
         </action>
@@ -3773,12 +3654,6 @@
             <selection type="lower_body" state_id="kneel_down"/>
             <selection type="skeleton" state_id="fight"/>
             <selection type="upper_body" state_id="dance"/>
-        </action>
-        <action id="kneel_punch" name="Kneel down - punch" loop="Y" totalframe="23" enable="Y" category="fighting" is_motion="N">
-            <selection type="facial" facial_id="head_angry"/>
-            <selection type="lower_body" state_id="kneel_down"/>
-            <selection type="skeleton" state_id="punch"/>
-            <selection type="upper_body" state_id="run"/>
         </action>
         <action id="faint" name="Faint" loop="Y" totalframe="23" enable="Y" category="daily life" is_motion="N">
             <selection type="facial" facial_id="head_sick"/>
@@ -6449,7 +6324,6 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
-            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -6469,7 +6343,6 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
-            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -6489,7 +6362,6 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
-            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -6623,6 +6495,7 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
+            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -6642,6 +6515,7 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
+            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -6661,6 +6535,7 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
+            <state id="ready_to_fight" filename="ready_to_fight.swf"/>
             <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
@@ -20407,7 +20282,7 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
-            <state id="run" filename="run.swf"/> 
+            <state id="run" filename="run.swf"/>
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
             <state id="talk" filename="talk.swf"/>
@@ -20655,7 +20530,7 @@
             <state id="laugh" filename="laugh.swf"/>
             <state id="lie_down" filename="lie_down.swf"/>
             <state id="point_at" filename="point_at.swf"/>
-            <state id="run" filename="run.swf"/>
+            <state id="run" filename="run.swf"/> 
             <state id="sad" filename="sad.swf"/>
             <state id="sit" filename="sit.swf"/>
             <state id="talk" filename="talk.swf"/>
