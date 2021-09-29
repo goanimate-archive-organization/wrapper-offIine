@@ -414,6 +414,10 @@ static void ReportFatalException(Environment* env,
     }
   }
 
+  if (env->options()->extra_info_on_fatal_exception) {
+    FPrintF(stderr, "\nNode.js %s\n", NODE_VERSION);
+  }
+
   fflush(stderr);
 }
 
@@ -430,7 +434,7 @@ void OnFatalError(const char* location, const char* message) {
     FPrintF(stderr, "FATAL ERROR: %s\n", message);
   }
 
-  Isolate* isolate = Isolate::GetCurrent();
+  Isolate* isolate = Isolate::TryGetCurrent();
   Environment* env = nullptr;
   if (isolate != nullptr) {
     env = Environment::GetCurrent(isolate);

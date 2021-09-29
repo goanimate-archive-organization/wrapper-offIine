@@ -385,9 +385,20 @@ static av_cold int codecctl_int(AVCodecContext *avctx,
         snprintf(buf, sizeof(buf), "Failed to set %s codec control",
                  ctlidstr[id]);
         log_encoder_error(avctx, buf);
+        return AVERROR(EINVAL);
     }
 
-    return res == VPX_CODEC_OK ? 0 : AVERROR(EINVAL);
+    if (ctx->is_alpha) {
+        int res_alpha = vpx_codec_control(&ctx->encoder_alpha, id, val);
+        if (res_alpha != VPX_CODEC_OK) {
+            snprintf(buf, sizeof(buf), "Failed to set %s alpha codec control",
+                     ctlidstr[id]);
+            log_encoder_error(avctx, buf);
+            return AVERROR(EINVAL);
+        }
+    }
+
+    return 0;
 }
 
 #if VPX_ENCODER_ABI_VERSION >= 12
@@ -407,9 +418,20 @@ static av_cold int codecctl_intp(AVCodecContext *avctx,
         snprintf(buf, sizeof(buf), "Failed to set %s codec control",
                  ctlidstr[id]);
         log_encoder_error(avctx, buf);
+        return AVERROR(EINVAL);
     }
 
-    return res == VPX_CODEC_OK ? 0 : AVERROR(EINVAL);
+    if (ctx->is_alpha) {
+        int res_alpha = vpx_codec_control(&ctx->encoder_alpha, id, val);
+        if (res_alpha != VPX_CODEC_OK) {
+            snprintf(buf, sizeof(buf), "Failed to set %s alpha codec control",
+                     ctlidstr[id]);
+            log_encoder_error(avctx, buf);
+            return AVERROR(EINVAL);
+        }
+    }
+
+    return 0;
 }
 #endif
 
@@ -1470,7 +1492,7 @@ static int set_roi_map(AVCodecContext *avctx, const AVFrameSideData *sd, int fra
 
     roi_map->rows = (frame_height + block_size - 1) / block_size;
     roi_map->cols = (frame_width  + block_size - 1) / block_size;
-    roi_map->roi_map = av_mallocz_array(roi_map->rows * roi_map->cols, sizeof(*roi_map->roi_map));
+    roi_map->roi_map = av_calloc(roi_map->rows * roi_map->cols, sizeof(*roi_map->roi_map));
     if (!roi_map->roi_map) {
         av_log(avctx, AV_LOG_ERROR, "roi_map alloc failed.\n");
         return AVERROR(ENOMEM);

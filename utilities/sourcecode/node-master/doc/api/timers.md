@@ -72,6 +72,17 @@ timer is active. Each of the `Timeout` objects returned by these functions
 export both `timeout.ref()` and `timeout.unref()` functions that can be used to
 control this default behavior.
 
+### `timeout.close()`
+<!-- YAML
+added: v0.9.1
+-->
+
+> Stability: 3 - Legacy: Use [`clearTimeout()`][] instead.
+
+* Returns: {Timeout} a reference to `timeout`
+
+Cancels the timeout.
+
 ### `timeout.hasRef()`
 <!-- YAML
 added: v11.0.0
@@ -443,16 +454,16 @@ const interval = 100;
 ```
 
 [Event Loop]: https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/#setimmediate-vs-settimeout
-[`AbortController`]: globals.md#globals_class_abortcontroller
-[`TypeError`]: errors.md#errors_class_typeerror
-[`clearImmediate()`]: #timers_clearimmediate_immediate
-[`clearInterval()`]: #timers_clearinterval_timeout
-[`clearTimeout()`]: #timers_cleartimeout_timeout
-[`setImmediate()`]: #timers_setimmediate_callback_args
-[`setInterval()`]: #timers_setinterval_callback_delay_args
-[`setTimeout()`]: #timers_settimeout_callback_delay_args
-[`timersPromises.setImmediate()`]: #timers_timerspromises_setimmediate_value_options
-[`timersPromises.setInterval()`]: #timers_timerspromises_setinterval_delay_value_options
-[`timersPromises.setTimeout()`]: #timers_timerspromises_settimeout_delay_value_options
+[`AbortController`]: globals.md#class-abortcontroller
+[`TypeError`]: errors.md#class-typeerror
+[`clearImmediate()`]: #clearimmediateimmediate
+[`clearInterval()`]: #clearintervaltimeout
+[`clearTimeout()`]: #cleartimeouttimeout
+[`setImmediate()`]: #setimmediatecallback-args
+[`setInterval()`]: #setintervalcallback-delay-args
+[`setTimeout()`]: #settimeoutcallback-delay-args
+[`timersPromises.setImmediate()`]: #timerspromisessetimmediatevalue-options
+[`timersPromises.setInterval()`]: #timerspromisessetintervaldelay-value-options
+[`timersPromises.setTimeout()`]: #timerspromisessettimeoutdelay-value-options
 [`worker_threads`]: worker_threads.md
-[primitive]: #timers_timeout_symbol_toprimitive
+[primitive]: #timeoutsymboltoprimitive

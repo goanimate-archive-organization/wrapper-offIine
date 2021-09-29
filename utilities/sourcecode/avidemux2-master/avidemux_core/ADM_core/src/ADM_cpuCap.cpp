@@ -117,14 +117,18 @@ skipIt:
   #define CHECK(x) if (myCpuCaps & ADM_CPUCAP_##x) { printf("\t\t"#x" detected"); \
                        if (!(myCpuMask & ADM_CPUCAP_##x)) printf(", but disabled"); \
                        printf("\n"); }
-      CHECK(MMX);
-      CHECK(3DNOW);
-      CHECK(3DNOWEXT);
-      CHECK(MMXEXT);
-      CHECK(SSE);
-      CHECK(SSE2);
-      CHECK(SSE3);
-      CHECK(SSSE3);
+    CHECK(MMX)
+    CHECK(3DNOW)
+    CHECK(3DNOWEXT)
+    CHECK(MMXEXT)
+    CHECK(SSE)
+    CHECK(SSE2)
+    CHECK(SSE3)
+    CHECK(SSSE3)
+    CHECK(SSE4)
+    CHECK(SSE42)
+    CHECK(AVX)
+    CHECK(AVX2)
 #endif // X86
     ADM_info("[CpuCaps] End of CPU capabilities check (cpuCaps: 0x%08x, cpuMask: 0x%08x)\n",myCpuCaps,myCpuMask);
     return ;
@@ -205,6 +209,8 @@ bool     CpuCaps::setMask(uint32_t mask)
 
     int lavCpuMask=Cpu2Lav(myCpuMask);
     //av_set_cpu_flags_mask(lavCpuMask); deprecated!
+    lavCpuMask &= av_get_cpu_flags();
+    ADM_info("[CpuCaps] Forcing lav cpu flags 0x%08x\n",lavCpuMask);
     av_force_cpu_flags(lavCpuMask);
 
     return true;
@@ -217,6 +223,13 @@ bool     CpuCaps::setMask(uint32_t mask)
 uint32_t     CpuCaps::getMask( )
 {
     return myCpuMask;
+}
+/**
+ * \fn getCaps
+ */
+uint32_t CpuCaps::getCaps(void)
+{
+    return myCpuCaps;
 }
 extern "C"
 {

@@ -274,7 +274,7 @@ is similar to [`window.performance.toJSON`][] in browsers.
 added: v8.5.0
 -->
 
-### `performanceEntry.details`
+### `performanceEntry.detail`
 <!-- YAML
 added: v16.0.0
 -->
@@ -382,7 +382,7 @@ Performance Entry.
 
 ### Garbage Collection ('gc') Details
 
-When `performanceEntry.type` is equal to `'gc'`, the `performanceEntry.details`
+When `performanceEntry.type` is equal to `'gc'`, the `performanceEntry.detail`
 property will be an {Object} with two properties:
 
 * `kind` {number} One of:
@@ -402,10 +402,10 @@ property will be an {Object} with two properties:
 ### HTTP/2 ('http2') Details
 
 When `performanceEntry.type` is equal to `'http2'`, the
-`performanceEntry.details` property will be an {Object} containing
+`performanceEntry.detail` property will be an {Object} containing
 additional performance information.
 
-If `performanceEntry.name` is equal to `Http2Stream`, the `details`
+If `performanceEntry.name` is equal to `Http2Stream`, the `detail`
 will contain the following properties:
 
 * `bytesRead` {number} The number of `DATA` frame bytes received for this
@@ -420,7 +420,7 @@ will contain the following properties:
 * `timeToFirstHeader` {number} The number of milliseconds elapsed between the
   `PerformanceEntry` `startTime` and the reception of the first header.
 
-If `performanceEntry.name` is equal to `Http2Session`, the `details` will
+If `performanceEntry.name` is equal to `Http2Session`, the `detail` will
 contain the following properties:
 
 * `bytesRead` {number} The number of bytes received for this `Http2Session`.
@@ -443,7 +443,7 @@ contain the following properties:
 ### Timerify ('function') Details
 
 When `performanceEntry.type` is equal to `'function'`, the
-`performanceEntry.details` property will be an {Array} listing
+`performanceEntry.detail` property will be an {Array} listing
 the input arguments to the timed function.
 
 ## Class: `PerformanceNodeTiming`
@@ -776,7 +776,9 @@ performance.mark('meow');
 
 ## `perf_hooks.createHistogram([options])`
 <!-- YAML
-added: v15.9.0
+added:
+  - v15.9.0
+  - v14.18.0
 -->
 
 * `options` {Object}
@@ -935,19 +937,25 @@ implement the `enable()` and `disable()` methods.
 
 ## Class: `RecordableHistogram extends Histogram`
 <!-- YAML
-added: v15.9.0
+added:
+  - v15.9.0
+  - v14.18.0
 -->
 
 ### `histogram.record(val)`
 <!-- YAML
-added: v15.9.0
+added:
+  - v15.9.0
+  - v14.18.0
 -->
 
 * `val` {number|bigint} The amount to record in the histogram.
 
 ### `histogram.recordDelta()`
 <!-- YAML
-added: v15.9.0
+added:
+  - v15.9.0
+  - v14.18.0
 -->
 
 Calculates the amount of time (in nanoseconds) that has passed since the
@@ -1036,10 +1044,10 @@ require('some-module');
 [Performance Timeline]: https://w3c.github.io/performance-timeline/
 [User Timing]: https://www.w3.org/TR/user-timing/
 [Web Performance APIs]: https://w3c.github.io/perf-timing-primer/
-[Worker threads]: worker_threads.md#worker_threads_worker_threads
-[`'exit'`]: process.md#process_event_exit
-[`child_process.spawnSync()`]: child_process.md#child_process_child_process_spawnsync_command_args_options
-[`process.hrtime()`]: process.md#process_process_hrtime_time
+[Worker threads]: worker_threads.md#worker-threads
+[`'exit'`]: process.md#event-exit
+[`child_process.spawnSync()`]: child_process.md#child_processspawnsynccommand-args-options
+[`process.hrtime()`]: process.md#processhrtimetime
 [`timeOrigin`]: https://w3c.github.io/hr-time/#dom-performance-timeorigin
 [`window.performance.toJSON`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/toJSON
 [`window.performance`]: https://developer.mozilla.org/en-US/docs/Web/API/Window/performance

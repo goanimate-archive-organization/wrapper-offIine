@@ -12,7 +12,6 @@
 #include "src/numbers/conversions.h"
 #include "src/objects/bigint.h"
 #include "src/objects/compressed-slots.h"
-#include "src/objects/heap-number-inl.h"
 #include "src/objects/map.h"
 #include "src/objects/maybe-object-inl.h"
 #include "src/objects/objects-inl.h"
@@ -85,7 +84,7 @@ bool FixedArray::is_the_hole(Isolate* isolate, int index) {
   return get(isolate, index).IsTheHole(isolate);
 }
 
-#if !defined(_WIN32) || defined(_WIN64)
+#if !defined(_WIN32) || (defined(_WIN64) && _MSC_VER < 1930 && __cplusplus < 201703L)
 void FixedArray::set(int index, Smi value) {
   DCHECK_NE(map(), GetReadOnlyRoots().fixed_cow_array_map());
   DCHECK_LT(static_cast<unsigned>(index), static_cast<unsigned>(length()));
@@ -536,6 +535,10 @@ void ArrayList::Set(int index, Object obj, WriteBarrierMode mode) {
   FixedArray::cast(*this).set(kFirstIndex + index, obj, mode);
 }
 
+void ArrayList::Set(int index, Smi value) {
+  DCHECK(Object(value).IsSmi());
+  Set(index, value, SKIP_WRITE_BARRIER);
+}
 void ArrayList::Clear(int index, Object undefined) {
   DCHECK(undefined.IsUndefined());
   FixedArray::cast(*this).set(kFirstIndex + index, undefined,
@@ -558,14 +561,14 @@ void ByteArray::copy_in(int index, const byte* buffer, int length) {
   DCHECK(index >= 0 && length >= 0 && length <= kMaxInt - index &&
          index + length <= this->length());
   Address dst_addr = field_address(kHeaderSize + index * kCharSize);
-  base::Memcpy(reinterpret_cast<void*>(dst_addr), buffer, length);
+  memcpy(reinterpret_cast<void*>(dst_addr), buffer, length);
 }
 
 void ByteArray::copy_out(int index, byte* buffer, int length) {
   DCHECK(index >= 0 && length >= 0 && length <= kMaxInt - index &&
          index + length <= this->length());
   Address src_addr = field_address(kHeaderSize + index * kCharSize);
-  base::Memcpy(buffer, reinterpret_cast<void*>(src_addr), length);
+  memcpy(buffer, reinterpret_cast<void*>(src_addr), length);
 }
 
 int ByteArray::get_int(int index) const {

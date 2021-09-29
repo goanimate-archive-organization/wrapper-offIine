@@ -1626,9 +1626,7 @@ static int curl_debug(CURL *cp, curl_infotype type, char *buf, size_t buf_len, v
 		if (ch->header.str) {
 			zend_string_release_ex(ch->header.str, 0);
 		}
-		if (buf_len > 0) {
-			ch->header.str = zend_string_init(buf, buf_len, 0);
-		}
+		ch->header.str = zend_string_init(buf, buf_len, 0);
 	}
 
 	return 0;
@@ -1914,6 +1912,7 @@ void _php_setup_easy_copy_handlers(php_curl *ch, php_curl *source)
 	curl_easy_setopt(ch->cp, CURLOPT_FILE,              (void *) ch);
 	curl_easy_setopt(ch->cp, CURLOPT_INFILE,            (void *) ch);
 	curl_easy_setopt(ch->cp, CURLOPT_WRITEHEADER,       (void *) ch);
+	curl_easy_setopt(ch->cp, CURLOPT_DEBUGDATA,         (void *) ch);
 
 	if (source->handlers.progress) {
 		ch->handlers.progress = ecalloc(1, sizeof(php_curl_callback));

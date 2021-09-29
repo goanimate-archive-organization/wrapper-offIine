@@ -166,8 +166,9 @@ static int wav_probe(const AVProbeData *p)
 static void handle_stream_probing(AVStream *st)
 {
     if (st->codecpar->codec_id == AV_CODEC_ID_PCM_S16LE) {
-        st->internal->request_probe = AVPROBE_SCORE_EXTENSION;
-        st->internal->probe_packets = FFMIN(st->internal->probe_packets, 32);
+        FFStream *const sti = ffstream(st);
+        sti->request_probe = AVPROBE_SCORE_EXTENSION;
+        sti->probe_packets = FFMIN(sti->probe_packets, 32);
     }
 }
 
@@ -183,7 +184,7 @@ static int wav_parse_fmt_tag(AVFormatContext *s, int64_t size, AVStream *st)
         return ret;
     handle_stream_probing(st);
 
-    st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
 
@@ -200,7 +201,7 @@ static int wav_parse_xma2_tag(AVFormatContext *s, int64_t size, AVStream *st)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_XMA2;
-    st->internal->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     version = avio_r8(pb);
     if (version != 3 && version != 4)
@@ -549,7 +550,7 @@ static int wav_read_header(AVFormatContext *s)
         case MKTAG('I', 'D', '3', ' '):
         case MKTAG('i', 'd', '3', ' '): {
             ID3v2ExtraMeta *id3v2_extra_meta;
-            ff_id3v2_read_dict(pb, &s->internal->id3v2_meta, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta);
+            ff_id3v2_read_dict(pb, &ffformatcontext(s)->id3v2_meta, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta);
             if (id3v2_extra_meta) {
                 ff_id3v2_parse_apic(s, id3v2_extra_meta);
                 ff_id3v2_parse_chapters(s, id3v2_extra_meta);
@@ -702,8 +703,8 @@ static int wav_read_packet(AVFormatContext *s, AVPacket *pkt)
         int64_t audio_dts, video_dts;
         AVStream *vst = wav->vst;
 smv_retry:
-        audio_dts = (int32_t)st->internal->cur_dts;
-        video_dts = (int32_t)vst->internal->cur_dts;
+        audio_dts = (int32_t)ffstream( st)->cur_dts;
+        video_dts = (int32_t)ffstream(vst)->cur_dts;
 
         if (audio_dts != AV_NOPTS_VALUE && video_dts != AV_NOPTS_VALUE) {
             /*We always return a video frame first to get the pixel format first*/
@@ -950,7 +951,7 @@ static int w64_read_header(AVFormatContext *s)
     ff_metadata_conv_ctx(s, NULL, ff_riff_info_conv);
 
     handle_stream_probing(st);
-    st->internal->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     avio_seek(pb, data_ofs, SEEK_SET);
 

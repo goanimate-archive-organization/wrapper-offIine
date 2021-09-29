@@ -299,8 +299,7 @@ function isStringOrBuffer(val) {
 }
 
 function parseKeyEncoding(enc, keyType, isPublic, objName) {
-  if (enc === null || typeof enc !== 'object')
-    throw new ERR_INVALID_ARG_TYPE('options', 'object', enc);
+  validateObject(enc, 'options');
 
   const isInput = keyType === undefined;
 
@@ -436,16 +435,10 @@ function getKeyObjectHandleFromJwk(key, ctx) {
     }
 
     const handle = new KeyObjectHandle();
-    if (isPublic) {
-      handle.initEDRaw(
-        `NODE-${key.crv.toUpperCase()}`,
-        keyData,
-        kKeyTypePublic);
-    } else {
-      handle.initEDRaw(
-        `NODE-${key.crv.toUpperCase()}`,
-        keyData,
-        kKeyTypePrivate);
+
+    const keyType = isPublic ? kKeyTypePublic : kKeyTypePrivate;
+    if (!handle.initEDRaw(`NODE-${key.crv.toUpperCase()}`, keyData, keyType)) {
+      throw new ERR_CRYPTO_INVALID_JWK();
     }
 
     return handle;

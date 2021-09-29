@@ -27,16 +27,19 @@
 
 #include "zend_llist.h"
 
-#define SET_UNUSED(op)  op ## _type = IS_UNUSED
+#define SET_UNUSED(op) do { \
+	op ## _type = IS_UNUSED; \
+	op.num = (uint32_t) -1; \
+} while (0)
 
 #define MAKE_NOP(opline) do { \
 	(opline)->op1.num = 0; \
 	(opline)->op2.num = 0; \
 	(opline)->result.num = 0; \
 	(opline)->opcode = ZEND_NOP; \
-	(opline)->op1_type =  IS_UNUSED; \
-	(opline)->op2_type = IS_UNUSED; \
-	(opline)->result_type = IS_UNUSED; \
+	SET_UNUSED((opline)->op1); \
+	SET_UNUSED((opline)->op2); \
+	SET_UNUSED((opline)->result); \
 } while (0)
 
 #define RESET_DOC_COMMENT() do { \
@@ -237,7 +240,7 @@ typedef struct _zend_oparray_context {
 /* or IS_CONSTANT_VISITED_MARK                            |     |     |     */
 #define ZEND_CLASS_CONST_IS_CASE         (1 << 6)  /*     |     |     |  X  */
 /*                                                        |     |     |     */
-/* Class Flags (unused: 15,21,30,31)                      |     |     |     */
+/* Class Flags (unused: 15,16,21,30,31)                   |     |     |     */
 /* ===========                                            |     |     |     */
 /*                                                        |     |     |     */
 /* Special class types                                    |     |     |     */
@@ -265,9 +268,6 @@ typedef struct _zend_oparray_context {
 /*                                                        |     |     |     */
 /* User class has methods with static variables           |     |     |     */
 #define ZEND_HAS_STATIC_IN_METHODS       (1 << 14) /*  X  |     |     |     */
-/*                                                        |     |     |     */
-/* Children must reuse parent get_iterator()              |     |     |     */
-#define ZEND_ACC_REUSE_GET_ITERATOR      (1 << 16) /*  X  |     |     |     */
 /*                                                        |     |     |     */
 /* Parent class is resolved (CE).                         |     |     |     */
 #define ZEND_ACC_RESOLVED_PARENT         (1 << 17) /*  X  |     |     |     */

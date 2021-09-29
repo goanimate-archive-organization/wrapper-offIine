@@ -3,9 +3,7 @@ import assert from 'assert';
 
 let curWarning = 0;
 const expectedWarnings = [
-  '"./sub/"',
-  '"./fallbackdir/"',
-  '"./subpath/"',
+  '"./trailing-pattern-slash/"',
   'no_exports',
   'default_index',
 ];

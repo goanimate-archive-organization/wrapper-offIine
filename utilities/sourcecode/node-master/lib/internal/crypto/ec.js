@@ -122,13 +122,12 @@ function createECRawKey(namedCurve, keyData, isPublic) {
       break;
   }
 
-  if (isPublic) {
-    handle.initEDRaw(namedCurve, keyData, kKeyTypePublic);
-    return new PublicKeyObject(handle);
+  const keyType = isPublic ? kKeyTypePublic : kKeyTypePrivate;
+  if (!handle.initEDRaw(namedCurve, keyData, keyType)) {
+    throw lazyDOMException('Failure to generate key object');
   }
 
-  handle.initEDRaw(namedCurve, keyData, kKeyTypePrivate);
-  return new PrivateKeyObject(handle);
+  return isPublic ? new PublicKeyObject(handle) : new PrivateKeyObject(handle);
 }
 
 async function ecGenerateKey(algorithm, extractable, keyUsages) {
@@ -269,14 +268,12 @@ async function ecImportKey(
         case 'NODE-X25519':
           // Fall through
         case 'NODE-X448':
-          checkNamedCurve = false;
           if (algorithm.name !== 'ECDH')
             throw lazyDOMException('Invalid algorithm name.', 'DataError');
           break;
         case 'NODE-ED25519':
           // Fall through
         case 'NODE-ED448':
-          checkNamedCurve = false;
           if (algorithm.name !== namedCurve)
             throw lazyDOMException('Invalid algorithm name.', 'DataError');
           break;
@@ -310,7 +307,6 @@ async function ecImportKey(
         throw lazyDOMException('Invalid JWK keyData', 'DataError');
       switch (keyData.kty) {
         case 'OKP': {
-          checkNamedCurve = false;
           const isPublic = keyData.d === undefined;
 
           let type;
@@ -395,7 +391,6 @@ async function ecImportKey(
         case 'NODE-X25519':
           // Fall through
         case 'NODE-X448':
-          checkNamedCurve = false;
           if (algorithm.public !== undefined)
             validateBoolean(algorithm.public, 'algorithm.public');
           if (algorithm.name !== 'ECDH')
@@ -409,7 +404,6 @@ async function ecImportKey(
         case 'NODE-ED25519':
           // Fall through
         case 'NODE-ED448':
-          checkNamedCurve = false;
           if (algorithm.public !== undefined)
             validateBoolean(algorithm.public, 'algorithm.public');
           if (algorithm.name !== namedCurve)
@@ -428,6 +422,36 @@ async function ecImportKey(
         throw lazyDOMException('Unable to import EC key', 'OperationError');
       break;
     }
+  }
+
+  switch (algorithm.name) {
+    case 'ECDSA':
+      if (keyObject.asymmetricKeyType !== 'ec')
+        throw lazyDOMException('Invalid key type', 'DataError');
+      break;
+    case 'ECDH':
+      if (algorithm.namedCurve === 'NODE-X25519') {
+        if (keyObject.asymmetricKeyType !== 'x25519')
+          throw lazyDOMException('Invalid key type', 'DataError');
+        checkNamedCurve = false;
+      } else if (algorithm.namedCurve === 'NODE-X448') {
+        if (keyObject.asymmetricKeyType !== 'x448')
+          throw lazyDOMException('Invalid key type', 'DataError');
+        checkNamedCurve = false;
+      } else if (keyObject.asymmetricKeyType !== 'ec') {
+        throw lazyDOMException('Invalid key type', 'DataError');
+      }
+      break;
+    case 'NODE-ED25519':
+      if (keyObject.asymmetricKeyType !== 'ed25519')
+        throw lazyDOMException('Invalid key type', 'DataError');
+      checkNamedCurve = false;
+      break;
+    case 'NODE-ED448':
+      if (keyObject.asymmetricKeyType !== 'ed448')
+        throw lazyDOMException('Invalid key type', 'DataError');
+      checkNamedCurve = false;
+      break;
   }
 
   if (checkNamedCurve) {

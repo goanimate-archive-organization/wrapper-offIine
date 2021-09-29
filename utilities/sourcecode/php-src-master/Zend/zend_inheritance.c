@@ -997,7 +997,7 @@ static void ZEND_COLD emit_incompatible_method_error(
 		if (!return_type_will_change_attribute) {
 			zend_error_at(E_DEPRECATED, func_filename(child), func_lineno(child),
 				"Return type of %s should either be compatible with %s, "
-				"or the #[ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+				"or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
 				ZSTR_VAL(child_prototype), ZSTR_VAL(parent_prototype));
 			if (EG(exception)) {
 				zend_exception_uncaught_error(
@@ -2498,6 +2498,9 @@ static void load_delayed_classes(void) {
 
 	ZEND_HASH_FOREACH_STR_KEY(delayed_autoloads, name) {
 		zend_lookup_class(name);
+		if (EG(exception)) {
+			break;
+		}
 	} ZEND_HASH_FOREACH_END();
 
 	zend_hash_destroy(delayed_autoloads);

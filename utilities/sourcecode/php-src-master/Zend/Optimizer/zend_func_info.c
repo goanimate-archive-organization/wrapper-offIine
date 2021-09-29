@@ -33,7 +33,7 @@ typedef uint32_t (*info_func_t)(const zend_call_info *call_info, const zend_ssa 
 
 typedef struct _func_info_t {
 	const char *name;
-	int         name_len;
+	unsigned    name_len;
 	uint32_t    info;
 	info_func_t info_func;
 } func_info_t;
@@ -75,7 +75,8 @@ static uint32_t zend_range_info(const zend_call_info *call_info, const zend_ssa 
 				|| (t3 & (MAY_BE_DOUBLE|MAY_BE_STRING))) {
 			tmp |= MAY_BE_ARRAY_OF_DOUBLE;
 		}
-		if ((t1 & (MAY_BE_ANY-(MAY_BE_STRING|MAY_BE_DOUBLE))) && (t2 & (MAY_BE_ANY-(MAY_BE_STRING|MAY_BE_DOUBLE)))) {
+		if ((t1 & ((MAY_BE_ANY|MAY_BE_UNDEF)-(MAY_BE_STRING|MAY_BE_DOUBLE)))
+				&& (t2 & ((MAY_BE_ANY|MAY_BE_UNDEF)-(MAY_BE_STRING|MAY_BE_DOUBLE)))) {
 			if ((t3 & MAY_BE_ANY) != MAY_BE_DOUBLE) {
 				tmp |= MAY_BE_ARRAY_OF_LONG;
 			}
@@ -88,182 +89,7 @@ static uint32_t zend_range_info(const zend_call_info *call_info, const zend_ssa 
 }
 
 static const func_info_t old_func_infos[] = {
-	/* zend */
-	F1("get_class_vars",          MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY | MAY_BE_ARRAY_OF_REF),
-	F1("get_defined_vars",        MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY | MAY_BE_ARRAY_OF_REF),
-
-	/* ext/standard */
-	F1("base64_decode",                MAY_BE_FALSE | MAY_BE_STRING),
-	F1("base64_encode",                MAY_BE_STRING),
-	F1("password_hash",                MAY_BE_STRING),
-	F1("password_get_info",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_NULL | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("convert_uuencode",             MAY_BE_STRING),
-	F1("convert_uudecode",             MAY_BE_FALSE | MAY_BE_STRING),
-	F1("pow",                          MAY_BE_LONG | MAY_BE_DOUBLE | MAY_BE_OBJECT),
-	F1("decbin",                       MAY_BE_STRING),
-	F1("decoct",                       MAY_BE_STRING),
-	F1("dechex",                       MAY_BE_STRING),
-	F1("base_convert",                 MAY_BE_STRING),
-	F1("number_format",                MAY_BE_STRING),
-#ifdef HAVE_INET_NTOP
-	F1("inet_ntop",                    MAY_BE_FALSE | MAY_BE_STRING),
-#endif
-#ifdef HAVE_INET_PTON
-	F1("inet_pton",                    MAY_BE_FALSE | MAY_BE_STRING),
-#endif
-	F1("long2ip",                      MAY_BE_FALSE | MAY_BE_STRING),
-	F1("getenv",                       MAY_BE_FALSE | MAY_BE_STRING | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_STRING),
-#ifdef HAVE_PUTENV
-#endif
-	F1("getopt",                       MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_FALSE | MAY_BE_ARRAY_OF_TRUE | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-#ifdef HAVE_GETLOADAVG
-	F1("sys_getloadavg",               MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_DOUBLE),
-#endif
-#ifdef HAVE_GETTIMEOFDAY
-	F1("microtime",                    MAY_BE_DOUBLE | MAY_BE_STRING),
-	F1("gettimeofday",                 MAY_BE_DOUBLE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_LONG),
-#endif
-#ifdef HAVE_GETRUSAGE
-	F1("getrusage",                    MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_LONG),
-#endif
-#ifdef HAVE_GETTIMEOFDAY
-	F1("uniqid",                       MAY_BE_STRING),
-#endif
-	F1("quoted_printable_decode",      MAY_BE_STRING),
-	F1("quoted_printable_encode",      MAY_BE_STRING),
-	F1("get_current_user",             MAY_BE_STRING),
-	F1("get_cfg_var",                  MAY_BE_FALSE | MAY_BE_STRING | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("error_get_last",               MAY_BE_NULL | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("serialize",                    MAY_BE_STRING),
-	F1("var_export",                   MAY_BE_NULL | MAY_BE_STRING),
-	F1("print_r",                      MAY_BE_TRUE | MAY_BE_STRING),
-	F0("register_shutdown_function",   MAY_BE_NULL | MAY_BE_FALSE),
-	F1("highlight_file",               MAY_BE_FALSE | MAY_BE_TRUE | MAY_BE_STRING),
-	F1("show_source",                  MAY_BE_FALSE | MAY_BE_TRUE | MAY_BE_STRING),
-	F1("highlight_string",             MAY_BE_FALSE | MAY_BE_TRUE | MAY_BE_STRING),
-	F1("php_strip_whitespace",         MAY_BE_STRING),
-	F1("ini_get_all",                  MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_NULL | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("ini_alter",                    MAY_BE_FALSE | MAY_BE_STRING),
-	F1("get_include_path",             MAY_BE_FALSE | MAY_BE_STRING),
-	F1("set_include_path",             MAY_BE_FALSE | MAY_BE_STRING),
-	F1("headers_list",                 MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("parse_ini_file",               MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_NULL | MAY_BE_ARRAY_OF_FALSE | MAY_BE_ARRAY_OF_TRUE | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_DOUBLE | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("parse_ini_string",             MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_NULL | MAY_BE_ARRAY_OF_FALSE | MAY_BE_ARRAY_OF_TRUE | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_DOUBLE | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-#if ZEND_DEBUG
-	F1("config_get_hash",              MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-#endif
-	F1("gethostbyaddr",                MAY_BE_FALSE | MAY_BE_STRING),
-	F1("gethostbyname",                MAY_BE_STRING),
-	F1("gethostbynamel",               MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-#ifdef HAVE_GETHOSTNAME
-	F1("gethostname",                  MAY_BE_FALSE | MAY_BE_STRING),
-#endif
-	F1("fgets",                        MAY_BE_FALSE | MAY_BE_STRING),
-	F1("fread",                        MAY_BE_FALSE | MAY_BE_STRING),
-	F1("fstat",                        MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_LONG),
-	F1("tempnam",                      MAY_BE_FALSE | MAY_BE_STRING),
-	F1("file",                         MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("file_get_contents",            MAY_BE_FALSE | MAY_BE_STRING),
-	F1("stream_context_get_params",    MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
-	FN("stream_context_get_options",   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
-	F1("stream_socket_get_name",       MAY_BE_FALSE | MAY_BE_STRING),
-	F1("stream_socket_recvfrom",       MAY_BE_FALSE | MAY_BE_STRING),
-#if HAVE_SOCKETPAIR
-	F1("stream_socket_pair",           MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_RESOURCE),
-#endif
-	F1("stream_get_contents",          MAY_BE_FALSE | MAY_BE_STRING),
-	F1("fgetcsv",                      MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_NULL | MAY_BE_ARRAY_OF_STRING),
-	F1("get_meta_tags",                MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_STRING),
-	F1("stream_get_meta_data",         MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
-	F1("stream_get_line",              MAY_BE_FALSE | MAY_BE_STRING),
-	F1("stream_get_wrappers",          MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("stream_get_transports",        MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("stream_resolve_include_path",  MAY_BE_FALSE | MAY_BE_STRING),
-	F1("get_headers",                  MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("socket_get_status",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
-	F1("realpath",                     MAY_BE_FALSE | MAY_BE_STRING),
-	F1("pack",                         MAY_BE_STRING),
-	F1("unpack",                       MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY),
-	F1("get_browser",                  MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_OBJECT | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ANY),
-	F1("crypt",                        MAY_BE_STRING),
-	F1("getcwd",                       MAY_BE_FALSE | MAY_BE_STRING),
-	F1("readdir",                      MAY_BE_FALSE | MAY_BE_STRING),
-	F1("dir",                          MAY_BE_FALSE | MAY_BE_OBJECT),
-	F1("scandir",                      MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-#ifdef HAVE_GLOB
-	F1("glob",                         MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-#endif
-	F1("filetype",                     MAY_BE_FALSE | MAY_BE_STRING),
-	F1("stat",                         MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_FALSE | MAY_BE_ARRAY_OF_TRUE | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("lstat",                        MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_FALSE | MAY_BE_ARRAY_OF_TRUE | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("realpath_cache_get",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_ARRAY),
-#ifdef HAVE_SYSLOG_H
-	F0("syslog",                       MAY_BE_TRUE),
-	F0("closelog",                     MAY_BE_TRUE),
-#endif
-	F1("metaphone",                    MAY_BE_STRING),
-	F1("ob_get_flush",                 MAY_BE_FALSE | MAY_BE_STRING),
-	F1("ob_get_clean",                 MAY_BE_FALSE | MAY_BE_STRING),
-	F1("ob_get_status",                MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING | MAY_BE_ARRAY_OF_ARRAY),
-	F1("ob_list_handlers",             MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F0("array_walk",                   MAY_BE_TRUE),
-	F0("array_walk_recursive",         MAY_BE_TRUE),
-	F0("arsort",                       MAY_BE_TRUE),
-	F0("asort",                        MAY_BE_TRUE),
-	F0("krsort",                       MAY_BE_TRUE),
-	F0("ksort",                        MAY_BE_TRUE),
-	F0("shuffle",                      MAY_BE_TRUE),
-	F0("sort",                         MAY_BE_TRUE),
-	F0("usort",                        MAY_BE_TRUE),
-	F0("uasort",                       MAY_BE_TRUE),
-	F0("uksort",                       MAY_BE_TRUE),
-	F1("compact",                      MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_STRING | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	FN("array_fill",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_ANY),
-	F1("array_fill_keys",              MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
 	FC("range",                        zend_range_info),
-	F1("array_replace",                MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_replace_recursive",      MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	FN("array_keys",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	FN("array_values",                 MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_count_values",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_LONG),
-	F1("array_column",                 MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_reverse",                MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_flip",                   MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("array_change_key_case",        MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	FN("array_rand",                   MAY_BE_LONG | MAY_BE_STRING | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("array_intersect",              MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_intersect_key",          MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_intersect_ukey",         MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_uintersect",             MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_intersect_assoc",        MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_uintersect_assoc",       MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_intersect_uassoc",       MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_uintersect_uassoc",      MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_diff_key",               MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_diff_ukey",              MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_udiff",                  MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_diff_assoc",             MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_udiff_assoc",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_diff_uassoc",            MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("array_udiff_uassoc",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-	F1("str_rot13",                    MAY_BE_STRING),
-	F1("stream_get_filters",           MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_LONG | MAY_BE_ARRAY_OF_STRING),
-	F1("stream_bucket_make_writeable", MAY_BE_NULL | MAY_BE_OBJECT),
-	F1("stream_bucket_new",            MAY_BE_OBJECT),
-	F1("sys_get_temp_dir",             MAY_BE_STRING),
-
-	/* ext/preg */
-	F1("preg_grep",				                MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-
-	F1("utf8_encode",                           MAY_BE_STRING),
-	F1("utf8_decode",                           MAY_BE_STRING),
-
-	/* ext/filter */
-	F1("filter_var_array",						MAY_BE_NULL | MAY_BE_FALSE | MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY | MAY_BE_ARRAY_OF_REF),
-
-	/* ext/spl */
-	F1("iterator_to_array",						MAY_BE_ARRAY | MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_REF | MAY_BE_ARRAY_OF_ANY),
-
 };
 
 static HashTable func_info;
@@ -359,11 +185,9 @@ ZEND_API uint32_t zend_get_func_info(
 	return ret;
 }
 
-void zend_func_info_add(const func_info_t *func_infos, size_t n)
+static void zend_func_info_add(const func_info_t *func_infos, size_t n)
 {
-	size_t i;
-
-	for (i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		zend_string *key = zend_string_init_interned(func_infos[i].name, func_infos[i].name_len, 1);
 
 		if (zend_hash_add_ptr(&func_info, key, (void**)&func_infos[i]) == NULL) {
@@ -374,7 +198,7 @@ void zend_func_info_add(const func_info_t *func_infos, size_t n)
 	}
 }
 
-int zend_func_info_startup(void)
+zend_result zend_func_info_startup(void)
 {
 	if (zend_func_info_rid == -1) {
 		zend_func_info_rid = zend_get_resource_handle("Zend Optimizer");
@@ -391,7 +215,7 @@ int zend_func_info_startup(void)
 	return SUCCESS;
 }
 
-int zend_func_info_shutdown(void)
+zend_result zend_func_info_shutdown(void)
 {
 	if (zend_func_info_rid != -1) {
 		zend_hash_destroy(&func_info);

@@ -402,6 +402,16 @@ EnvironmentOptionsParser::EnvironmentOptionsParser() {
             &EnvironmentOptions::force_async_hooks_checks,
             kAllowedInEnvironment,
             true);
+  AddOption("--addons",
+            "disable loading native addons",
+            &EnvironmentOptions::allow_native_addons,
+            kAllowedInEnvironment,
+            true);
+  AddOption("--global-search-paths",
+            "disable global module search paths",
+            &EnvironmentOptions::global_search_paths,
+            kAllowedInEnvironment,
+            true);
   AddOption("--warnings",
             "silence all process warnings",
             &EnvironmentOptions::warnings,
@@ -511,6 +521,11 @@ EnvironmentOptionsParser::EnvironmentOptionsParser() {
             "show stack traces on process warnings",
             &EnvironmentOptions::trace_warnings,
             kAllowedInEnvironment);
+  AddOption("--extra-info-on-fatal-exception",
+            "hide extra information on fatal exception that causes exit",
+            &EnvironmentOptions::extra_info_on_fatal_exception,
+            kAllowedInEnvironment,
+            true);
   AddOption("--unhandled-rejections",
             "define unhandled rejections behavior. Options are 'strict' "
             "(always raise an error), 'throw' (raise an error unless "
@@ -1066,6 +1081,12 @@ void Initialize(Local<Object> target,
       ->Set(context,
             FIXED_ONE_BYTE_STRING(env->isolate(), "shouldNotRegisterESMLoader"),
             Boolean::New(isolate, env->should_not_register_esm_loader()))
+      .Check();
+
+  target
+      ->Set(context,
+            FIXED_ONE_BYTE_STRING(env->isolate(), "noGlobalSearchPaths"),
+            Boolean::New(isolate, env->no_global_search_paths()))
       .Check();
 
   Local<Object> types = Object::New(isolate);

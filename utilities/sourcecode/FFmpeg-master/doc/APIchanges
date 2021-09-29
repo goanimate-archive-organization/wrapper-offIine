@@ -14,6 +14,39 @@ libavutil:     2021-04-27
 
 API changes, most recent first:
 
+2021-09-21 - xxxxxxxxxx - lavu 57.7.100 - pixfmt.h
+  Add AV_PIX_FMT_X2BGR10.
+
+2021-09-20 - xxxxxxxxxx - lavu 57.6.100 - mem.h
+  Deprecate av_mallocz_array() as it is identical to av_calloc().
+
+2021-09-20 - xxxxxxxxxx - lavc 59.9.100 - avcodec.h
+  Deprecate AVCodecContext.sub_text_format and the corresponding
+  AVOptions. It is unused since the last major bump.
+
+2021-09-20 - xxxxxxxxxx - lavc 59.8.100 - avcodec.h codec.h
+  Deprecate AV_CODEC_FLAG_TRUNCATED and AV_CODEC_CAP_TRUNCATED,
+  as they are redundant with parsers.
+
+2021-09-17 - xxxxxxxxxx - lavu 57.5.101 - buffer.h
+  Constified the input parameters in av_buffer_replace(), av_buffer_ref(),
+  and av_buffer_pool_buffer_get_opaque().
+
+2021-09-08 - xxxxxxxxxx - lavu 57.5.100 - hwcontext_d3d11va.h
+  Add AVD3D11VAFramesContext.texture_infos
+
+2021-09-06 - xxxxxxxxxx - lsws 6.1.100 - swscale.h
+  Add AVFrame-based scaling API:
+    - sws_scale_frame()
+    - sws_frame_start()
+    - sws_frame_end()
+    - sws_send_slice()
+    - sws_receive_slice()
+    - sws_receive_slice_alignment()
+
+2021-09-02 - xxxxxxxxxx - lavc 59.7.100 - avcodec.h
+  Incremented the number of elements of AVCodecParser.codec_ids to seven.
+
 2021-08-24 - xxxxxxxxxx - lavc 59.6.100 - avcodec.h
   Add FF_CODEC_PROPERTY_FILM_GRAIN
 

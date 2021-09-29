@@ -298,6 +298,12 @@ void avcodec_align_dimensions2(AVCodecContext *s, int *width, int *height,
             h_align = 4;
         }
         break;
+    case AV_PIX_FMT_BGR0:
+        if (s->codec_id == AV_CODEC_ID_ARGO) {
+            w_align = 4;
+            h_align = 4;
+        }
+        break;
     default:
         break;
     }
@@ -379,8 +385,7 @@ int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels,
 
     planar = av_sample_fmt_is_planar(sample_fmt);
     if (planar && nb_channels > AV_NUM_DATA_POINTERS) {
-        if (!(frame->extended_data = av_mallocz_array(nb_channels,
-                                                sizeof(*frame->extended_data))))
+        if (!FF_ALLOCZ_TYPED_ARRAY(frame->extended_data, nb_channels))
             return AVERROR(ENOMEM);
     } else {
         frame->extended_data = frame->data;

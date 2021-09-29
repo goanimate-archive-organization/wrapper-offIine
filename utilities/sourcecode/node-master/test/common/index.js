@@ -293,6 +293,13 @@ if (global.PerformanceMeasure) {
   knownGlobals.push(global.PerformanceMeasure);
 }
 
+// TODO(@ethan-arrowood): Similar to previous checks, this can be temporary
+// until v16.x is EOL. Once all supported versions have structuredClone we
+// can add this to the list above instead.
+if (global.structuredClone) {
+  knownGlobals.push(global.structuredClone);
+}
+
 function allowGlobals(...allowlist) {
   knownGlobals = knownGlobals.concat(allowlist);
 }
@@ -547,7 +554,7 @@ function _expectWarning(name, expected, code) {
     if (typeof message === 'string') {
       assert.strictEqual(warning.message, message);
     } else {
-      assert(message.test(warning.message));
+      assert.match(warning.message, message);
     }
     assert.strictEqual(warning.code, code);
   }, expected.length);
@@ -878,8 +885,14 @@ const common = {
       throw new Error('common.PORT cannot be used in a parallelized test');
     }
     return +process.env.NODE_COMMON_PORT || 12346;
-  }
+  },
 
+  /**
+   * Returns the EOL character used by this Git checkout.
+   */
+  get checkoutEOL() {
+    return fs.readFileSync(__filename).includes('\r\n') ? '\r\n' : '\n';
+  },
 };
 
 const validProperties = new Set(Object.keys(common));

@@ -1,6 +1,7 @@
 # About this documentation
 
 <!--introduced_in=v0.10.0-->
+
 <!-- type=misc -->
 
 Welcome to the official API reference documentation for Node.js!
@@ -51,6 +52,7 @@ a command-line flag. Experimental features may also emit a [warning][].
 
 ## Stability overview
 <!-- STABILITY_OVERVIEW_SLOT_BEGIN -->
+
 <!-- STABILITY_OVERVIEW_SLOT_END -->
 
 ## JSON output
@@ -73,4 +75,4 @@ be unavoidable.
 [V8 JavaScript engine]: https://v8.dev/
 [the contributing guide]: https://github.com/nodejs/node/blob/HEAD/CONTRIBUTING.md
 [the issue tracker]: https://github.com/nodejs/node/issues/new
-[warning]: process.md#process_event_warning
+[warning]: process.md#event-warning

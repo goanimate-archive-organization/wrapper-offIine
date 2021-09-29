@@ -47,6 +47,7 @@ typedef struct DHAVContext {
 } DHAVContext;
 
 typedef struct DHAVStream {
+    int64_t last_frame_number;
     int64_t last_timestamp;
     int64_t last_time;
     int64_t pts;
@@ -314,6 +315,8 @@ static int64_t get_pts(AVFormatContext *s, int stream_index)
 
         if (diff < 0)
             diff += 65535;
+        if (diff == 0 && dhav->frame_rate)
+            diff = av_rescale(dhav->frame_number - dst->last_frame_number, 1000, dhav->frame_rate);
         dst->pts += diff;
     } else {
         dst->pts = t * 1000LL;
@@ -321,6 +324,7 @@ static int64_t get_pts(AVFormatContext *s, int stream_index)
 
     dst->last_time = t;
     dst->last_timestamp = dhav->timestamp;
+    dst->last_frame_number = dhav->frame_number;
 
     return dst->pts;
 }
@@ -429,15 +433,16 @@ static int dhav_read_seek(AVFormatContext *s, int stream_index,
 {
     DHAVContext *dhav = s->priv_data;
     AVStream *st = s->streams[stream_index];
+    FFStream *const sti = ffstream(st);
     int index = av_index_search_timestamp(st, timestamp, flags);
     int64_t pts;
 
     if (index < 0)
         return -1;
-    if (avio_seek(s->pb, st->internal->index_entries[index].pos, SEEK_SET) < 0)
+    if (avio_seek(s->pb, sti->index_entries[index].pos, SEEK_SET) < 0)
         return -1;
 
-    pts = st->internal->index_entries[index].timestamp;
+    pts = sti->index_entries[index].timestamp;
 
     for (int n = 0; n < s->nb_streams; n++) {
         AVStream *st = s->streams[n];

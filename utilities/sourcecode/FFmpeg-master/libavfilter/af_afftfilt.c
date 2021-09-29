@@ -298,18 +298,25 @@ static int filter_frame(AVFilterLink *inlink)
         int x;
         values[VAR_CHANNEL] = ch;
 
-        for (n = 0; n <= window_size / 2; n++) {
-            float fr, fi;
+        if (ctx->is_disabled) {
+            for (n = 0; n <= window_size / 2; n++) {
+                fft_temp[n].re = fft_out[n].re;
+                fft_temp[n].im = fft_out[n].im;
+            }
+        } else {
+            for (n = 0; n <= window_size / 2; n++) {
+                float fr, fi;
 
-            values[VAR_BIN] = n;
-            values[VAR_REAL] = fft_out[n].re;
-            values[VAR_IMAG] = fft_out[n].im;
+                values[VAR_BIN] = n;
+                values[VAR_REAL] = fft_out[n].re;
+                values[VAR_IMAG] = fft_out[n].im;
 
-            fr = av_expr_eval(s->real[ch], values, s);
-            fi = av_expr_eval(s->imag[ch], values, s);
+                fr = av_expr_eval(s->real[ch], values, s);
+                fi = av_expr_eval(s->imag[ch], values, s);
 
-            fft_temp[n].re = fr;
-            fft_temp[n].im = fi;
+                fft_temp[n].re = fr;
+                fft_temp[n].im = fi;
+            }
         }
 
         for (n = window_size / 2 + 1, x = window_size / 2 - 1; n < window_size; n++, x--) {
@@ -485,4 +492,5 @@ const AVFilter ff_af_afftfilt = {
     .activate        = activate,
     .query_formats   = query_formats,
     .uninit          = uninit,
+    .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

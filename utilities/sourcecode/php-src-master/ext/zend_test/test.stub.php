@@ -45,6 +45,17 @@ namespace {
 
     }
 
+    enum ZendTestUnitEnum {
+        case Foo;
+        case Bar;
+    }
+
+    enum ZendTestStringEnum: string {
+        case Foo = "Test1";
+        case Bar = "Test2";
+        case Baz = "Test2\\a";
+    }
+
     function zend_test_array_return(): array {}
 
     function zend_test_nullable_array_return(): ?array {}
@@ -88,6 +99,8 @@ namespace ZendTestNS {
 namespace ZendTestNS2 {
 
     class Foo {
+        public ZendSubNS\Foo $foo;
+
         public function method(): void {}
     }
 

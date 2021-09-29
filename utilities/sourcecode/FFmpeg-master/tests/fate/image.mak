@@ -374,17 +374,19 @@ $(foreach CLSP,$(PNG_COLORSPACES),$(eval $(call FATE_IMGSUITE_PNG,$(CLSP))))
 FATE_PNG += fate-png-int-rgb24
 fate-png-int-rgb24: CMD = framecrc -i $(TARGET_SAMPLES)/png1/lena-int_rgb24.png -sws_flags +accurate_rnd+bitexact
 
-FATE_PNG += fate-png-frame-metadata
+FATE_PNG_PROBE += fate-png-frame-metadata
 fate-png-frame-metadata: CMD = run ffprobe$(PROGSSUF)$(EXESUF) -show_entries frame_tags \
     -i $(TARGET_SAMPLES)/filter/pixelart0.png
 
-FATE_PNG += fate-png-side-data
+FATE_PNG_PROBE += fate-png-side-data
 fate-png-side-data: CMD = run ffprobe$(PROGSSUF)$(EXESUF) -show_frames \
     -i $(TARGET_SAMPLES)/png1/lena-int_rgb24.png
 
 FATE_PNG-$(call DEMDEC, IMAGE2, PNG) += $(FATE_PNG)
+FATE_PNG_PROBE-$(call DEMDEC, IMAGE2, PNG) += $(FATE_PNG_PROBE)
 FATE_IMAGE += $(FATE_PNG-yes)
-fate-png: $(FATE_PNG-yes)
+FATE_IMAGE_PROBE += $(FATE_PNG_PROBE-yes)
+fate-png: $(FATE_PNG-yes) $(FATE_PNG_PROBE-yes)
 
 FATE_IMAGE-$(call DEMDEC, IMAGE2, PTX) += fate-ptx
 fate-ptx: CMD = framecrc -i $(TARGET_SAMPLES)/ptx/_113kw_pic.ptx -pix_fmt rgb24 -vf scale
@@ -516,6 +518,10 @@ fate-webp-rgb-lena-lossless-rgb24: CMD = framecrc -i $(TARGET_SAMPLES)/webp/rgb_
 
 FATE_WEBP += fate-webp-rgba-lossless
 fate-webp-rgba-lossless: CMD = framecrc -i $(TARGET_SAMPLES)/webp/rgba_lossless.webp
+
+# TODO(https://trac.ffmpeg.org/ticket/9368): enable after sample is uploaded
+# FATE_WEBP += fate-webp-rgb-lossless-palette-predictor
+# fate-webp-rgb-lossless-palette-predictor: CMD = framecrc -i $(TARGET_SAMPLES)/webp/dual_transform.webp
 
 FATE_WEBP += fate-webp-rgb-lossy-q80
 fate-webp-rgb-lossy-q80: CMD = framecrc -i $(TARGET_SAMPLES)/webp/rgb_q80.webp

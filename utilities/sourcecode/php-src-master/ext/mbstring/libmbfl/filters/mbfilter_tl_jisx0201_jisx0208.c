@@ -114,16 +114,6 @@ int mbfl_convert_kana(int c, int next, bool *consumed, int *second, int mode)
 		} else if (c == 0x22) {
 			return 0x201d; /* RIGHT DOUBLE QUOTATION MARK */
 		}
-	} else if (mode & MBFL_FILT_TL_HAN2ZEN_COMPAT2) { /* special ascii to symbol */
-		if (c == 0x5c) {
-			return 0xff3c; /* FULLWIDTH REVERSE SOLIDUS */
-		} else if (c == 0x7e) {
-			return 0xff5e; /* FULLWIDTH TILDE */
-		} else if (c == 0x27) {
-			return 0xff07; /* FULLWIDTH APOSTROPHE */
-		} else if (c == 0x22) {
-			return 0xff02; /* FULLWIDTH QUOTATION MARK */
-		}
 	}
 
 	if (mode & (MBFL_FILT_TL_ZEN2HAN_ALL | MBFL_FILT_TL_ZEN2HAN_ALPHA | MBFL_FILT_TL_ZEN2HAN_NUMERIC | MBFL_FILT_TL_ZEN2HAN_SPACE)) {
@@ -175,11 +165,11 @@ int mbfl_convert_kana(int c, int next, bool *consumed, int *second, int mode)
 		} else if (c == 0x30fb) {
 			return 0xff65; /* HALFWIDTH KATAKANA MIDDLE DOT */
 		}
-	} else if (mode & (MBFL_FILT_TL_ZEN2HAN_HIRA2KANA | MBFL_FILT_TL_ZEN2HAN_KANA2HIRA)) {
-		if ((mode & MBFL_FILT_TL_ZEN2HAN_HIRA2KANA) && ((c >= 0x3041 && c <= 0x3093) || c == 0x309d || c == 0x309e)) {
+	} else if (mode & (MBFL_FILT_TL_ZENKAKU_HIRA2KANA | MBFL_FILT_TL_ZENKAKU_KANA2HIRA)) {
+		if ((mode & MBFL_FILT_TL_ZENKAKU_HIRA2KANA) && ((c >= 0x3041 && c <= 0x3093) || c == 0x309d || c == 0x309e)) {
 			/* Zenkaku hiragana to Zenkaku katakana */
 			return c + 0x60;
-		} else if ((mode & MBFL_FILT_TL_ZEN2HAN_KANA2HIRA) && ((c >= 0x30a1 && c <= 0x30f3) || c == 0x30fd || c == 0x30fe)) {
+		} else if ((mode & MBFL_FILT_TL_ZENKAKU_KANA2HIRA) && ((c >= 0x30a1 && c <= 0x30f3) || c == 0x30fd || c == 0x30fe)) {
 			/* Zenkaku katakana to Zenkaku hiragana */
 			return c - 0x60;
 		}
@@ -201,18 +191,6 @@ int mbfl_convert_kana(int c, int next, bool *consumed, int *second, int mode)
 		} else if (c == 0x201c) { /* LEFT DOUBLE QUOTATION MARK */
 			return 0x22;
 		} else if (c == 0x201d) { /* RIGHT DOUBLE QUOTATION MARK */
-			return 0x22;
-		}
-	}
-
-	if (mode & MBFL_FILT_TL_ZEN2HAN_COMPAT2) { /* special symbol to ascii */
-		if (c == 0xff3c) { /* FULLWIDTH REVERSE SOLIDUS */
-			return 0x5c;
-		} else if (c == 0xff5e) { /* FULLWIDTH TILDE */
-			return 0x7e;
-		} else if (c == 0xff07) { /* FULLWIDTH APOSTROPHE */
-			return 0x27;
-		} else if (c == 0xff02) { /* FULLWIDTH QUOTATION MARK */
 			return 0x22;
 		}
 	}

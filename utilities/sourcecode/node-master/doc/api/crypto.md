@@ -1908,11 +1908,20 @@ const {
 ### `keyObject.asymmetricKeyDetails`
 <!-- YAML
 added: v15.7.0
+changes:
+  - version: v16.9.0
+    pr-url: https://github.com/nodejs/node/pull/39851
+    description: Expose `RSASSA-PSS-params` sequence parameters
+                 for RSA-PSS keys.
 -->
 
 * {Object}
   * `modulusLength`: {number} Key size in bits (RSA, DSA).
   * `publicExponent`: {bigint} Public exponent (RSA).
+  * `hashAlgorithm`: {string} Name of the message digest (RSA-PSS).
+  * `mgf1HashAlgorithm`: {string} Name of the message digest used by
+    MGF1 (RSA-PSS).
+  * `saltLength`: {number} Minimal salt length in bytes (RSA-PSS).
   * `divisorLength`: {number} Size of `q` in bits (DSA).
   * `namedCurve`: {string} Name of the curve (EC).
 
@@ -1921,8 +1930,11 @@ this object contains information about the key. None of the information obtained
 through this property can be used to uniquely identify a key or to compromise
 the security of the key.
 
-RSA-PSS parameters, DH, or any future key type details might be exposed via this
-API using additional attributes.
+For RSA-PSS keys, if the key material contains a `RSASSA-PSS-params` sequence,
+the `hashAlgorithm`, `mgf1HashAlgorithm`, and `saltLength` properties will be
+set.
+
+Other key details might be exposed via this API using additional attributes.
 
 ### `keyObject.asymmetricKeyType`
 <!-- YAML
@@ -3363,11 +3375,18 @@ generateKey('hmac', { length: 64 }, (err, key) => {
 <!-- YAML
 added: v10.12.0
 changes:
+  - version: v16.10.0
+    pr-url: https://github.com/nodejs/node/pull/39927
+    description: Add ability to define `RSASSA-PSS-params` sequence parameters
+                 for RSA-PSS keys pairs.
   - version:
      - v13.9.0
      - v12.17.0
     pr-url: https://github.com/nodejs/node/pull/31178
     description: Add support for Diffie-Hellman.
+  - version: v12.0.0
+    pr-url: https://github.com/nodejs/node/pull/26960
+    description: Add support for RSA-PSS key pairs.
   - version: v12.0.0
     pr-url: https://github.com/nodejs/node/pull/26774
     description: Add ability to generate X25519 and X448 key pairs.
@@ -3380,11 +3399,15 @@ changes:
                  produce key objects if no encoding was specified.
 -->
 
-* `type`: {string} Must be `'rsa'`, `'dsa'`, `'ec'`, `'ed25519'`, `'ed448'`,
-  `'x25519'`, `'x448'`, or `'dh'`.
+* `type`: {string} Must be `'rsa'`, `'rsa-pss'`, `'dsa'`, `'ec'`, `'ed25519'`,
+  `'ed448'`, `'x25519'`, `'x448'`, or `'dh'`.
 * `options`: {Object}
   * `modulusLength`: {number} Key size in bits (RSA, DSA).
   * `publicExponent`: {number} Public exponent (RSA). **Default:** `0x10001`.
+  * `hashAlgorithm`: {string} Name of the message digest (RSA-PSS).
+  * `mgf1HashAlgorithm`: {string} Name of the message digest used by
+    MGF1 (RSA-PSS).
+  * `saltLength`: {number} Minimal salt length in bytes (RSA-PSS).
   * `divisorLength`: {number} Size of `q` in bits (DSA).
   * `namedCurve`: {string} Name of the curve to use (EC).
   * `prime`: {Buffer} The prime parameter (DH).
@@ -3399,8 +3422,8 @@ changes:
   * `publicKey`: {string | Buffer | KeyObject}
   * `privateKey`: {string | Buffer | KeyObject}
 
-Generates a new asymmetric key pair of the given `type`. RSA, DSA, EC, Ed25519,
-Ed448, X25519, X448, and DH are currently supported.
+Generates a new asymmetric key pair of the given `type`. RSA, RSA-PSS, DSA, EC,
+Ed25519, Ed448, X25519, X448, and DH are currently supported.
 
 If a `publicKeyEncoding` or `privateKeyEncoding` was specified, this function
 behaves as if [`keyObject.export()`][] had been called on its result. Otherwise,
@@ -3463,11 +3486,21 @@ a `Promise` for an `Object` with `publicKey` and `privateKey` properties.
 <!-- YAML
 added: v10.12.0
 changes:
+  - version: v16.10.0
+    pr-url: https://github.com/nodejs/node/pull/39927
+    description: Add ability to define `RSASSA-PSS-params` sequence parameters
+                 for RSA-PSS keys pairs.
   - version:
      - v13.9.0
      - v12.17.0
     pr-url: https://github.com/nodejs/node/pull/31178
     description: Add support for Diffie-Hellman.
+  - version: v12.0.0
+    pr-url: https://github.com/nodejs/node/pull/26960
+    description: Add support for RSA-PSS key pairs.
+  - version: v12.0.0
+    pr-url: https://github.com/nodejs/node/pull/26774
+    description: Add ability to generate X25519 and X448 key pairs.
   - version: v12.0.0
     pr-url: https://github.com/nodejs/node/pull/26554
     description: Add ability to generate Ed25519 and Ed448 key pairs.
@@ -3477,11 +3510,15 @@ changes:
                  produce key objects if no encoding was specified.
 -->
 
-* `type`: {string} Must be `'rsa'`, `'dsa'`, `'ec'`, `'ed25519'`, `'ed448'`,
-  `'x25519'`, `'x448'`, or `'dh'`.
+* `type`: {string} Must be `'rsa'`, `'rsa-pss'`, `'dsa'`, `'ec'`, `'ed25519'`,
+  `'ed448'`, `'x25519'`, `'x448'`, or `'dh'`.
 * `options`: {Object}
   * `modulusLength`: {number} Key size in bits (RSA, DSA).
   * `publicExponent`: {number} Public exponent (RSA). **Default:** `0x10001`.
+  * `hashAlgorithm`: {string} Name of the message digest (RSA-PSS).
+  * `mgf1HashAlgorithm`: {string} Name of the message digest used by
+    MGF1 (RSA-PSS).
+  * `saltLength`: {number} Minimal salt length in bytes (RSA-PSS).
   * `divisorLength`: {number} Size of `q` in bits (DSA).
   * `namedCurve`: {string} Name of the curve to use (EC).
   * `prime`: {Buffer} The prime parameter (DH).
@@ -3495,8 +3532,8 @@ changes:
   * `publicKey`: {string | Buffer | KeyObject}
   * `privateKey`: {string | Buffer | KeyObject}
 
-Generates a new asymmetric key pair of the given `type`. RSA, DSA, EC, Ed25519,
-Ed448, X25519, X448, and DH are currently supported.
+Generates a new asymmetric key pair of the given `type`. RSA, RSA-PSS, DSA, EC,
+Ed25519, Ed448, X25519, X448, and DH are currently supported.
 
 If a `publicKeyEncoding` or `privateKeyEncoding` was specified, this function
 behaves as if [`keyObject.export()`][] had been called on its result. Otherwise,
@@ -3579,7 +3616,7 @@ const {
   generateKeySync
 } = await import('crypto');
 
-const key = generateKeySync('hmac', 64);
+const key = generateKeySync('hmac', { length: 64 });
 console.log(key.export().toString('hex'));  // e89..........41e
 ```
 
@@ -3588,7 +3625,7 @@ const {
   generateKeySync,
 } = require('crypto');
 
-const key = generateKeySync('hmac', 64);
+const key = generateKeySync('hmac', { length: 64 });
 console.log(key.export().toString('hex'));  // e89..........41e
 ```
 
@@ -5248,8 +5285,7 @@ const receivedPlaintext = decipher.update(ciphertext, null, 'utf8');
 try {
   decipher.final();
 } catch (err) {
-  console.error('Authentication failed!');
-  return;
+  throw new Error('Authentication failed!', { cause: err });
 }
 
 console.log(receivedPlaintext);
@@ -5293,8 +5329,7 @@ const receivedPlaintext = decipher.update(ciphertext, null, 'utf8');
 try {
   decipher.final();
 } catch (err) {
-  console.error('Authentication failed!');
-  return;
+  throw new Error('Authentication failed!', { cause: err });
 }
 
 console.log(receivedPlaintext);
@@ -5306,6 +5341,8 @@ The following constants exported by `crypto.constants` apply to various uses of
 the `crypto`, `tls`, and `https` modules and are generally specific to OpenSSL.
 
 ### OpenSSL options
+
+See the [list of SSL OP Flags][] for details.
 
 <table>
   <tr>
@@ -5541,8 +5578,6 @@ the `crypto`, `tls`, and `https` modules and are generally specific to OpenSSL.
 
 ### Other OpenSSL constants
 
-See the [list of SSL OP Flags][] for details.
-
 <table>
   <tr>
     <th>Constant</th>
@@ -5640,9 +5675,9 @@ See the [list of SSL OP Flags][] for details.
 </table>
 
 [AEAD algorithms]: https://en.wikipedia.org/wiki/Authenticated_encryption
-[CCM mode]: #crypto_ccm_mode
-[Caveats]: #crypto_support_for_weak_or_compromised_algorithms
-[Crypto constants]: #crypto_crypto_constants_1
+[CCM mode]: #ccm-mode
+[Caveats]: #support-for-weak-or-compromised-algorithms
+[Crypto constants]: #crypto-constants
 [HTML 5.2]: https://www.w3.org/TR/html52/changes.html#features-removed
 [HTML5's `keygen` element]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/keygen
 [JWK]: https://tools.ietf.org/html/rfc7517
@@ -5662,62 +5697,62 @@ See the [list of SSL OP Flags][] for details.
 [`BN_is_prime_ex`]: https://www.openssl.org/docs/man1.1.1/man3/BN_is_prime_ex.html
 [`Buffer`]: buffer.md
 [`EVP_BytesToKey`]: https://www.openssl.org/docs/man1.1.0/crypto/EVP_BytesToKey.html
-[`KeyObject`]: #crypto_class_keyobject
-[`Sign`]: #crypto_class_sign
+[`KeyObject`]: #class-keyobject
+[`Sign`]: #class-sign
 [`String.prototype.normalize()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize
-[`UV_THREADPOOL_SIZE`]: cli.md#cli_uv_threadpool_size_size
-[`Verify`]: #crypto_class_verify
-[`cipher.final()`]: #crypto_cipher_final_outputencoding
-[`cipher.update()`]: #crypto_cipher_update_data_inputencoding_outputencoding
-[`crypto.createCipher()`]: #crypto_crypto_createcipher_algorithm_password_options
-[`crypto.createCipheriv()`]: #crypto_crypto_createcipheriv_algorithm_key_iv_options
-[`crypto.createDecipher()`]: #crypto_crypto_createdecipher_algorithm_password_options
-[`crypto.createDecipheriv()`]: #crypto_crypto_createdecipheriv_algorithm_key_iv_options
-[`crypto.createDiffieHellman()`]: #crypto_crypto_creatediffiehellman_prime_primeencoding_generator_generatorencoding
-[`crypto.createECDH()`]: #crypto_crypto_createecdh_curvename
-[`crypto.createHash()`]: #crypto_crypto_createhash_algorithm_options
-[`crypto.createHmac()`]: #crypto_crypto_createhmac_algorithm_key_options
-[`crypto.createPrivateKey()`]: #crypto_crypto_createprivatekey_key
-[`crypto.createPublicKey()`]: #crypto_crypto_createpublickey_key
-[`crypto.createSecretKey()`]: #crypto_crypto_createsecretkey_key_encoding
-[`crypto.createSign()`]: #crypto_crypto_createsign_algorithm_options
-[`crypto.createVerify()`]: #crypto_crypto_createverify_algorithm_options
-[`crypto.getCurves()`]: #crypto_crypto_getcurves
-[`crypto.getDiffieHellman()`]: #crypto_crypto_getdiffiehellman_groupname
-[`crypto.getHashes()`]: #crypto_crypto_gethashes
-[`crypto.privateDecrypt()`]: #crypto_crypto_privatedecrypt_privatekey_buffer
-[`crypto.privateEncrypt()`]: #crypto_crypto_privateencrypt_privatekey_buffer
-[`crypto.publicDecrypt()`]: #crypto_crypto_publicdecrypt_key_buffer
-[`crypto.publicEncrypt()`]: #crypto_crypto_publicencrypt_key_buffer
-[`crypto.randomBytes()`]: #crypto_crypto_randombytes_size_callback
-[`crypto.randomFill()`]: #crypto_crypto_randomfill_buffer_offset_size_callback
-[`crypto.scrypt()`]: #crypto_crypto_scrypt_password_salt_keylen_options_callback
-[`decipher.final()`]: #crypto_decipher_final_outputencoding
-[`decipher.update()`]: #crypto_decipher_update_data_inputencoding_outputencoding
-[`diffieHellman.setPublicKey()`]: #crypto_diffiehellman_setpublickey_publickey_encoding
-[`ecdh.generateKeys()`]: #crypto_ecdh_generatekeys_encoding_format
-[`ecdh.setPrivateKey()`]: #crypto_ecdh_setprivatekey_privatekey_encoding
-[`ecdh.setPublicKey()`]: #crypto_ecdh_setpublickey_publickey_encoding
-[`hash.digest()`]: #crypto_hash_digest_encoding
-[`hash.update()`]: #crypto_hash_update_data_inputencoding
-[`hmac.digest()`]: #crypto_hmac_digest_encoding
-[`hmac.update()`]: #crypto_hmac_update_data_inputencoding
-[`keyObject.export()`]: #crypto_keyobject_export_options
-[`postMessage()`]: worker_threads.md#worker_threads_port_postmessage_value_transferlist
-[`sign.sign()`]: #crypto_sign_sign_privatekey_outputencoding
-[`sign.update()`]: #crypto_sign_update_data_inputencoding
-[`stream.Writable` options]: stream.md#stream_new_stream_writable_options
-[`stream.transform` options]: stream.md#stream_new_stream_transform_options
-[`util.promisify()`]: util.md#util_util_promisify_original
-[`verify.update()`]: #crypto_verify_update_data_inputencoding
-[`verify.verify()`]: #crypto_verify_verify_object_signature_signatureencoding
-[caveats when using strings as inputs to cryptographic APIs]: #crypto_using_strings_as_inputs_to_cryptographic_apis
-[certificate object]: tls.md#tls_certificate_object
-[encoding]: buffer.md#buffer_buffers_and_character_encodings
+[`UV_THREADPOOL_SIZE`]: cli.md#uv_threadpool_sizesize
+[`Verify`]: #class-verify
+[`cipher.final()`]: #cipherfinaloutputencoding
+[`cipher.update()`]: #cipherupdatedata-inputencoding-outputencoding
+[`crypto.createCipher()`]: #cryptocreatecipheralgorithm-password-options
+[`crypto.createCipheriv()`]: #cryptocreatecipherivalgorithm-key-iv-options
+[`crypto.createDecipher()`]: #cryptocreatedecipheralgorithm-password-options
+[`crypto.createDecipheriv()`]: #cryptocreatedecipherivalgorithm-key-iv-options
+[`crypto.createDiffieHellman()`]: #cryptocreatediffiehellmanprime-primeencoding-generator-generatorencoding
+[`crypto.createECDH()`]: #cryptocreateecdhcurvename
+[`crypto.createHash()`]: #cryptocreatehashalgorithm-options
+[`crypto.createHmac()`]: #cryptocreatehmacalgorithm-key-options
+[`crypto.createPrivateKey()`]: #cryptocreateprivatekeykey
+[`crypto.createPublicKey()`]: #cryptocreatepublickeykey
+[`crypto.createSecretKey()`]: #cryptocreatesecretkeykey-encoding
+[`crypto.createSign()`]: #cryptocreatesignalgorithm-options
+[`crypto.createVerify()`]: #cryptocreateverifyalgorithm-options
+[`crypto.getCurves()`]: #cryptogetcurves
+[`crypto.getDiffieHellman()`]: #cryptogetdiffiehellmangroupname
+[`crypto.getHashes()`]: #cryptogethashes
+[`crypto.privateDecrypt()`]: #cryptoprivatedecryptprivatekey-buffer
+[`crypto.privateEncrypt()`]: #cryptoprivateencryptprivatekey-buffer
+[`crypto.publicDecrypt()`]: #cryptopublicdecryptkey-buffer
+[`crypto.publicEncrypt()`]: #cryptopublicencryptkey-buffer
+[`crypto.randomBytes()`]: #cryptorandombytessize-callback
+[`crypto.randomFill()`]: #cryptorandomfillbuffer-offset-size-callback
+[`crypto.scrypt()`]: #cryptoscryptpassword-salt-keylen-options-callback
+[`decipher.final()`]: #decipherfinaloutputencoding
+[`decipher.update()`]: #decipherupdatedata-inputencoding-outputencoding
+[`diffieHellman.setPublicKey()`]: #diffiehellmansetpublickeypublickey-encoding
+[`ecdh.generateKeys()`]: #ecdhgeneratekeysencoding-format
+[`ecdh.setPrivateKey()`]: #ecdhsetprivatekeyprivatekey-encoding
+[`ecdh.setPublicKey()`]: #ecdhsetpublickeypublickey-encoding
+[`hash.digest()`]: #hashdigestencoding
+[`hash.update()`]: #hashupdatedata-inputencoding
+[`hmac.digest()`]: #hmacdigestencoding
+[`hmac.update()`]: #hmacupdatedata-inputencoding
+[`keyObject.export()`]: #keyobjectexportoptions
+[`postMessage()`]: worker_threads.md#portpostmessagevalue-transferlist
+[`sign.sign()`]: #signsignprivatekey-outputencoding
+[`sign.update()`]: #signupdatedata-inputencoding
+[`stream.Writable` options]: stream.md#new-streamwritableoptions
+[`stream.transform` options]: stream.md#new-streamtransformoptions
+[`util.promisify()`]: util.md#utilpromisifyoriginal
+[`verify.update()`]: #verifyupdatedata-inputencoding
+[`verify.verify()`]: #verifyverifyobject-signature-signatureencoding
+[caveats when using strings as inputs to cryptographic APIs]: #using-strings-as-inputs-to-cryptographic-apis
+[certificate object]: tls.md#certificate-object
+[encoding]: buffer.md#buffers-and-character-encodings
 [initialization vector]: https://en.wikipedia.org/wiki/Initialization_vector
 [list of SSL OP Flags]: https://wiki.openssl.org/index.php/List_of_SSL_OP_Flags#Table_of_Options
 [modulo bias]: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle#Modulo_bias
 [safe integers]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger
 [scrypt]: https://en.wikipedia.org/wiki/Scrypt
 [stream]: stream.md
-[stream-writable-write]: stream.md#stream_writable_write_chunk_encoding_callback
+[stream-writable-write]: stream.md#writablewritechunk-encoding-callback

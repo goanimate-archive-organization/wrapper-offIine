@@ -804,7 +804,11 @@ define('global', {
     * bin files are linked to \`{prefix}/bin\`
     * man pages are linked to \`{prefix}/share/man\`
   `,
-  flatten,
+  flatten: (key, obj, flatOptions) => {
+    flatten(key, obj, flatOptions)
+    if (flatOptions.global)
+      flatOptions.location = 'global'
+  },
 })
 
 define('global-style', {
@@ -1131,14 +1135,10 @@ define('location', {
   description: `
     When passed to \`npm config\` this refers to which config file to use.
   `,
-  // NOTE: the flattener here deliberately does not alter the value of global
-  // for now, this is to avoid inadvertently causing any breakage. the value of
-  // global, however, does modify this flag.
-  flatten (key, obj, flatOptions) {
-    // if global is set, we override ourselves
-    if (obj.global)
-      obj.location = 'global'
-    flatOptions.location = obj.location
+  flatten: (key, obj, flatOptions) => {
+    flatten(key, obj, flatOptions)
+    if (flatOptions.global)
+      flatOptions.location = 'global'
   },
 })
 
@@ -1359,7 +1359,11 @@ define('package-lock', {
     modules will also be disabled.  To remove extraneous modules with
     package-locks disabled use \`npm prune\`.
   `,
-  flatten,
+  flatten: (key, obj, flatOptions) => {
+    flatten(key, obj, flatOptions)
+    if (flatOptions.packageLockOnly)
+      flatOptions.packageLock = true
+  },
 })
 
 define('package-lock-only', {
@@ -1375,7 +1379,11 @@ define('package-lock-only', {
     For \`list\` this means the output will be based on the tree described by the
     \`package-lock.json\`, rather than the contents of \`node_modules\`.
   `,
-  flatten,
+  flatten: (key, obj, flatOptions) => {
+    flatten(key, obj, flatOptions)
+    if (flatOptions.packageLockOnly)
+      flatOptions.packageLock = true
+  },
 })
 
 define('pack-destination', {
@@ -2045,10 +2053,14 @@ define('user-agent', {
         .replace(/\{workspaces\}/gi, inWorkspaces)
         .replace(/\{ci\}/gi, ciName ? `ci/${ciName}` : '')
         .trim()
+
+    // We can't clobber the original or else subsequent flattening will fail
+    // (i.e. when we change the underlying config values)
+    // obj[key] = flatOptions.userAgent
+
     // user-agent is a unique kind of config item that gets set from a template
     // and ends up translated.  Because of this, the normal "should we set this
     // to process.env also doesn't work
-    obj[key] = flatOptions.userAgent
     process.env.npm_config_user_agent = flatOptions.userAgent
   },
 })
@@ -2132,6 +2144,9 @@ define('workspace', {
     a workspace which does not yet exist, to create the folder and set it
     up as a brand new workspace within the project.
   `,
+  flatten: (key, obj, flatOptions) => {
+    definitions['user-agent'].flatten('user-agent', obj, flatOptions)
+  },
 })
 
 define('workspaces', {
@@ -2143,6 +2158,9 @@ define('workspaces', {
     Enable running a command in the context of **all** the configured
     workspaces.
   `,
+  flatten: (key, obj, flatOptions) => {
+    definitions['user-agent'].flatten('user-agent', obj, flatOptions)
+  },
 })
 
 define('yes', {

@@ -62,7 +62,7 @@
 
 typedef struct QSVMid {
     AVBufferRef *hw_frames_ref;
-    mfxHDL handle;
+    mfxHDLPair *handle_pair;
 
     AVFrame *locked_frame;
     AVFrame *hw_frame;
@@ -105,11 +105,6 @@ typedef struct QSVFramesContext {
 
 int ff_qsv_print_iopattern(void *log_ctx, int mfx_iopattern,
                            const char *extra_string);
-
-/**
- * Convert a libmfx error code into an ffmpeg error code.
- */
-int ff_qsv_map_error(mfxStatus mfx_err, const char **desc);
 
 int ff_qsv_print_error(void *log_ctx, mfxStatus err,
                        const char *error_string);

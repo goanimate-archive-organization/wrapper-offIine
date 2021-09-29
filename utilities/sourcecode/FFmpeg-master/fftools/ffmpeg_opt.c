@@ -169,7 +169,7 @@ int qp_hist           = 0;
 int stdin_interaction = 1;
 int frame_bits_per_raw_sample = 0;
 float max_error_rate  = 2.0/3;
-int filter_nbthreads = 0;
+char *filter_nbthreads;
 int filter_complex_nbthreads = 0;
 int vstats_version = 2;
 int auto_conversion_filters = 1;
@@ -262,6 +262,13 @@ static AVDictionary *strip_specifiers(AVDictionary *dict)
             *p = ':';
     }
     return ret;
+}
+
+static int opt_filter_threads(void *optctx, const char *opt, const char *arg)
+{
+    av_free(filter_nbthreads);
+    filter_nbthreads = av_strdup(arg);
+    return 0;
 }
 
 static int opt_abort_on(void *optctx, const char *opt, const char *arg)
@@ -814,7 +821,8 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         char *next;
         char *discard_str = NULL;
         const AVClass *cc = avcodec_get_class();
-        const AVOption *discard_opt = av_opt_find(&cc, "skip_frame", NULL, 0, 0);
+        const AVOption *discard_opt = av_opt_find(&cc, "skip_frame", NULL,
+                                                  0, AV_OPT_SEARCH_FAKE_OBJ);
 
         if (!ist)
             exit_program(1);
@@ -1627,8 +1635,6 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
     av_dict_copy(&ost->swr_opts, o->g->swr_opts, 0);
     if (ost->enc && av_get_exact_bits_per_sample(ost->enc->id) == 24)
         av_dict_set(&ost->swr_opts, "output_sample_bits", "24", 0);
-
-    av_dict_copy(&ost->resample_opts, o->g->resample_opts, 0);
 
     ost->source_index = source_index;
     if (source_index >= 0) {
@@ -2586,7 +2592,7 @@ loop_end:
                     count = 0;
                     while (ost->enc->pix_fmts[count] != AV_PIX_FMT_NONE)
                         count++;
-                    f->formats = av_mallocz_array(count + 1, sizeof(*f->formats));
+                    f->formats = av_calloc(count + 1, sizeof(*f->formats));
                     if (!f->formats)
                         exit_program(1);
                     memcpy(f->formats, ost->enc->pix_fmts, (count + 1) * sizeof(*f->formats));
@@ -2599,7 +2605,7 @@ loop_end:
                     count = 0;
                     while (ost->enc->sample_fmts[count] != AV_SAMPLE_FMT_NONE)
                         count++;
-                    f->formats = av_mallocz_array(count + 1, sizeof(*f->formats));
+                    f->formats = av_calloc(count + 1, sizeof(*f->formats));
                     if (!f->formats)
                         exit_program(1);
                     memcpy(f->formats, ost->enc->sample_fmts, (count + 1) * sizeof(*f->formats));
@@ -2610,7 +2616,7 @@ loop_end:
                     count = 0;
                     while (ost->enc->supported_samplerates[count])
                         count++;
-                    f->sample_rates = av_mallocz_array(count + 1, sizeof(*f->sample_rates));
+                    f->sample_rates = av_calloc(count + 1, sizeof(*f->sample_rates));
                     if (!f->sample_rates)
                         exit_program(1);
                     memcpy(f->sample_rates, ost->enc->supported_samplerates,
@@ -2622,7 +2628,7 @@ loop_end:
                     count = 0;
                     while (ost->enc->channel_layouts[count])
                         count++;
-                    f->channel_layouts = av_mallocz_array(count + 1, sizeof(*f->channel_layouts));
+                    f->channel_layouts = av_calloc(count + 1, sizeof(*f->channel_layouts));
                     if (!f->channel_layouts)
                         exit_program(1);
                     memcpy(f->channel_layouts, ost->enc->channel_layouts,
@@ -3620,7 +3626,7 @@ const OptionDef options[] = {
         "set profile", "profile" },
     { "filter",         HAS_ARG | OPT_STRING | OPT_SPEC | OPT_OUTPUT, { .off = OFFSET(filters) },
         "set stream filtergraph", "filter_graph" },
-    { "filter_threads",  HAS_ARG | OPT_INT,                          { &filter_nbthreads },
+    { "filter_threads", HAS_ARG,                                     { .func_arg = opt_filter_threads },
         "number of non-complex filter threads" },
     { "filter_script",  HAS_ARG | OPT_STRING | OPT_SPEC | OPT_OUTPUT, { .off = OFFSET(filter_scripts) },
         "read stream filtergraph description from a file", "filename" },

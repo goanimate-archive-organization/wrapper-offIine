@@ -821,8 +821,6 @@ typedef struct AVIndexEntry {
  */
 #define AV_DISPOSITION_TIMED_THUMBNAILS  0x0800
 
-typedef struct AVStreamInternal AVStreamInternal;
-
 /**
  * To specify text track kind (different from subtitles default).
  */
@@ -1003,12 +1001,6 @@ typedef struct AVStream {
      *
      */
     int pts_wrap_bits;
-
-    /**
-     * An opaque field for libavformat internal usage.
-     * Must not be accessed in any way by callers.
-     */
-    AVStreamInternal *internal;
 } AVStream;
 
 struct AVCodecParserContext *av_stream_get_parser(const AVStream *s);
@@ -1089,8 +1081,6 @@ enum AVDurationEstimationMethod {
     AVFMT_DURATION_FROM_STREAM, ///< Duration estimated from a stream with a known duration
     AVFMT_DURATION_FROM_BITRATE ///< Duration estimated from bitrate (less accurate)
 };
-
-typedef struct AVFormatInternal AVFormatInternal;
 
 /**
  * Format I/O context.
@@ -1559,12 +1549,6 @@ typedef struct AVFormatContext {
      * - decoding: set by user
      */
     char *format_whitelist;
-
-    /**
-     * An opaque field for libavformat internal usage.
-     * Must not be accessed in any way by callers.
-     */
-    AVFormatInternal *internal;
 
     /**
      * IO repositioned flag.

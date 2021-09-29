@@ -1,6 +1,7 @@
 # Process
 
 <!-- introduced_in=v0.10.0 -->
+
 <!-- type=global -->
 
 <!-- source_link=lib/process.js -->
@@ -627,7 +628,9 @@ The `*-deprecation` command-line flags only affect warnings that use the name
 
 ### Event: `'worker'`
 <!-- YAML
-added: v16.2.0
+added:
+  - v16.2.0
+  - v14.18.0
 -->
 
 * `worker` {Worker} The {Worker} that was created.
@@ -665,6 +668,7 @@ A few of the warning types that are most common include:
 ### Signal events
 
 <!--type=event-->
+
 <!--name=SIGINT, SIGHUP, etc.-->
 
 Signal events will be emitted when the Node.js process receives a signal. Please
@@ -2218,7 +2222,9 @@ program memory allocations.
 
 ## `process.memoryUsage.rss()`
 <!-- YAML
-added: v15.6.0
+added:
+  - v15.6.0
+  - v14.18.0
 -->
 
 * Returns: {integer}
@@ -2596,7 +2602,7 @@ tarball.
   that are no longer supported).
   * `'Dubnium'` for the 10.x LTS line beginning with 10.13.0.
   * `'Erbium'` for the 12.x LTS line beginning with 12.13.0.
-  For other LTS Release code names, see [Node.js Changelog Archive](https://github.com/nodejs/node/blob/HEAD/doc/changelogs/CHANGELOG_ARCHIVE.md)
+    For other LTS Release code names, see [Node.js Changelog Archive](https://github.com/nodejs/node/blob/HEAD/doc/changelogs/CHANGELOG_ARCHIVE.md)
 
 <!-- eslint-skip -->
 ```js
@@ -3251,7 +3257,9 @@ This feature is not available in [`Worker`][] threads.
 
 ## `process.setSourceMapsEnabled(val)`
 <!-- YAML
-added: v16.6.0
+added:
+  - v16.6.0
+  - v14.18.0
 -->
 
 > Stability: 1 - Experimental
@@ -3679,63 +3687,63 @@ cases:
   For example, signal `SIGABRT` has value `6`, so the expected exit
   code will be `128` + `6`, or `134`.
 
-[Advanced serialization for `child_process`]: child_process.md#child_process_advanced_serialization
+[Advanced serialization for `child_process`]: child_process.md#advanced-serialization
 [Android building]: https://github.com/nodejs/node/blob/HEAD/BUILDING.md#androidandroid-based-devices-eg-firefox-os
 [Child Process]: child_process.md
 [Cluster]: cluster.md
-[Duplex]: stream.md#stream_duplex_and_transform_streams
+[Duplex]: stream.md#duplex-and-transform-streams
 [Event Loop]: https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/#process-nexttick
 [LTS]: https://github.com/nodejs/Release
-[Readable]: stream.md#stream_readable_streams
-[Signal Events]: #process_signal_events
+[Readable]: stream.md#readable-streams
+[Signal Events]: #signal-events
 [Source Map]: https://sourcemaps.info/spec.html
-[Stream compatibility]: stream.md#stream_compatibility_with_older_node_js_versions
-[TTY]: tty.md#tty_tty
-[Writable]: stream.md#stream_writable_streams
-[`'exit'`]: #process_event_exit
-[`'message'`]: child_process.md#child_process_event_message
-[`'uncaughtException'`]: #process_event_uncaughtexception
-[`--unhandled-rejections`]: cli.md#cli_unhandled_rejections_mode
+[Stream compatibility]: stream.md#compatibility-with-older-nodejs-versions
+[TTY]: tty.md#tty
+[Writable]: stream.md#writable-streams
+[`'exit'`]: #event-exit
+[`'message'`]: child_process.md#event-message
+[`'uncaughtException'`]: #event-uncaughtexception
+[`--unhandled-rejections`]: cli.md#--unhandled-rejectionsmode
 [`Buffer`]: buffer.md
-[`ChildProcess.disconnect()`]: child_process.md#child_process_subprocess_disconnect
-[`ChildProcess.send()`]: child_process.md#child_process_subprocess_send_message_sendhandle_options_callback
-[`ChildProcess`]: child_process.md#child_process_class_childprocess
-[`Error`]: errors.md#errors_class_error
-[`EventEmitter`]: events.md#events_class_eventemitter
-[`NODE_OPTIONS`]: cli.md#cli_node_options_options
+[`ChildProcess.disconnect()`]: child_process.md#subprocessdisconnect
+[`ChildProcess.send()`]: child_process.md#subprocesssendmessage-sendhandle-options-callback
+[`ChildProcess`]: child_process.md#class-childprocess
+[`Error`]: errors.md#class-error
+[`EventEmitter`]: events.md#class-eventemitter
+[`NODE_OPTIONS`]: cli.md#node_optionsoptions
 [`Promise.race()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
-[`Worker`]: worker_threads.md#worker_threads_class_worker
-[`Worker` constructor]: worker_threads.md#worker_threads_new_worker_filename_options
-[`console.error()`]: console.md#console_console_error_data_args
-[`console.log()`]: console.md#console_console_log_data_args
+[`Worker`]: worker_threads.md#class-worker
+[`Worker` constructor]: worker_threads.md#new-workerfilename-options
+[`console.error()`]: console.md#consoleerrordata-args
+[`console.log()`]: console.md#consolelogdata-args
 [`domain`]: domain.md
-[`net.Server`]: net.md#net_class_net_server
-[`net.Socket`]: net.md#net_class_net_socket
-[`os.constants.dlopen`]: os.md#os_dlopen_constants
-[`process.argv`]: #process_process_argv
-[`process.config`]: #process_process_config
-[`process.execPath`]: #process_process_execpath
-[`process.exit()`]: #process_process_exit_code
-[`process.exitCode`]: #process_process_exitcode
-[`process.hrtime()`]: #process_process_hrtime_time
-[`process.hrtime.bigint()`]: #process_process_hrtime_bigint
-[`process.kill()`]: #process_process_kill_pid_signal
-[`process.setUncaughtExceptionCaptureCallback()`]: #process_process_setuncaughtexceptioncapturecallback_fn
+[`net.Server`]: net.md#class-netserver
+[`net.Socket`]: net.md#class-netsocket
+[`os.constants.dlopen`]: os.md#dlopen-constants
+[`process.argv`]: #processargv
+[`process.config`]: #processconfig
+[`process.execPath`]: #processexecpath
+[`process.exit()`]: #processexitcode
+[`process.exitCode`]: #processexitcode
+[`process.hrtime()`]: #processhrtimetime
+[`process.hrtime.bigint()`]: #processhrtimebigint
+[`process.kill()`]: #processkillpid-signal
+[`process.setUncaughtExceptionCaptureCallback()`]: #processsetuncaughtexceptioncapturecallbackfn
 [`promise.catch()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/catch
-[`queueMicrotask()`]: globals.md#globals_queuemicrotask_callback
-[`readable.read()`]: stream.md#stream_readable_read_size
-[`require()`]: globals.md#globals_require
-[`require.main`]: modules.md#modules_accessing_the_main_module
-[`subprocess.kill()`]: child_process.md#child_process_subprocess_kill_signal
-[`v8.setFlagsFromString()`]: v8.md#v8_v8_setflagsfromstring_flags
+[`queueMicrotask()`]: globals.md#queuemicrotaskcallback
+[`readable.read()`]: stream.md#readablereadsize
+[`require()`]: globals.md#require
+[`require.main`]: modules.md#accessing-the-main-module
+[`subprocess.kill()`]: child_process.md#subprocesskillsignal
+[`v8.setFlagsFromString()`]: v8.md#v8setflagsfromstringflags
 [debugger]: debugger.md
 [deprecation code]: deprecations.md
-[note on process I/O]: #process_a_note_on_process_i_o
-[process.cpuUsage]: #process_process_cpuusage_previousvalue
-[process_emit_warning]: #process_process_emitwarning_warning_type_code_ctor
-[process_warning]: #process_event_warning
+[note on process I/O]: #a-note-on-process-io
+[process.cpuUsage]: #processcpuusagepreviousvalue
+[process_emit_warning]: #processemitwarningwarning-type-code-ctor
+[process_warning]: #event-warning
 [report documentation]: report.md
-[terminal raw mode]: tty.md#tty_readstream_setrawmode_mode
+[terminal raw mode]: tty.md#readstreamsetrawmodemode
 [uv_rusage_t]: https://docs.libuv.org/en/v1.x/misc.html#c.uv_rusage_t
 [wikipedia_major_fault]: https://en.wikipedia.org/wiki/Page_fault#Major
 [wikipedia_minor_fault]: https://en.wikipedia.org/wiki/Page_fault#Minor

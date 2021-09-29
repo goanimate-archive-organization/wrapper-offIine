@@ -468,6 +468,10 @@ if the socket is not connected.
 <!-- YAML
 added: v0.1.99
 changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/39190
+    description: The `address` parameter now only accepts a `string`, `null`
+                 or `undefined`.
   - version:
     - v14.5.0
     - v12.19.0
@@ -517,7 +521,7 @@ If `msg` is an array, `offset` and `length` must not be specified.
 
 The `address` argument is a string. If the value of `address` is a host name,
 DNS will be used to resolve the address of the host. If `address` is not
-provided or otherwise falsy, `'127.0.0.1'` (for `udp4` sockets) or `'::1'`
+provided or otherwise nullish, `'127.0.0.1'` (for `udp4` sockets) or `'::1'`
 (for `udp6` sockets) will be used by default.
 
 If the socket has not been previously bound with a call to `bind`, the socket
@@ -912,19 +916,19 @@ and `udp6` sockets). The bound address and port can be retrieved using
 
 [IPv6 Zone Indices]: https://en.wikipedia.org/wiki/IPv6_address#Scoped_literal_IPv6_addresses
 [RFC 4007]: https://tools.ietf.org/html/rfc4007
-[`'close'`]: #dgram_event_close
-[`ERR_SOCKET_BAD_PORT`]: errors.md#errors_err_socket_bad_port
-[`ERR_SOCKET_BUFFER_SIZE`]: errors.md#errors_err_socket_buffer_size
-[`ERR_SOCKET_DGRAM_IS_CONNECTED`]: errors.md#errors_err_socket_dgram_is_connected
-[`ERR_SOCKET_DGRAM_NOT_CONNECTED`]: errors.md#errors_err_socket_dgram_not_connected
-[`Error`]: errors.md#errors_class_error
-[`System Error`]: errors.md#errors_class_systemerror
-[`close()`]: #dgram_socket_close_callback
+[`'close'`]: #event-close
+[`ERR_SOCKET_BAD_PORT`]: errors.md#err_socket_bad_port
+[`ERR_SOCKET_BUFFER_SIZE`]: errors.md#err_socket_buffer_size
+[`ERR_SOCKET_DGRAM_IS_CONNECTED`]: errors.md#err_socket_dgram_is_connected
+[`ERR_SOCKET_DGRAM_NOT_CONNECTED`]: errors.md#err_socket_dgram_not_connected
+[`Error`]: errors.md#class-error
+[`System Error`]: errors.md#class-systemerror
+[`close()`]: #socketclosecallback
 [`cluster`]: cluster.md
-[`connect()`]: #dgram_socket_connect_port_address_callback
-[`dgram.createSocket()`]: #dgram_dgram_createsocket_options_callback
-[`dns.lookup()`]: dns.md#dns_dns_lookup_hostname_options_callback
-[`socket.address().address`]: #dgram_socket_address
-[`socket.address().port`]: #dgram_socket_address
-[`socket.bind()`]: #dgram_socket_bind_port_address_callback
-[byte length]: buffer.md#buffer_static_method_buffer_bytelength_string_encoding
+[`connect()`]: #socketconnectport-address-callback
+[`dgram.createSocket()`]: #dgramcreatesocketoptions-callback
+[`dns.lookup()`]: dns.md#dnslookuphostname-options-callback
+[`socket.address().address`]: #socketaddress
+[`socket.address().port`]: #socketaddress
+[`socket.bind()`]: #socketbindport-address-callback
+[byte length]: buffer.md#static-method-bufferbytelengthstring-encoding

@@ -747,7 +747,7 @@ t.test('user-agent', t => {
   definitions['user-agent'].flatten('user-agent', obj, flat)
   t.equal(flat.userAgent, expectNoCI)
   t.equal(process.env.npm_config_user_agent, flat.userAgent, 'npm_user_config environment is set')
-  t.equal(obj['user-agent'], flat.userAgent, 'config user-agent template is translated')
+  t.not(obj['user-agent'], flat.userAgent, 'config user-agent template is not translated')
 
   obj['ci-name'] = 'foo'
   obj['user-agent'] = definitions['user-agent'].default
@@ -755,7 +755,7 @@ t.test('user-agent', t => {
   definitions['user-agent'].flatten('user-agent', obj, flat)
   t.equal(flat.userAgent, expectCI)
   t.equal(process.env.npm_config_user_agent, flat.userAgent, 'npm_user_config environment is set')
-  t.equal(obj['user-agent'], flat.userAgent, 'config user-agent template is translated')
+  t.not(obj['user-agent'], flat.userAgent, 'config user-agent template is not translated')
 
   delete obj['ci-name']
   obj.workspaces = true
@@ -764,7 +764,7 @@ t.test('user-agent', t => {
   definitions['user-agent'].flatten('user-agent', obj, flat)
   t.equal(flat.userAgent, expectWorkspaces)
   t.equal(process.env.npm_config_user_agent, flat.userAgent, 'npm_user_config environment is set')
-  t.equal(obj['user-agent'], flat.userAgent, 'config user-agent template is translated')
+  t.not(obj['user-agent'], flat.userAgent, 'config user-agent template is not translated')
 
   delete obj.workspaces
   obj.workspace = ['foo']
@@ -772,7 +772,7 @@ t.test('user-agent', t => {
   definitions['user-agent'].flatten('user-agent', obj, flat)
   t.equal(flat.userAgent, expectWorkspaces)
   t.equal(process.env.npm_config_user_agent, flat.userAgent, 'npm_user_config environment is set')
-  t.equal(obj['user-agent'], flat.userAgent, 'config user-agent template is translated')
+  t.not(obj['user-agent'], flat.userAgent, 'config user-agent template is not translated')
   t.end()
 })
 
@@ -812,19 +812,66 @@ t.test('location', t => {
     location: 'user',
   }
   const flat = {}
+  // the global flattener is what sets location, so run that
+  definitions.global.flatten('global', obj, flat)
   definitions.location.flatten('location', obj, flat)
   // global = true sets location in both places to global
-  t.strictSame(flat, { location: 'global' })
-  t.strictSame(obj, { global: true, location: 'global' })
+  t.strictSame(flat, { global: true, location: 'global' })
+  // location here is still 'user' because flattening doesn't modify the object
+  t.strictSame(obj, { global: true, location: 'user' })
 
   obj.global = false
   obj.location = 'user'
   delete flat.global
   delete flat.location
 
+  definitions.global.flatten('global', obj, flat)
   definitions.location.flatten('location', obj, flat)
   // global = false leaves location unaltered
-  t.strictSame(flat, { location: 'user' })
+  t.strictSame(flat, { global: false, location: 'user' })
   t.strictSame(obj, { global: false, location: 'user' })
+  t.end()
+})
+
+t.test('package-lock-only', t => {
+  const obj = {
+    'package-lock': false,
+    'package-lock-only': true,
+  }
+  const flat = {}
+
+  definitions['package-lock-only'].flatten('package-lock-only', obj, flat)
+  definitions['package-lock'].flatten('package-lock', obj, flat)
+  t.strictSame(flat, { packageLock: true, packageLockOnly: true })
+
+  obj['package-lock-only'] = false
+  delete flat.packageLock
+  delete flat.packageLockOnly
+
+  definitions['package-lock-only'].flatten('package-lock-only', obj, flat)
+  definitions['package-lock'].flatten('package-lock', obj, flat)
+  t.strictSame(flat, { packageLock: false, packageLockOnly: false })
+  t.end()
+})
+
+t.test('workspaces', t => {
+  const obj = {
+    workspaces: true,
+    'user-agent': definitions['user-agent'].default,
+  }
+  const flat = {}
+  definitions.workspaces.flatten('workspaces', obj, flat)
+  t.match(flat.userAgent, /workspaces\/true/)
+  t.end()
+})
+
+t.test('workspace', t => {
+  const obj = {
+    workspace: ['workspace-a'],
+    'user-agent': definitions['user-agent'].default,
+  }
+  const flat = {}
+  definitions.workspace.flatten('workspaces', obj, flat)
+  t.match(flat.userAgent, /workspaces\/true/)
   t.end()
 })

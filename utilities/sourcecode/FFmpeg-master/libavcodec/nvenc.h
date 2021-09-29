@@ -68,11 +68,13 @@ typedef void ID3D11Device;
 #define NVENC_HAVE_MULTIPASS
 #define NVENC_HAVE_LDKFS
 #define NVENC_HAVE_H264_LVL6
+#define NVENC_HAVE_HEVC_CONSTRAINED_ENCODING
 #endif
 
 // SDK 11.1 compile time feature checks
 #if NVENCAPI_CHECK_VERSION(11, 1)
 #define NVENC_HAVE_QP_CHROMA_OFFSETS
+#define NVENC_HAVE_SINGLE_SLICE_INTRA_REFRESH
 #endif
 
 typedef struct NvencSurface
@@ -230,6 +232,9 @@ typedef struct NvencContext
     int multipass;
     int ldkfs;
     int extra_sei;
+    int intra_refresh;
+    int single_slice_intra_refresh;
+    int constrained_encoding;
 } NvencContext;
 
 int ff_nvenc_encode_init(AVCodecContext *avctx);

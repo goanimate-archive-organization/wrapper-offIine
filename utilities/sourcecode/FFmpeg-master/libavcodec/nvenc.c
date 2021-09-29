@@ -529,6 +529,38 @@ static int nvenc_check_capabilities(AVCodecContext *avctx)
     }
 #endif
 
+#ifdef NVENC_HAVE_SINGLE_SLICE_INTRA_REFRESH
+    ret = nvenc_check_cap(avctx, NV_ENC_CAPS_SINGLE_SLICE_INTRA_REFRESH);
+    if(ctx->single_slice_intra_refresh && ret <= 0) {
+        av_log(avctx, AV_LOG_WARNING, "Single slice intra refresh not supported by the device\n");
+        return AVERROR(ENOSYS);
+    }
+#else
+    if(ctx->single_slice_intra_refresh) {
+        av_log(avctx, AV_LOG_WARNING, "Single slice intra refresh needs SDK 11.1 at build time\n");
+        return AVERROR(ENOSYS);
+    }
+#endif
+
+    ret = nvenc_check_cap(avctx, NV_ENC_CAPS_SUPPORT_INTRA_REFRESH);
+    if((ctx->intra_refresh || ctx->single_slice_intra_refresh) && ret <= 0) {
+        av_log(avctx, AV_LOG_WARNING, "Intra refresh not supported by the device\n");
+        return AVERROR(ENOSYS);
+    }
+
+#ifndef NVENC_HAVE_HEVC_CONSTRAINED_ENCODING
+    if (ctx->constrained_encoding && avctx->codec->id == AV_CODEC_ID_HEVC) {
+        av_log(avctx, AV_LOG_WARNING, "HEVC constrained encoding needs SDK 10.0 at build time\n");
+        return AVERROR(ENOSYS);
+    }
+#endif
+
+    ret = nvenc_check_cap(avctx, NV_ENC_CAPS_SUPPORT_CONSTRAINED_ENCODING);
+    if(ctx->constrained_encoding && ret <= 0) {
+        av_log(avctx, AV_LOG_WARNING, "Constrained encoding not supported by the device\n");
+        return AVERROR(ENOSYS);
+    }
+
     ctx->support_dyn_bitrate = nvenc_check_cap(avctx, NV_ENC_CAPS_SUPPORT_DYN_BITRATE_CHANGE);
 
     return 0;
@@ -1074,7 +1106,19 @@ static av_cold int nvenc_setup_h264_config(AVCodecContext *avctx)
         || vui->videoFullRangeFlag != 0);
 
     h264->sliceMode = 3;
-    h264->sliceModeData = 1;
+    h264->sliceModeData = avctx->slices > 0 ? avctx->slices : 1;
+
+    if (ctx->intra_refresh) {
+        h264->enableIntraRefresh = 1;
+        h264->intraRefreshPeriod = avctx->gop_size;
+        h264->intraRefreshCnt = avctx->gop_size - 1;
+#ifdef NVENC_HAVE_SINGLE_SLICE_INTRA_REFRESH
+        h264->singleSliceIntraRefresh = ctx->single_slice_intra_refresh;
+#endif
+    }
+
+    if (ctx->constrained_encoding)
+        h264->enableConstrainedEncoding = 1;
 
     h264->disableSPSPPS = (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) ? 1 : 0;
     h264->repeatSPSPPS  = (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) ? 0 : 1;
@@ -1084,8 +1128,11 @@ static av_cold int nvenc_setup_h264_config(AVCodecContext *avctx)
         /* 0 means "let the hardware decide" */
         h264->maxNumRefFrames = ctx->dpb_size;
     }
-    if (avctx->gop_size >= 0) {
-        h264->idrPeriod = cc->gopLength;
+
+    if (ctx->intra_refresh) {
+        h264->idrPeriod = NVENC_INFINITE_GOPLENGTH;
+    } else if (avctx->gop_size >= 0) {
+        h264->idrPeriod = avctx->gop_size;
     }
 
     if (IS_CBR(cc->rcParams.rateControlMode)) {
@@ -1171,7 +1218,21 @@ static av_cold int nvenc_setup_hevc_config(AVCodecContext *avctx)
         || vui->videoFullRangeFlag != 0);
 
     hevc->sliceMode = 3;
-    hevc->sliceModeData = 1;
+    hevc->sliceModeData = avctx->slices > 0 ? avctx->slices : 1;
+
+    if (ctx->intra_refresh) {
+        hevc->enableIntraRefresh = 1;
+        hevc->intraRefreshPeriod = avctx->gop_size;
+        hevc->intraRefreshCnt = avctx->gop_size - 1;
+#ifdef NVENC_HAVE_SINGLE_SLICE_INTRA_REFRESH
+        hevc->singleSliceIntraRefresh = ctx->single_slice_intra_refresh;
+#endif
+    }
+
+#ifdef NVENC_HAVE_HEVC_CONSTRAINED_ENCODING
+    if (ctx->constrained_encoding)
+        hevc->enableConstrainedEncoding = 1;
+#endif
 
     hevc->disableSPSPPS = (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) ? 1 : 0;
     hevc->repeatSPSPPS  = (avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) ? 0 : 1;
@@ -1181,8 +1242,11 @@ static av_cold int nvenc_setup_hevc_config(AVCodecContext *avctx)
         /* 0 means "let the hardware decide" */
         hevc->maxNumRefFramesInDPB = ctx->dpb_size;
     }
-    if (avctx->gop_size >= 0) {
-        hevc->idrPeriod = cc->gopLength;
+
+    if (ctx->intra_refresh) {
+        hevc->idrPeriod = NVENC_INFINITE_GOPLENGTH;
+    } else if (avctx->gop_size >= 0) {
+        hevc->idrPeriod = avctx->gop_size;
     }
 
     if (IS_CBR(cc->rcParams.rateControlMode)) {
@@ -1367,6 +1431,13 @@ static av_cold int nvenc_setup_encoder(AVCodecContext *avctx)
         ctx->encode_config.gopLength = 1;
     }
 
+    /* force to enable intra refresh */
+    if(ctx->single_slice_intra_refresh)
+        ctx->intra_refresh = 1;
+
+    if (ctx->intra_refresh)
+        ctx->encode_config.gopLength = NVENC_INFINITE_GOPLENGTH;
+
     nvenc_recalc_surfaces(avctx);
 
     nvenc_setup_rate_control(avctx);
@@ -1507,7 +1578,7 @@ static av_cold int nvenc_setup_surfaces(AVCodecContext *avctx)
     NvencContext *ctx = avctx->priv_data;
     int i, res = 0, res2;
 
-    ctx->surfaces = av_mallocz_array(ctx->nb_surfaces, sizeof(*ctx->surfaces));
+    ctx->surfaces = av_calloc(ctx->nb_surfaces, sizeof(*ctx->surfaces));
     if (!ctx->surfaces)
         return AVERROR(ENOMEM);
 

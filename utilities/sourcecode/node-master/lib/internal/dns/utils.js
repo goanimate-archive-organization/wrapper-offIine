@@ -32,7 +32,6 @@ const IPv6RE = /^\[([^[\]]*)\]/;
 const addrSplitRE = /(^.+?)(?::(\d+))?$/;
 const {
   ERR_DNS_SET_SERVERS_FAILED,
-  ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_IP_ADDRESS,
 } = errors.codes;
@@ -131,8 +130,8 @@ class Resolver {
   setLocalAddress(ipv4, ipv6) {
     validateString(ipv4, 'ipv4');
 
-    if (typeof ipv6 !== 'string' && ipv6 !== undefined) {
-      throw new ERR_INVALID_ARG_TYPE('ipv6', ['String', 'undefined'], ipv6);
+    if (ipv6 !== undefined) {
+      validateString(ipv6, 'ipv6');
     }
 
     this._handle.setLocalAddress(ipv4, ipv6);
@@ -193,16 +192,22 @@ function emitInvalidHostnameWarning(hostname) {
   );
 }
 
-let dnsOrder = getOptionValue('--dns-result-order') || 'ipv4first';
+let typeCoercionWarningEmitted = false;
+function emitTypeCoercionDeprecationWarning() {
+  if (!typeCoercionWarningEmitted) {
+    process.emitWarning(
+      'Type coercion of dns.lookup options is deprecated',
+      'DeprecationWarning',
+      'DEP0153'
+    );
+    typeCoercionWarningEmitted = true;
+  }
+}
+
+let dnsOrder = getOptionValue('--dns-result-order') || 'verbatim';
 
 function getDefaultVerbatim() {
-  switch (dnsOrder) {
-    case 'verbatim':
-      return true;
-    case 'ipv4first':
-    default:
-      return false;
-  }
+  return dnsOrder !== 'ipv4first';
 }
 
 function setDefaultResultOrder(value) {
@@ -219,6 +224,7 @@ module.exports = {
   validateTries,
   Resolver,
   emitInvalidHostnameWarning,
+  emitTypeCoercionDeprecationWarning,
   getDefaultVerbatim,
   setDefaultResultOrder,
 };

@@ -121,6 +121,8 @@ class EnvironmentOptions : public Options {
   uint64_t max_http_header_size = 16 * 1024;
   bool deprecation = true;
   bool force_async_hooks_checks = true;
+  bool allow_native_addons = true;
+  bool global_search_paths = true;
   bool warnings = true;
   bool force_context_aware = false;
   bool pending_deprecation = false;
@@ -150,6 +152,7 @@ class EnvironmentOptions : public Options {
   bool trace_tls = false;
   bool trace_uncaught = false;
   bool trace_warnings = false;
+  bool extra_info_on_fatal_exception = true;
   std::string unhandled_rejections;
   std::string userland_loader;
   bool verify_base_objects =

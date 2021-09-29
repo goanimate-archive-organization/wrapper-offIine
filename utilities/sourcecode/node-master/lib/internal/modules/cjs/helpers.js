@@ -30,8 +30,16 @@ let debug = require('internal/util/debuglog').debuglog('module', (fn) => {
   debug = fn;
 });
 
+const noAddons = getOptionValue('--no-addons');
+const addonConditions = noAddons ? [] : ['node-addons'];
+
 // TODO: Use this set when resolving pkg#exports conditions in loader.js.
-const cjsConditions = new SafeSet(['require', 'node', ...userConditions]);
+const cjsConditions = new SafeSet([
+  'require',
+  'node',
+  ...addonConditions,
+  ...userConditions,
+]);
 
 function loadNativeModule(filename, request) {
   const mod = NativeModule.map.get(filename);
@@ -131,9 +139,16 @@ function stripBOM(content) {
   return content;
 }
 
-function addBuiltinLibsToObject(object) {
+function addBuiltinLibsToObject(object, dummyModuleName) {
   // Make built-in modules available directly (loaded lazily).
-  const { builtinModules } = require('internal/modules/cjs/loader').Module;
+  const Module = require('internal/modules/cjs/loader').Module;
+  const { builtinModules } = Module;
+
+  // To require built-in modules in user-land and ignore modules whose
+  // `canBeRequiredByUsers` is false. So we create a dummy module object and not
+  // use `require()` directly.
+  const dummyModule = new Module(dummyModuleName);
+
   ArrayPrototypeForEach(builtinModules, (name) => {
     // Neither add underscored modules, nor ones that contain slashes (e.g.,
     // 'fs/promises') or ones that are already defined.
@@ -157,7 +172,7 @@ function addBuiltinLibsToObject(object) {
 
     ObjectDefineProperty(object, name, {
       get: () => {
-        const lib = require(name);
+        const lib = dummyModule.require(name);
 
         // Disable the current getter/setter and set up a new
         // non-enumerable property.

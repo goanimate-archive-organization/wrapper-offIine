@@ -455,7 +455,7 @@ function REPLServer(prompt,
               filename: file,
               displayErrors: true,
               importModuleDynamically: async (specifier) => {
-                return asyncESM.ESMLoader.import(specifier, parentURL);
+                return asyncESM.esmLoader.import(specifier, parentURL);
               }
             });
           } catch (fallbackError) {
@@ -497,7 +497,7 @@ function REPLServer(prompt,
             filename: file,
             displayErrors: true,
             importModuleDynamically: async (specifier) => {
-              return asyncESM.ESMLoader.import(specifier, parentURL);
+              return asyncESM.esmLoader.import(specifier, parentURL);
             }
           });
         } catch (e) {
@@ -1098,7 +1098,7 @@ REPLServer.prototype.createContext = function() {
     value: makeRequireFunction(replModule)
   });
 
-  addBuiltinLibsToObject(context);
+  addBuiltinLibsToObject(context, '<REPL>');
 
   return context;
 };

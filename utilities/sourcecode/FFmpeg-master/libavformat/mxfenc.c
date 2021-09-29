@@ -965,7 +965,6 @@ static void mxf_write_structural_component(AVFormatContext *s, AVStream *st, MXF
 {
     MXFContext *mxf = s->priv_data;
     AVIOContext *pb = s->pb;
-    int i;
 
     mxf_write_metadata_key(pb, 0x011100);
     PRINT_KEY(s, "sturctural component key", pb->buf_ptr - 16);
@@ -985,8 +984,7 @@ static void mxf_write_structural_component(AVFormatContext *s, AVStream *st, MXF
     // write source package uid, end of the reference
     mxf_write_local_tag(s, 32, 0x1101);
     if (!package->ref) {
-        for (i = 0; i < 4; i++)
-            avio_wb64(pb, 0);
+        ffio_fill(pb, 0, 32);
     } else
         mxf_write_umid(s, package->ref->instance);
 
@@ -3100,13 +3098,14 @@ static void mxf_deinit(AVFormatContext *s)
 
 static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket *pkt, int flush)
 {
+    FFFormatContext *const si = ffformatcontext(s);
     int i, stream_count = 0;
 
     for (i = 0; i < s->nb_streams; i++)
-        stream_count += !!s->streams[i]->internal->last_in_packet_buffer;
+        stream_count += !!ffstream(s->streams[i])->last_in_packet_buffer;
 
     if (stream_count && (s->nb_streams == stream_count || flush)) {
-        PacketList *pktl = s->internal->packet_buffer;
+        PacketList *pktl = si->packet_buffer;
         if (s->nb_streams != stream_count) {
             PacketList *last = NULL;
             // find last packet in edit unit
@@ -3114,8 +3113,8 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
                 if (!stream_count || pktl->pkt.stream_index == 0)
                     break;
                 // update last packet in packet buffer
-                if (s->streams[pktl->pkt.stream_index]->internal->last_in_packet_buffer != pktl)
-                    s->streams[pktl->pkt.stream_index]->internal->last_in_packet_buffer = pktl;
+                if (ffstream(s->streams[pktl->pkt.stream_index])->last_in_packet_buffer != pktl)
+                    ffstream(s->streams[pktl->pkt.stream_index])->last_in_packet_buffer = pktl;
                 last = pktl;
                 pktl = pktl->next;
                 stream_count--;
@@ -3130,20 +3129,20 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
             if (last)
                 last->next = NULL;
             else {
-                s->internal->packet_buffer = NULL;
-                s->internal->packet_buffer_end= NULL;
+                si->packet_buffer     = NULL;
+                si->packet_buffer_end = NULL;
                 goto out;
             }
-            pktl = s->internal->packet_buffer;
+            pktl = si->packet_buffer;
         }
 
         *out = pktl->pkt;
         av_log(s, AV_LOG_TRACE, "out st:%d dts:%"PRId64"\n", (*out).stream_index, (*out).dts);
-        s->internal->packet_buffer = pktl->next;
-        if(s->streams[pktl->pkt.stream_index]->internal->last_in_packet_buffer == pktl)
-            s->streams[pktl->pkt.stream_index]->internal->last_in_packet_buffer= NULL;
-        if(!s->internal->packet_buffer)
-            s->internal->packet_buffer_end= NULL;
+        si->packet_buffer = pktl->next;
+        if (ffstream(s->streams[pktl->pkt.stream_index])->last_in_packet_buffer == pktl)
+            ffstream(s->streams[pktl->pkt.stream_index])->last_in_packet_buffer = NULL;
+        if (!si->packet_buffer)
+            si->packet_buffer_end = NULL;
         av_freep(&pktl);
         return 1;
     } else {

@@ -46,8 +46,10 @@ zend_persistent_script* create_persistent_script(void)
 void free_persistent_script(zend_persistent_script *persistent_script, int destroy_elements)
 {
 	if (!destroy_elements) {
-		persistent_script->script.function_table.pDestructor = NULL;
-		persistent_script->script.class_table.pDestructor = NULL;
+		/* Both the keys and values have been transferred into the global tables.
+		 * Set nNumUsed=0 to only deallocate the table, but not destroy any elements. */
+		persistent_script->script.function_table.nNumUsed = 0;
+		persistent_script->script.class_table.nNumUsed = 0;
 	} else {
 		destroy_op_array(&persistent_script->script.main_op_array);
 	}
@@ -57,6 +59,16 @@ void free_persistent_script(zend_persistent_script *persistent_script, int destr
 
 	if (persistent_script->script.filename) {
 		zend_string_release_ex(persistent_script->script.filename, 0);
+	}
+
+	if (persistent_script->warnings) {
+		for (uint32_t i = 0; i < persistent_script->num_warnings; i++) {
+			zend_error_info *info = persistent_script->warnings[i];
+			zend_string_release(info->filename);
+			zend_string_release(info->message);
+			efree(info);
+		}
+		efree(persistent_script->warnings);
 	}
 
 	efree(persistent_script);

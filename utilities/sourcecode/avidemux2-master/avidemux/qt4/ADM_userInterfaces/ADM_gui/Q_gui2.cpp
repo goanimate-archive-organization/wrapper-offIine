@@ -628,7 +628,7 @@ MainWindow::MainWindow(const vector<IScriptEngine*>& scriptEngines) : _scriptEng
     ui.menuToolbars->addSeparator();
     ui.menuToolbars->addAction(restoreDefaults);
 
-    connect(ui.menuToolbars->actions().at(6),SIGNAL(triggered(bool)),this,SLOT(restoreDefaultWidgetState(bool)));
+    connect(ui.menuToolbars->actions().last(),SIGNAL(triggered(bool)),this,SLOT(restoreDefaultWidgetState(bool)));
 
     this->installEventFilter(this);
     slider->installEventFilter(this);
@@ -855,6 +855,12 @@ bool MainWindow::buildMenu(QMenu *root,MenuEntry *menu, int nb)
                                     case ACT_MarkB:
                                         prefs->get(KEYBOARD_SHORTCUTS_ALT_MARK_B,sc);
                                         break;
+                                    case ACT_ResetMarkerA:
+                                        prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARK_A,sc);
+                                        break;
+                                    case ACT_ResetMarkerB:
+                                        prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARK_B,sc);
+                                        break;
                                     case ACT_ResetMarkers:
                                         prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARKERS,sc);
                                         break;
@@ -959,13 +965,10 @@ void MainWindow::buildActionLists(void)
     PUSH_LOADED(File, ACT_CLOSE)
     PUSH_LOADED(File, ACT_VIDEO_PROPERTIES)
 
-    PUSH_LOADED(Edit, ACT_Cut)
     PUSH_LOADED(Edit, ACT_Copy)
-    PUSH_LOADED(Edit, ACT_Delete)
 
     PUSH_LOADED(Edit, ACT_MarkA)
     PUSH_LOADED(Edit, ACT_MarkB)
-    PUSH_LOADED(Edit, ACT_ResetMarkers)
 
     PUSH_LOADED(View, ACT_ZOOM_1_4)
     PUSH_LOADED(View, ACT_ZOOM_1_2)
@@ -1135,8 +1138,8 @@ void MainWindow::setMenuItemsEnabledState(void)
         return;
     }
 
-    bool vid, undo, redo, paste, restore;
-    vid=undo=redo=paste=restore=false;
+    bool vid, undo, redo, paste, resetA, resetB;
+    vid = undo = redo = paste = resetA = resetB = false;
     if(avifileinfo)
         vid=true; // a video is loaded
 
@@ -1159,18 +1162,22 @@ void MainWindow::setMenuItemsEnabledState(void)
     {
         undo=video_body->canUndo();
         redo=video_body->canRedo();
+        if(video_body->getMarkerAPts())
+            resetA = true;
+        if(video_body->getMarkerBPts() != video_body->getVideoDuration())
+            resetB = true;
         paste=!video_body->clipboardEmpty();
     }
     ENABLE(Edit, ACT_Undo, undo)
     ENABLE(Edit, ACT_Redo, redo)
-    if(!vid || (!undo && !redo)) // if no edits have been performed, disable "Reset Edit" menu item
-    {
-        restore=A_checkSavedSession(false);
-        ENABLE(Edit, ACT_ResetSegments, false)
-    }else
-    {
-        ENABLE(Edit, ACT_ResetSegments, true)
-    }
+    ENABLE(Edit, ACT_ResetSegments, vid)
+    // TODO: Detect that segment layout matches the default one and disable "Reset Edit" then too.
+    ENABLE(Edit, ACT_ResetMarkerA, resetA)
+    ENABLE(Edit, ACT_ResetMarkerB, resetB)
+    ENABLE(Edit, ACT_ResetMarkers, (resetA || resetB))
+
+    ENABLE(Edit, ACT_Cut, (resetA || resetB))
+    ENABLE(Edit, ACT_Delete, (resetA || resetB))
     ENABLE(Edit, ACT_Paste, paste)
 
     n=ActionsAlwaysAvailable.size();
@@ -1186,7 +1193,7 @@ void MainWindow::setMenuItemsEnabledState(void)
     if(recentProjects && recentProjects->actions().size())
         haveRecentItems=true;
     ENABLE(Recent, ACT_CLEAR_RECENT, haveRecentItems)
-    ENABLE(Recent, ACT_RESTORE_SESSION, restore)
+    ENABLE(Recent, ACT_RESTORE_SESSION, A_checkSavedSession(false))
 
     ui.selectionDuration->setEnabled(vid);
     slider->setEnabled(vid);
@@ -1312,6 +1319,8 @@ void MainWindow::updateActionShortcuts(void)
             case ACT_Delete:
             case ACT_MarkA:
             case ACT_MarkB:
+            case ACT_ResetMarkerA:
+            case ACT_ResetMarkerB:
             case ACT_ResetMarkers:
                 defaultShortcuts.push_back(m);
                 break;
@@ -1355,6 +1364,12 @@ void MainWindow::updateActionShortcuts(void)
                     break;
                 case ACT_MarkB:
                     prefs->get(KEYBOARD_SHORTCUTS_ALT_MARK_B,sc);
+                    break;
+                case ACT_ResetMarkerA:
+                    prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARK_A,sc);
+                    break;
+                case ACT_ResetMarkerB:
+                    prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARK_B,sc);
                     break;
                 case ACT_ResetMarkers:
                     prefs->get(KEYBOARD_SHORTCUTS_ALT_RESET_MARKERS,sc);
@@ -2102,11 +2117,13 @@ uint8_t initGUI(const vector<IScriptEngine*>& scriptEngines)
 #endif
 
     bool vuMeterIsHidden = false;
+    bool maximize = false;
     QSettings *qset = qtSettingsCreate();
     if(qset)
     {
         qset->beginGroup("MainWindow");
         mw->restoreState(qset->value("windowState").toByteArray());
+        maximize = qset->value("showMaximized", false).toBool();
         qset->endGroup();
         // Hack: allow to drop other Qt-specific settings on application restart
         char *dropSettingsOnLaunch = getenv("ADM_QT_DROP_SETTINGS");
@@ -2119,8 +2136,17 @@ uint8_t initGUI(const vector<IScriptEngine*>& scriptEngines)
         if(openglEnabled && vuMeterIsHidden)
             mw->ui.audioMetreWidget->setVisible(true);
     }
-    mw->show();
+
     QuiMainWindows = (QWidget*)mw;
+
+    if(maximize)
+    {
+        UI_setBlockZoomChangesFlag(false); // unblock zoom to fit
+        QuiMainWindows->showMaximized();
+    }else
+    {
+        QuiMainWindows->show();
+    }
 
     uint32_t w, h;
 
@@ -2171,6 +2197,7 @@ void UI_closeGui(void)
     {
         qset->beginGroup("MainWindow");
         qset->setValue("windowState", ((QMainWindow *)QuiMainWindows)->saveState());
+        qset->setValue("showMaximized", QuiMainWindows->isMaximized());
         qset->endGroup();
         delete qset;
         qset = NULL;
@@ -2842,6 +2869,16 @@ void UI_getMaximumPreviewSize(uint32_t *availWidth, uint32_t *availHeight)
     int h = screenHeight - reqh - fheight;
     if(w < 0) w = 0;
     if(h < 0) h = 0;
+
+    // If we have to downscale anyway, leave some margin around the window.
+    // Opening a window which takes almost the entire desktop may feel intrusive.
+#define SHRINK_FACTOR 0.85
+    if(avifileinfo && !QuiMainWindows->isMaximized() && (avifileinfo->width > w || avifileinfo->height > h))
+    {
+        w = (float)w * SHRINK_FACTOR;
+        h = (float)h * SHRINK_FACTOR;
+    }
+#undef SHRINK_FACTOR
     *availWidth = w;
     *availHeight = h;
 }

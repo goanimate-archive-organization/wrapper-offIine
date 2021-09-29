@@ -124,9 +124,10 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
 {
     libx265Context *ctx = avctx->priv_data;
     AVCPBProperties *cpb_props = NULL;
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
     int ret;
 
-    ctx->api = x265_api_get(av_pix_fmt_desc_get(avctx->pix_fmt)->comp[0].depth);
+    ctx->api = x265_api_get(desc->comp[0].depth);
     if (!ctx->api)
         ctx->api = x265_api_get(0);
 
@@ -186,7 +187,7 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
             avctx->color_range == AVCOL_RANGE_JPEG;
     else
         ctx->params->vui.bEnableVideoFullRangeFlag =
-            (av_pix_fmt_desc_get(avctx->pix_fmt)->flags & AV_PIX_FMT_FLAG_RGB) ||
+            (desc->flags & AV_PIX_FMT_FLAG_RGB) ||
             avctx->pix_fmt == AV_PIX_FMT_YUVJ420P ||
             avctx->pix_fmt == AV_PIX_FMT_YUVJ422P ||
             avctx->pix_fmt == AV_PIX_FMT_YUVJ444P;
@@ -208,6 +209,19 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
             ctx->params->preferredTransferCharacteristics = ctx->params->vui.transferCharacteristics;
 #endif
         ctx->params->vui.matrixCoeffs            = avctx->colorspace;
+    }
+
+    // chroma sample location values are to be ignored in case of non-4:2:0
+    // according to the specification, so we only write them out in case of
+    // 4:2:0 (log2_chroma_{w,h} == 1).
+    ctx->params->vui.bEnableChromaLocInfoPresentFlag =
+        avctx->chroma_sample_location != AVCHROMA_LOC_UNSPECIFIED &&
+        desc->log2_chroma_w == 1 && desc->log2_chroma_h == 1;
+
+    if (ctx->params->vui.bEnableChromaLocInfoPresentFlag) {
+        ctx->params->vui.chromaSampleLocTypeTopField =
+        ctx->params->vui.chromaSampleLocTypeBottomField =
+            avctx->chroma_sample_location - 1;
     }
 
     if (avctx->sample_aspect_ratio.num > 0 && avctx->sample_aspect_ratio.den > 0) {
@@ -446,7 +460,7 @@ static av_cold int libx265_encode_set_roi(libx265Context *ctx, const AVFrame *fr
             }
             nb_rois = sd->size / roi_size;
 
-            qoffsets = av_mallocz_array(mbx * mby, sizeof(*qoffsets));
+            qoffsets = av_calloc(mbx * mby, sizeof(*qoffsets));
             if (!qoffsets)
                 return AVERROR(ENOMEM);
 

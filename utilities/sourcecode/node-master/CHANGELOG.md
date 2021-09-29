@@ -24,6 +24,7 @@ Please use the following table to find the changelog for a specific Node.js
 release.
 
 <!--lint disable maximum-line-length-->
+
 <table>
 <tr>
   <th title="Current"><a href="doc/changelogs/CHANGELOG_V16.md">16</a><sup>Current</sup></th>
@@ -32,7 +33,10 @@ release.
 </tr>
 <tr>
     <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V16.md#16.8.0">16.8.0</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V16.md#16.10.0">16.10.0</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V16.md#16.9.1">16.9.1</a><br/>
+<a href="doc/changelogs/CHANGELOG_V16.md#16.9.0">16.9.0</a><br/>
+<a href="doc/changelogs/CHANGELOG_V16.md#16.8.0">16.8.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.7.0">16.7.0</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.6.2">16.6.2</a><br/>
 <a href="doc/changelogs/CHANGELOG_V16.md#16.6.1">16.6.1</a><br/>
@@ -47,7 +51,9 @@ release.
 <a href="doc/changelogs/CHANGELOG_V16.md#16.0.0">16.0.0</a><br/>
     </td>
     <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V14.md#14.17.5">14.17.5</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V14.md#14.18.0">14.18.0</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V14.md#14.17.6">14.17.6</a><br/>
+<a href="doc/changelogs/CHANGELOG_V14.md#14.17.5">14.17.5</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.17.4">14.17.4</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.17.3">14.17.3</a><br/>
 <a href="doc/changelogs/CHANGELOG_V14.md#14.17.2">14.17.2</a><br/>
@@ -80,7 +86,8 @@ release.
 <a href="doc/changelogs/CHANGELOG_V14.md#14.0.0">14.0.0</a><br/>
     </td>
     <td valign="top">
-<b><a href="doc/changelogs/CHANGELOG_V12.md#12.22.5">12.22.5</a></b><br/>
+<b><a href="doc/changelogs/CHANGELOG_V12.md#12.22.6">12.22.6</a></b><br/>
+<a href="doc/changelogs/CHANGELOG_V12.md#12.22.5">12.22.5</a><br/>
 <a href="doc/changelogs/CHANGELOG_V12.md#12.22.4">12.22.4</a><br/>
 <a href="doc/changelogs/CHANGELOG_V12.md#12.22.3">12.22.3</a><br/>
 <a href="doc/changelogs/CHANGELOG_V12.md#12.22.2">12.22.2</a><br/>
@@ -134,8 +141,9 @@ release.
   LTS releases.
 * Release versions in **bold** text are the most recent supported releases.
 
-----
-----
+***
+
+***
 
 ## 2016-05-06, Version 0.12.14 (Maintenance), @rvagg
 
@@ -1351,7 +1359,7 @@ release.
 
 ## 2009.08.21, Version 0.1.5
 
-<a href="doc/changelogs/CHANGELOG_ARCHIVE.md#0.1.5>Moved to doc/changelogs/CHANGELOG_V6.md#6.0.0</a>.
+<a href="doc/changelogs/CHANGELOG_ARCHIVE.md#0.1.5">Moved to doc/changelogs/CHANGELOG_V6.md#6.0.0</a>.
 
 ## 2009.08.13, Version 0.1.4
 

@@ -53,9 +53,9 @@ jobs:
       - name: Environment Information
         run: npx envinfo
       - name: Get release version numbers
-        if: ${{ github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch }}
+        if: ${{ github.event.pull_request && github.event.pull_request.base.ref == github.event.pull_request.base.repo.default_branch }}
         id: get-released-versions
-        run: ./tools/node-lint-md-cli-rollup/src/list-released-versions-from-changelogs.mjs
+        run: ./tools/lint-md/list-released-versions-from-changelogs.mjs
       - name: Lint docs
         run: |
           echo "::add-matcher::.github/workflows/remark-lint-problem-matcher.json"
@@ -90,7 +90,23 @@ jobs:
       - name: Lint Python
         run: |
           make lint-py-build || true
-          NODE=$(command -v node) make lint-py
+          make lint-py
+  lint-yaml:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Environment Information
+        run: npx envinfo
+      - name: Lint YAML
+        run: |
+          make lint-yaml-build || true
+          make lint-yaml
+
   lint-sh:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-20.04

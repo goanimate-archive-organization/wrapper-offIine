@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: 93bb8b9120e510e8c3afc29dc0a5d47cb6b5f10e */
+ * Stub hash: 53832c784e59195e8ef41710c1e4e778f396c99b */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_array_return, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
@@ -158,6 +158,16 @@ static const zend_function_entry class_ZendTestAttribute_methods[] = {
 };
 
 
+static const zend_function_entry class_ZendTestUnitEnum_methods[] = {
+	ZEND_FE_END
+};
+
+
+static const zend_function_entry class_ZendTestStringEnum_methods[] = {
+	ZEND_FE_END
+};
+
+
 static const zend_function_entry class_ZendTestNS_Foo_methods[] = {
 	ZEND_ME(ZendTestNS_Foo, method, arginfo_class_ZendTestNS_Foo_method, ZEND_ACC_PUBLIC)
 	ZEND_FE_END
@@ -279,6 +289,39 @@ static zend_class_entry *register_class_ZendTestAttribute(void)
 	return class_entry;
 }
 
+static zend_class_entry *register_class_ZendTestUnitEnum(void)
+{
+	zend_class_entry *class_entry = zend_register_internal_enum("ZendTestUnitEnum", IS_UNDEF, class_ZendTestUnitEnum_methods);
+
+	zend_enum_add_case_cstr(class_entry, "Foo", NULL);
+
+	zend_enum_add_case_cstr(class_entry, "Bar", NULL);
+
+	return class_entry;
+}
+
+static zend_class_entry *register_class_ZendTestStringEnum(void)
+{
+	zend_class_entry *class_entry = zend_register_internal_enum("ZendTestStringEnum", IS_STRING, class_ZendTestStringEnum_methods);
+
+	zval enum_case_Foo_value;
+	zend_string *enum_case_Foo_value_str = zend_string_init("Test1", sizeof("Test1") - 1, 1);
+	ZVAL_STR(&enum_case_Foo_value, enum_case_Foo_value_str);
+	zend_enum_add_case_cstr(class_entry, "Foo", &enum_case_Foo_value);
+
+	zval enum_case_Bar_value;
+	zend_string *enum_case_Bar_value_str = zend_string_init("Test2", sizeof("Test2") - 1, 1);
+	ZVAL_STR(&enum_case_Bar_value, enum_case_Bar_value_str);
+	zend_enum_add_case_cstr(class_entry, "Bar", &enum_case_Bar_value);
+
+	zval enum_case_Baz_value;
+	zend_string *enum_case_Baz_value_str = zend_string_init("Test2\\a", sizeof("Test2\\a") - 1, 1);
+	ZVAL_STR(&enum_case_Baz_value, enum_case_Baz_value_str);
+	zend_enum_add_case_cstr(class_entry, "Baz", &enum_case_Baz_value);
+
+	return class_entry;
+}
+
 static zend_class_entry *register_class_ZendTestNS_Foo(void)
 {
 	zend_class_entry ce, *class_entry;
@@ -295,6 +338,13 @@ static zend_class_entry *register_class_ZendTestNS2_Foo(void)
 
 	INIT_NS_CLASS_ENTRY(ce, "ZendTestNS2", "Foo", class_ZendTestNS2_Foo_methods);
 	class_entry = zend_register_internal_class_ex(&ce, NULL);
+
+	zend_string *property_foo_class_ZendTestNS2_ZendSubNS_Foo = zend_string_init("ZendTestNS2\\ZendSubNS\\Foo", sizeof("ZendTestNS2\\ZendSubNS\\Foo")-1, 1);
+	zval property_foo_default_value;
+	ZVAL_UNDEF(&property_foo_default_value);
+	zend_string *property_foo_name = zend_string_init("foo", sizeof("foo") - 1, 1);
+	zend_declare_typed_property(class_entry, property_foo_name, &property_foo_default_value, ZEND_ACC_PUBLIC, NULL, (zend_type) ZEND_TYPE_INIT_CLASS(property_foo_class_ZendTestNS2_ZendSubNS_Foo, 0, 0));
+	zend_string_release(property_foo_name);
 
 	return class_entry;
 }

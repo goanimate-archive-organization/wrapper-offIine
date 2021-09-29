@@ -435,11 +435,7 @@ AVFilterFormats *ff_all_formats(enum AVMediaType type)
     AVFilterFormats *ret = NULL;
 
     if (type == AVMEDIA_TYPE_VIDEO) {
-        const AVPixFmtDescriptor *desc = NULL;
-        while ((desc = av_pix_fmt_desc_next(desc))) {
-            if (ff_add_format(&ret, av_pix_fmt_desc_get_id(desc)) < 0)
-                return NULL;
-        }
+        return ff_formats_pixdesc_filter(0, 0);
     } else if (type == AVMEDIA_TYPE_AUDIO) {
         enum AVSampleFormat fmt = 0;
         while (av_get_sample_fmt_name(fmt)) {
@@ -452,7 +448,7 @@ AVFilterFormats *ff_all_formats(enum AVMediaType type)
     return ret;
 }
 
-int ff_formats_pixdesc_filter(AVFilterFormats **rfmts, unsigned want, unsigned rej)
+AVFilterFormats *ff_formats_pixdesc_filter(unsigned want, unsigned rej)
 {
     unsigned nb_formats, fmt, flags;
     AVFilterFormats *formats = NULL;
@@ -476,18 +472,17 @@ int ff_formats_pixdesc_filter(AVFilterFormats **rfmts, unsigned want, unsigned r
         }
         if (formats) {
             av_assert0(formats->nb_formats == nb_formats);
-            *rfmts = formats;
-            return 0;
+            return formats;
         }
         formats = av_mallocz(sizeof(*formats));
         if (!formats)
-            return AVERROR(ENOMEM);
+            return NULL;
         formats->nb_formats = nb_formats;
         if (nb_formats) {
             formats->formats = av_malloc_array(nb_formats, sizeof(*formats->formats));
             if (!formats->formats) {
                 av_freep(&formats);
-                return AVERROR(ENOMEM);
+                return NULL;
             }
         }
     }

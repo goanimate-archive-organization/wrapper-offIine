@@ -27,6 +27,8 @@ extern const ADM_paramList my_prefs_struct_param[]={
  {"keyboard_shortcuts.swap_up_down_keys",offsetof(my_prefs_struct,keyboard_shortcuts.swap_up_down_keys),"bool",ADM_param_bool},
  {"keyboard_shortcuts.alt_mark_a",offsetof(my_prefs_struct,keyboard_shortcuts.alt_mark_a),"std::string",ADM_param_stdstring},
  {"keyboard_shortcuts.alt_mark_b",offsetof(my_prefs_struct,keyboard_shortcuts.alt_mark_b),"std::string",ADM_param_stdstring},
+ {"keyboard_shortcuts.alt_reset_mark_a",offsetof(my_prefs_struct,keyboard_shortcuts.alt_reset_mark_a),"std::string",ADM_param_stdstring},
+ {"keyboard_shortcuts.alt_reset_mark_b",offsetof(my_prefs_struct,keyboard_shortcuts.alt_reset_mark_b),"std::string",ADM_param_stdstring},
  {"keyboard_shortcuts.alt_reset_markers",offsetof(my_prefs_struct,keyboard_shortcuts.alt_reset_markers),"std::string",ADM_param_stdstring},
  {"keyboard_shortcuts.alt_goto_mark_a",offsetof(my_prefs_struct,keyboard_shortcuts.alt_goto_mark_a),"std::string",ADM_param_stdstring},
  {"keyboard_shortcuts.alt_goto_mark_b",offsetof(my_prefs_struct,keyboard_shortcuts.alt_goto_mark_b),"std::string",ADM_param_stdstring},
@@ -66,5 +68,6 @@ extern const ADM_paramList my_prefs_struct_param[]={
  {"avisynth.avisynth_defaultport",offsetof(my_prefs_struct,avisynth.avisynth_defaultport),"uint32_t",ADM_param_uint32_t},
  {"avisynth.avisynth_localport",offsetof(my_prefs_struct,avisynth.avisynth_localport),"uint32_t",ADM_param_uint32_t},
  {"reset_encoder_on_video_load",offsetof(my_prefs_struct,reset_encoder_on_video_load),"bool",ADM_param_bool},
+ {"load_pictures_reverse_order",offsetof(my_prefs_struct,load_pictures_reverse_order),"bool",ADM_param_bool},
 {NULL,0,NULL}
 };

@@ -37,6 +37,8 @@ json.addBool("use_alternate_kbd_shortcuts",key->keyboard_shortcuts.use_alternate
 json.addBool("swap_up_down_keys",key->keyboard_shortcuts.swap_up_down_keys);
 json.addString("alt_mark_a",key->keyboard_shortcuts.alt_mark_a);
 json.addString("alt_mark_b",key->keyboard_shortcuts.alt_mark_b);
+json.addString("alt_reset_mark_a",key->keyboard_shortcuts.alt_reset_mark_a);
+json.addString("alt_reset_mark_b",key->keyboard_shortcuts.alt_reset_mark_b);
 json.addString("alt_reset_markers",key->keyboard_shortcuts.alt_reset_markers);
 json.addString("alt_goto_mark_a",key->keyboard_shortcuts.alt_goto_mark_a);
 json.addString("alt_goto_mark_b",key->keyboard_shortcuts.alt_goto_mark_b);
@@ -91,6 +93,7 @@ json.addUint32("avisynth_defaultport",key->avisynth.avisynth_defaultport);
 json.addUint32("avisynth_localport",key->avisynth.avisynth_localport);
 json.endNode();
 json.addBool("reset_encoder_on_video_load",key->reset_encoder_on_video_load);
+json.addBool("load_pictures_reverse_order",key->load_pictures_reverse_order);
 return json.dumpToFile(file);
 };
 bool  my_prefs_struct_jdeserialize(const char *file, const ADM_paramList *tmpl,my_prefs_struct *key){

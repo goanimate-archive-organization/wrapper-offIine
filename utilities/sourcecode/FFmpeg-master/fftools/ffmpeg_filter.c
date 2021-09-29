@@ -699,6 +699,7 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
 {
     AVFilterContext *last_filter;
     const AVFilter *buffer_filt = avfilter_get_by_name("buffer");
+    const AVPixFmtDescriptor *desc;
     InputStream *ist = ifilter->ist;
     InputFile     *f = input_files[ist->file_index];
     AVRational tb = ist->framerate.num ? av_inv_q(ist->framerate) :
@@ -756,22 +757,49 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     av_freep(&par);
     last_filter = ifilter->filter;
 
-    if (ist->autorotate) {
-        double theta = get_rotation(ist->st);
+    desc = av_pix_fmt_desc_get(ifilter->format);
+    av_assert0(desc);
+
+    // TODO: insert hwaccel enabled filters like transpose_vaapi into the graph
+    if (ist->autorotate && !(desc->flags & AV_PIX_FMT_FLAG_HWACCEL)) {
+        int32_t *displaymatrix = ifilter->displaymatrix;
+        double theta;
+
+        if (!displaymatrix)
+            displaymatrix = (int32_t *)av_stream_get_side_data(ist->st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
+        theta = get_rotation(displaymatrix);
 
         if (fabs(theta - 90) < 1.0) {
+            if (displaymatrix[3] > 0) {
+                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
+                if (ret < 0)
+                    return ret;
+            }
             ret = insert_filter(&last_filter, &pad_idx, "transpose", "clock");
         } else if (fabs(theta - 180) < 1.0) {
-            ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
-            if (ret < 0)
-                return ret;
-            ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
+            if (displaymatrix[0] < 0) {
+                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
+                if (ret < 0)
+                    return ret;
+            }
+            if (displaymatrix[4] < 0) {
+                ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
+            }
         } else if (fabs(theta - 270) < 1.0) {
+            if (displaymatrix[3] < 0) {
+                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
+                if (ret < 0)
+                    return ret;
+            }
             ret = insert_filter(&last_filter, &pad_idx, "transpose", "cclock");
         } else if (fabs(theta) > 1.0) {
             char rotate_buf[64];
             snprintf(rotate_buf, sizeof(rotate_buf), "%f*PI/180", theta);
             ret = insert_filter(&last_filter, &pad_idx, "rotate", rotate_buf);
+        } else if (fabs(theta) < 1.0) {
+            if (displaymatrix && displaymatrix[4] < 0) {
+                ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
+            }
         }
         if (ret < 0)
             return ret;
@@ -968,23 +996,29 @@ int configure_filtergraph(FilterGraph *fg)
         char args[512];
         AVDictionaryEntry *e = NULL;
 
-        fg->graph->nb_threads = filter_nbthreads;
+        if (filter_nbthreads) {
+            ret = av_opt_set(fg->graph, "threads", filter_nbthreads, 0);
+            if (ret < 0)
+                goto fail;
+        } else {
+            e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
+            if (e)
+                av_opt_set(fg->graph, "threads", e->value, 0);
+        }
 
         args[0] = 0;
+        e       = NULL;
         while ((e = av_dict_get(ost->sws_dict, "", e,
                                 AV_DICT_IGNORE_SUFFIX))) {
             av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
         }
         if (strlen(args)) {
             args[strlen(args)-1] = 0;
-
-            if (!strncmp(args, "sws_flags=", 10)) {
-                // keep the 'flags=' part
-                fg->graph->scale_sws_opts = av_strdup(args+4);
-            }
+            fg->graph->scale_sws_opts = av_strdup(args);
         }
 
         args[0] = 0;
+        e       = NULL;
         while ((e = av_dict_get(ost->swr_opts, "", e,
                                 AV_DICT_IGNORE_SUFFIX))) {
             av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
@@ -992,18 +1026,6 @@ int configure_filtergraph(FilterGraph *fg)
         if (strlen(args))
             args[strlen(args)-1] = 0;
         av_opt_set(fg->graph, "aresample_swr_opts", args, 0);
-
-        args[0] = '\0';
-        while ((e = av_dict_get(fg->outputs[0]->ost->resample_opts, "", e,
-                                AV_DICT_IGNORE_SUFFIX))) {
-            av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
-        }
-        if (strlen(args))
-            args[strlen(args) - 1] = '\0';
-
-        e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
-        if (e)
-            av_opt_set(fg->graph, "threads", e->value, 0);
     } else {
         fg->graph->nb_threads = filter_complex_nbthreads;
     }
@@ -1133,6 +1155,8 @@ fail:
 
 int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
 {
+    AVFrameSideData *sd;
+
     av_buffer_unref(&ifilter->hw_frames_ctx);
 
     ifilter->format = frame->format;
@@ -1144,6 +1168,11 @@ int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
     ifilter->sample_rate         = frame->sample_rate;
     ifilter->channels            = frame->channels;
     ifilter->channel_layout      = frame->channel_layout;
+
+    av_freep(&ifilter->displaymatrix);
+    sd = av_frame_get_side_data(frame, AV_FRAME_DATA_DISPLAYMATRIX);
+    if (sd)
+        ifilter->displaymatrix = av_memdup(sd->data, sizeof(int32_t) * 9);
 
     if (frame->hw_frames_ctx) {
         ifilter->hw_frames_ctx = av_buffer_ref(frame->hw_frames_ctx);

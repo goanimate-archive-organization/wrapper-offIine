@@ -99,7 +99,7 @@ assert.deepEqual([[[1, 2, 3]], 4, 5], [[[1, 2, '3']], 4, 5]);
 To deactivate the colors, use the `NO_COLOR` or `NODE_DISABLE_COLORS`
 environment variables. This will also deactivate the colors in the REPL. For
 more on color support in terminal environments, read the tty
-[getColorDepth()](tty.md#tty_writestream_getcolordepth_env) documentation.
+[`getColorDepth()`][] documentation.
 
 ## Legacy assertion mode
 
@@ -456,7 +456,9 @@ An alias of [`assert.ok()`][].
 <!-- YAML
 added: v0.1.21
 changes:
-  - version: v16.0.0
+  - version:
+      - v16.0.0
+      - v14.18.0
     pr-url: https://github.com/nodejs/node/pull/38113
     description: In Legacy assertion mode, changed status from Deprecated to
                  Legacy.
@@ -475,18 +477,18 @@ changes:
     pr-url: https://github.com/nodejs/node/pull/12142
     description: The `Set` and `Map` content is also compared.
   - version:
-    - v6.4.0
-    - v4.7.1
+      - v6.4.0
+      - v4.7.1
     pr-url: https://github.com/nodejs/node/pull/8002
     description: Typed array slices are handled correctly now.
   - version:
-    - v6.1.0
-    - v4.5.0
+      - v6.1.0
+      - v4.5.0
     pr-url: https://github.com/nodejs/node/pull/6432
     description: Objects with circular references can be used as inputs now.
   - version:
-    - v5.10.1
-    - v4.4.3
+      - v5.10.1
+      - v4.4.3
     pr-url: https://github.com/nodejs/node/pull/5910
     description: Handle non-`Uint8Array` typed arrays correctly.
 -->
@@ -1127,7 +1129,9 @@ assert.doesNotThrow(
 <!-- YAML
 added: v0.1.21
 changes:
-  - version: v16.0.0
+  - version:
+      - v16.0.0
+      - v14.18.0
     pr-url: https://github.com/nodejs/node/pull/38113
     description: In Legacy assertion mode, changed status from Deprecated to
                  Legacy.
@@ -1455,7 +1459,9 @@ instance of an [`Error`][] then it will be thrown instead of the
 <!-- YAML
 added: v0.1.21
 changes:
-  - version: v16.0.0
+  - version:
+      - v16.0.0
+      - v14.18.0
     pr-url: https://github.com/nodejs/node/pull/38113
     description: In Legacy assertion mode, changed status from Deprecated to
                  Legacy.
@@ -1470,18 +1476,18 @@ changes:
     pr-url: https://github.com/nodejs/node/pull/12142
     description: The `Set` and `Map` content is also compared.
   - version:
-    - v6.4.0
-    - v4.7.1
+      - v6.4.0
+      - v4.7.1
     pr-url: https://github.com/nodejs/node/pull/8002
     description: Typed array slices are handled correctly now.
   - version:
-    - v6.1.0
-    - v4.5.0
+      - v6.1.0
+      - v4.5.0
     pr-url: https://github.com/nodejs/node/pull/6432
     description: Objects with circular references can be used as inputs now.
   - version:
-    - v5.10.1
-    - v4.4.3
+      - v5.10.1
+      - v4.4.3
     pr-url: https://github.com/nodejs/node/pull/5910
     description: Handle non-`Uint8Array` typed arrays correctly.
 -->
@@ -1635,7 +1641,9 @@ instead of the [`AssertionError`][].
 <!-- YAML
 added: v0.1.21
 changes:
-  - version: v16.0.0
+  - version:
+      - v16.0.0
+      - v14.18.0
     pr-url: https://github.com/nodejs/node/pull/38113
     description: In Legacy assertion mode, changed status from Deprecated to
                  Legacy.
@@ -2420,34 +2428,35 @@ argument.
 [Object.prototype.toString()]: https://tc39.github.io/ecma262/#sec-object.prototype.tostring
 [SameValue Comparison]: https://tc39.github.io/ecma262/#sec-samevalue
 [Strict Equality Comparison]: https://tc39.github.io/ecma262/#sec-strict-equality-comparison
-[`AssertionError`]: #assert_class_assert_assertionerror
-[`CallTracker`]: #assert_class_assert_calltracker
+[`AssertionError`]: #class-assertassertionerror
+[`CallTracker`]: #class-assertcalltracker
 [`Class`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes
-[`ERR_INVALID_RETURN_VALUE`]: errors.md#errors_err_invalid_return_value
-[`Error.captureStackTrace`]: errors.md#errors_error_capturestacktrace_targetobject_constructoropt
-[`Error`]: errors.md#errors_class_error
+[`ERR_INVALID_RETURN_VALUE`]: errors.md#err_invalid_return_value
+[`Error.captureStackTrace`]: errors.md#errorcapturestacktracetargetobject-constructoropt
+[`Error`]: errors.md#class-error
 [`Map`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
 [`Object.is()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
 [`RegExp`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
 [`Set`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
 [`Symbol`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol
-[`TypeError`]: errors.md#errors_class_typeerror
+[`TypeError`]: errors.md#class-typeerror
 [`WeakMap`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
 [`WeakSet`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet
-[`assert.deepEqual()`]: #assert_assert_deepequal_actual_expected_message
-[`assert.deepStrictEqual()`]: #assert_assert_deepstrictequal_actual_expected_message
-[`assert.doesNotThrow()`]: #assert_assert_doesnotthrow_fn_error_message
-[`assert.equal()`]: #assert_assert_equal_actual_expected_message
-[`assert.notDeepEqual()`]: #assert_assert_notdeepequal_actual_expected_message
-[`assert.notDeepStrictEqual()`]: #assert_assert_notdeepstrictequal_actual_expected_message
-[`assert.notEqual()`]: #assert_assert_notequal_actual_expected_message
-[`assert.notStrictEqual()`]: #assert_assert_notstrictequal_actual_expected_message
-[`assert.ok()`]: #assert_assert_ok_value_message
-[`assert.strictEqual()`]: #assert_assert_strictequal_actual_expected_message
-[`assert.throws()`]: #assert_assert_throws_fn_error_message
-[`process.on('exit')`]: process.md#process_event_exit
-[`tracker.calls()`]: #assert_tracker_calls_fn_exact
-[`tracker.verify()`]: #assert_tracker_verify
+[`assert.deepEqual()`]: #assertdeepequalactual-expected-message
+[`assert.deepStrictEqual()`]: #assertdeepstrictequalactual-expected-message
+[`assert.doesNotThrow()`]: #assertdoesnotthrowfn-error-message
+[`assert.equal()`]: #assertequalactual-expected-message
+[`assert.notDeepEqual()`]: #assertnotdeepequalactual-expected-message
+[`assert.notDeepStrictEqual()`]: #assertnotdeepstrictequalactual-expected-message
+[`assert.notEqual()`]: #assertnotequalactual-expected-message
+[`assert.notStrictEqual()`]: #assertnotstrictequalactual-expected-message
+[`assert.ok()`]: #assertokvalue-message
+[`assert.strictEqual()`]: #assertstrictequalactual-expected-message
+[`assert.throws()`]: #assertthrowsfn-error-message
+[`getColorDepth()`]: tty.md#writestreamgetcolordepthenv
+[`process.on('exit')`]: process.md#event-exit
+[`tracker.calls()`]: #trackercallsfn-exact
+[`tracker.verify()`]: #trackerverify
 [enumerable "own" properties]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Enumerability_and_ownership_of_properties
 [prototype-spec]: https://tc39.github.io/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots
-[strict assertion mode]: #assert_strict_assertion_mode
+[strict assertion mode]: #strict-assertion-mode

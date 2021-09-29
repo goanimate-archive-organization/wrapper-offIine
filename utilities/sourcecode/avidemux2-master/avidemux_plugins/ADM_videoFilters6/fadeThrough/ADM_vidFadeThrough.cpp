@@ -347,7 +347,7 @@ void * ADMVideoFadeThrough::qtr_worker_thread( void *ptr )
 /**
     \fn FadeThroughProcess_C
 */
-void ADMVideoFadeThrough::FadeThroughProcess_C(ADMImage *img, int w, int h, fadeThrough param, fadeThrough_buffers_t * buffers)
+void ADMVideoFadeThrough::FadeThroughProcess_C(ADMImage *img, int w, int h, uint64_t absoluteStartPts, fadeThrough param, fadeThrough_buffers_t * buffers)
 {
     if (!img || !buffers || !buffers->imgCopy) return;
     if (!buffers->bicubicWeights || !buffers->qtr_worker_threads || !buffers->qtr_worker_thread_args) return;
@@ -363,13 +363,13 @@ void ADMVideoFadeThrough::FadeThroughProcess_C(ADMImage *img, int w, int h, fade
         startMs = tmp;
     }
     
-    uint32_t imgMs = img->Pts/1000LL;
+    uint32_t imgMs = (img->Pts+absoluteStartPts)/1000LL;
     
     if (startMs == endMs)
         return;
     if (imgMs < startMs)
         return;
-    if (imgMs > endMs)
+    if (imgMs >= endMs)
         return;
 
     double frac = ((double)(imgMs - startMs)) / ((double)(endMs - startMs));
@@ -1150,7 +1150,7 @@ bool ADMVideoFadeThrough::getNextFrame(uint32_t *fn,ADMImage *image)
 {
     if(!previousFilter->getNextFrame(fn,image)) return false;
 
-    FadeThroughProcess_C(image,info.width,info.height,_param, &(_buffers));
+    FadeThroughProcess_C(image,info.width,info.height,getAbsoluteStartTime(),_param, &(_buffers));
  
     return 1;
 }

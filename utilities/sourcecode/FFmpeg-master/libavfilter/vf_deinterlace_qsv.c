@@ -42,6 +42,8 @@
 #include "internal.h"
 #include "video.h"
 
+#define MFX_IMPL_VIA_MASK(impl) (0x0f00 & (impl))
+
 enum {
     QSVDEINT_MORE_OUTPUT = 1,
     QSVDEINT_MORE_INPUT,
@@ -144,15 +146,15 @@ static mfxStatus frame_unlock(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr)
 
 static mfxStatus frame_get_hdl(mfxHDL pthis, mfxMemId mid, mfxHDL *hdl)
 {
-    *hdl = mid;
+    mfxHDLPair *pair_dst = (mfxHDLPair*)hdl;
+    mfxHDLPair *pair_src = (mfxHDLPair*)mid;
+
+    pair_dst->first = pair_src->first;
+
+    if (pair_src->second != (mfxMemId)MFX_INFINITE)
+        pair_dst->second = pair_src->second;
     return MFX_ERR_NONE;
 }
-
-static const mfxHandleType handle_types[] = {
-    MFX_HANDLE_VA_DISPLAY,
-    MFX_HANDLE_D3D9_DEVICE_MANAGER,
-    MFX_HANDLE_D3D11_DEVICE,
-};
 
 static int init_out_session(AVFilterContext *ctx)
 {
@@ -181,14 +183,18 @@ static int init_out_session(AVFilterContext *ctx)
         return AVERROR_UNKNOWN;
     }
 
-    for (i = 0; i < FF_ARRAY_ELEMS(handle_types); i++) {
-        err = MFXVideoCORE_GetHandle(device_hwctx->session, handle_types[i], &handle);
-        if (err == MFX_ERR_NONE) {
-            handle_type = handle_types[i];
-            break;
-        }
+    if (MFX_IMPL_VIA_VAAPI == MFX_IMPL_VIA_MASK(impl)) {
+        handle_type = MFX_HANDLE_VA_DISPLAY;
+    } else if (MFX_IMPL_VIA_D3D11 == MFX_IMPL_VIA_MASK(impl)) {
+        handle_type = MFX_HANDLE_D3D11_DEVICE;
+    } else if (MFX_IMPL_VIA_D3D9 == MFX_IMPL_VIA_MASK(impl)) {
+        handle_type = MFX_HANDLE_D3D9_DEVICE_MANAGER;
+    } else {
+        av_log(ctx, AV_LOG_ERROR, "Error unsupported handle type\n");
+        return AVERROR_UNKNOWN;
     }
 
+    err = MFXVideoCORE_GetHandle(device_hwctx->session, handle_type, &handle);
     if (err < 0)
         return ff_qsvvpp_print_error(ctx, err, "Error getting the session handle");
     else if (err > 0) {
@@ -227,8 +233,8 @@ static int init_out_session(AVFilterContext *ctx)
     s->ext_buffers[s->num_ext_buffers++] = (mfxExtBuffer *)&s->deint_conf;
 
     if (opaque) {
-        s->surface_ptrs = av_mallocz_array(hw_frames_hwctx->nb_surfaces,
-                                           sizeof(*s->surface_ptrs));
+        s->surface_ptrs = av_calloc(hw_frames_hwctx->nb_surfaces,
+                                    sizeof(*s->surface_ptrs));
         if (!s->surface_ptrs)
             return AVERROR(ENOMEM);
         for (i = 0; i < hw_frames_hwctx->nb_surfaces; i++)
@@ -257,8 +263,8 @@ static int init_out_session(AVFilterContext *ctx)
             .Free   = frame_free,
         };
 
-        s->mem_ids = av_mallocz_array(hw_frames_hwctx->nb_surfaces,
-                                      sizeof(*s->mem_ids));
+        s->mem_ids = av_calloc(hw_frames_hwctx->nb_surfaces,
+                               sizeof(*s->mem_ids));
         if (!s->mem_ids)
             return AVERROR(ENOMEM);
         for (i = 0; i < hw_frames_hwctx->nb_surfaces; i++)

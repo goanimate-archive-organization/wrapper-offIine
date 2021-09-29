@@ -38,6 +38,8 @@ static optionDesc myOptions[]={
 { KEYBOARD_SHORTCUTS_SWAP_UP_DOWN_KEYS,"keyboard_shortcuts.swap_up_down_keys",ADM_param_bool    	,"0",	0,	1},
 { KEYBOARD_SHORTCUTS_ALT_MARK_A,"keyboard_shortcuts.alt_mark_a"       ,ADM_param_stdstring  	,"I",	0,	0},
 { KEYBOARD_SHORTCUTS_ALT_MARK_B,"keyboard_shortcuts.alt_mark_b"       ,ADM_param_stdstring  	,"O",	0,	0},
+{ KEYBOARD_SHORTCUTS_ALT_RESET_MARK_A,"keyboard_shortcuts.alt_reset_mark_a",ADM_param_stdstring  	,"U",	0,	0},
+{ KEYBOARD_SHORTCUTS_ALT_RESET_MARK_B,"keyboard_shortcuts.alt_reset_mark_b",ADM_param_stdstring  	,"P",	0,	0},
 { KEYBOARD_SHORTCUTS_ALT_RESET_MARKERS,"keyboard_shortcuts.alt_reset_markers",ADM_param_stdstring  	,"R",	0,	0},
 { KEYBOARD_SHORTCUTS_ALT_GOTO_MARK_A,"keyboard_shortcuts.alt_goto_mark_a",ADM_param_stdstring  	,"A",	0,	0},
 { KEYBOARD_SHORTCUTS_ALT_GOTO_MARK_B,"keyboard_shortcuts.alt_goto_mark_b",ADM_param_stdstring  	,"B",	0,	0},
@@ -77,5 +79,6 @@ static optionDesc myOptions[]={
 { AVISYNTH_AVISYNTH_DEFAULTPORT,"avisynth.avisynth_defaultport"       ,ADM_param_uint32_t	,"9999",	1024,	65535},
 { AVISYNTH_AVISYNTH_LOCALPORT,"avisynth.avisynth_localport"           ,ADM_param_uint32_t	,"0",	1024,	65535},
 { RESET_ENCODER_ON_VIDEO_LOAD,"reset_encoder_on_video_load"           ,ADM_param_bool    	,"0",	0,	1},
+{ LOAD_PICTURES_REVERSE_ORDER,"load_pictures_reverse_order"           ,ADM_param_bool    	,"0",	0,	1},
 };
 

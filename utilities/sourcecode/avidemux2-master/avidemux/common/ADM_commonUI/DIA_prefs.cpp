@@ -72,6 +72,7 @@ uint32_t pp_value=5;
 
 bool     useCustomFragmentSize=false;
 uint32_t customFragmentSize=4000;
+bool     loadPicsInReverseOrder=false;
 
 uint32_t editor_cache_size=16;
 bool     editor_use_shared_cache=false;
@@ -120,9 +121,14 @@ std::string currentSdlDriver=getSdlDriverName();
     DOME(4,dring);
 
 // Cpu caps
-#define CPU_CAPS(x)    	if(cpuMask & ADM_CPUCAP_##x) caps##x=1; else caps##x=0;
+#define CPU_CAPS(x) \
+    if((cpuCaps & cpuMask) & ADM_CPUCAP_##x) \
+        caps##x = true; \
+    else \
+        caps##x = false;
 
         uint32_t cpuMask=CpuCaps::getMask();
+        uint32_t cpuCaps=CpuCaps::getCaps();
     	if(cpuMask==ADM_CPUCAP_ALL) capsAll=1; else capsAll=0;
     	CPU_CAPS(MMX);
     	CPU_CAPS(MMXEXT);
@@ -161,6 +167,10 @@ std::string currentSdlDriver=getSdlDriverName();
             useCustomFragmentSize=false;
         if(!prefs->get(DEFAULT_MULTILOAD_CUSTOM_SIZE_M,&customFragmentSize))
             customFragmentSize=4000;
+        // Should the pics demuxer be used to reverse video?
+        if(!prefs->get(LOAD_PICTURES_REVERSE_ORDER,&loadPicsInReverseOrder))
+            loadPicsInReverseOrder = false;
+
         // Video cache
         prefs->get(FEATURES_CACHE_SIZE,&editor_cache_size);
         prefs->get(FEATURES_SHARED_CACHE,&editor_use_shared_cache);
@@ -280,32 +290,42 @@ std::string currentSdlDriver=getSdlDriverName();
         diaElemToggle capsToggleAVX(&capsAVX, QT_TRANSLATE_NOOP("adm","Enable AVX"));
         diaElemToggle capsToggleAVX2(&capsAVX2, QT_TRANSLATE_NOOP("adm","Enable AVX2"));
 
-        capsToggleAll.link(0, &capsToggleMMX);
-        capsToggleAll.link(0, &capsToggleMMXEXT);
-        capsToggleAll.link(0, &capsToggle3DNOW);
-        capsToggleAll.link(0, &capsToggle3DNOWEXT);
-        capsToggleAll.link(0, &capsToggleSSE);
-        capsToggleAll.link(0, &capsToggleSSE2);
-        capsToggleAll.link(0, &capsToggleSSE3);
-        capsToggleAll.link(0, &capsToggleSSSE3);
-        capsToggleAll.link(0, &capsToggleSSE4);
-        capsToggleAll.link(0, &capsToggleSSE42);
-        capsToggleAll.link(0, &capsToggleAVX);
-        capsToggleAll.link(0, &capsToggleAVX2);
+#define CPU_CAP_AVAIL(x) \
+    if(cpuCaps & ADM_CPUCAP_##x) \
+        capsToggleAll.link(0, &capsToggle##x);
+
+        CPU_CAP_AVAIL(MMX)
+        CPU_CAP_AVAIL(MMXEXT)
+        CPU_CAP_AVAIL(3DNOW)
+        CPU_CAP_AVAIL(3DNOWEXT)
+        CPU_CAP_AVAIL(SSE)
+        CPU_CAP_AVAIL(SSE2)
+        CPU_CAP_AVAIL(SSE3)
+        CPU_CAP_AVAIL(SSSE3)
+        CPU_CAP_AVAIL(SSE4)
+        CPU_CAP_AVAIL(SSE42)
+        CPU_CAP_AVAIL(AVX)
+        CPU_CAP_AVAIL(AVX2)
+#undef CPU_CAP_AVAIL
 
         frameSimd.swallow(&capsToggleAll);
-        frameSimd.swallow(&capsToggleMMX);
-        frameSimd.swallow(&capsToggleMMXEXT);
-        frameSimd.swallow(&capsToggle3DNOW);
-        frameSimd.swallow(&capsToggle3DNOWEXT);
-        frameSimd.swallow(&capsToggleSSE);
-        frameSimd.swallow(&capsToggleSSE2);
-        frameSimd.swallow(&capsToggleSSE3);
-        frameSimd.swallow(&capsToggleSSSE3);
-        frameSimd.swallow(&capsToggleSSE4);
-        frameSimd.swallow(&capsToggleSSE42);
-        frameSimd.swallow(&capsToggleAVX);
-        frameSimd.swallow(&capsToggleAVX2);
+#define CPU_CAP_AVAIL(x) \
+    if(cpuCaps & ADM_CPUCAP_##x) \
+        frameSimd.swallow(&capsToggle##x);
+
+        CPU_CAP_AVAIL(MMX)
+        CPU_CAP_AVAIL(MMXEXT)
+        CPU_CAP_AVAIL(3DNOW)
+        CPU_CAP_AVAIL(3DNOWEXT)
+        CPU_CAP_AVAIL(SSE)
+        CPU_CAP_AVAIL(SSE2)
+        CPU_CAP_AVAIL(SSE3)
+        CPU_CAP_AVAIL(SSSE3)
+        CPU_CAP_AVAIL(SSE4)
+        CPU_CAP_AVAIL(SSE42)
+        CPU_CAP_AVAIL(AVX)
+        CPU_CAP_AVAIL(AVX2)
+#undef CPU_CAP_AVAIL
 
         diaElemThreadCount lavcThreadCount(&lavcThreads, QT_TRANSLATE_NOOP("adm","_lavc threads:"));
 
@@ -324,9 +344,10 @@ std::string currentSdlDriver=getSdlDriverName();
                     ,{3,      QT_TRANSLATE_NOOP("adm","Below normal"),NULL}
                     ,{4,      QT_TRANSLATE_NOOP("adm","Low"),NULL}
 };
-        diaElemMenu menuEncodePriority(&encodePriority,QT_TRANSLATE_NOOP("adm","_Encoding priority:"), sizeof(priorityEntries)/sizeof(diaMenuEntry), priorityEntries,"");
-        diaElemMenu menuIndexPriority(&indexPriority,QT_TRANSLATE_NOOP("adm","_Indexing/unpacking priority:"), sizeof(priorityEntries)/sizeof(diaMenuEntry), priorityEntries,"");
-        diaElemMenu menuPlaybackPriority(&playbackPriority,QT_TRANSLATE_NOOP("adm","_Playback priority:"), sizeof(priorityEntries)/sizeof(diaMenuEntry), priorityEntries,"");
+#define NB_ITEMS(x) sizeof(x)/sizeof(diaMenuEntry)
+        diaElemMenu menuEncodePriority(&encodePriority, QT_TRANSLATE_NOOP("adm","_Encoding priority:"), NB_ITEMS(priorityEntries), priorityEntries);
+        diaElemMenu menuIndexPriority(&indexPriority, QT_TRANSLATE_NOOP("adm","_Indexing/unpacking priority:"), NB_ITEMS(priorityEntries), priorityEntries);
+        diaElemMenu menuPlaybackPriority(&playbackPriority, QT_TRANSLATE_NOOP("adm","_Playback priority:"), NB_ITEMS(priorityEntries), priorityEntries);
 
         diaElemFrame framePriority(QT_TRANSLATE_NOOP("adm","Prioritisation"));
         framePriority.swallow(&menuEncodePriority);
@@ -336,6 +357,7 @@ std::string currentSdlDriver=getSdlDriverName();
         diaElemToggle useLastReadAsTarget(&lastReadDirAsTarget,QT_TRANSLATE_NOOP("adm","_Default to the directory of the last read file for saving"));
         diaElemToggle firstPassLogFilesAutoDelete(&multiPassStatsAutoDelete,QT_TRANSLATE_NOOP("adm","De_lete first pass log files by default"));
 
+        // Multiload
         diaElemFrame frameMultiLoad(QT_TRANSLATE_NOOP("adm","Auto-Append Settings"));
         diaElemToggle multiLoadUseCustomFragmentSize(&useCustomFragmentSize,QT_TRANSLATE_NOOP("adm","_Use custom fragment size for auto-append of MPEG-TS files"));
         diaElemUInteger multiLoadCustomFragmentSize(&customFragmentSize,QT_TRANSLATE_NOOP("adm","_Fragment size:"),250,8196);
@@ -343,6 +365,19 @@ std::string currentSdlDriver=getSdlDriverName();
         frameMultiLoad.swallow(&multiLoadCustomFragmentSize);
         multiLoadUseCustomFragmentSize.link(1,&multiLoadCustomFragmentSize);
 
+        // Pictures
+        diaElemFrame framePics(QT_TRANSLATE_NOOP("adm","Pictures")); // the purpose of this frame is to fix tab order
+        diaElemToggle toggleReversePicsOrder(&loadPicsInReverseOrder, QT_TRANSLATE_NOOP("adm","_Load sequentially named pictures in reverse order"));
+        framePics.swallow(&toggleReversePicsOrder);
+
+        // Avisynth
+        diaElemFrame frameAvisynth(QT_TRANSLATE_NOOP("adm","Avisynth"));
+        diaElemToggle togAskAvisynthPort(&askPortAvisynth,QT_TRANSLATE_NOOP("adm","_Always ask which port to use"));
+        diaElemUInteger uintDefaultPortAvisynth(&defaultPortAvisynth,QT_TRANSLATE_NOOP("adm","Default port to use"),1024,65535);
+        frameAvisynth.swallow(&togAskAvisynthPort);
+        frameAvisynth.swallow(&uintDefaultPortAvisynth);
+
+        // Editor cache
         diaElemFrame frameCache(QT_TRANSLATE_NOOP("adm","Caching of decoded pictures"));
         diaElemUInteger cacheSize(&editor_cache_size,QT_TRANSLATE_NOOP("adm","_Cache size:"),8,16);
         diaElemToggle toggleSharedCache(&editor_use_shared_cache,QT_TRANSLATE_NOOP("adm","Use _shared cache"));
@@ -350,29 +385,27 @@ std::string currentSdlDriver=getSdlDriverName();
         frameCache.swallow(&toggleSharedCache);
 
         diaMenuEntry videoMode[]={
-                             {RENDER_GTK, getNativeRendererDesc(0), NULL}
+            {RENDER_GTK, getNativeRendererDesc(0), QT_TRANSLATE_NOOP("adm","This renderer provides no hardware acceleration")}
 #ifdef USE_XV
-                             ,{RENDER_XV,   QT_TRANSLATE_NOOP("adm","XVideo (best)"),NULL}
+            ,{RENDER_XV, QT_TRANSLATE_NOOP("adm","XVideo"),NULL}
 #endif
 #ifdef USE_VDPAU
-                             ,{RENDER_VDPAU,   QT_TRANSLATE_NOOP("adm","VDPAU (best)"),NULL}
+            ,{RENDER_VDPAU, QT_TRANSLATE_NOOP("adm","VDPAU"),NULL}
 #endif
 #ifdef USE_DXVA2
-                             ,{RENDER_DXVA2,   QT_TRANSLATE_NOOP("adm","DXVA2 (best)"),NULL}
+            ,{RENDER_DXVA2, QT_TRANSLATE_NOOP("adm","DXVA2"),NULL}
 #endif
 #ifdef USE_OPENGL
-                             ,{RENDER_QTOPENGL,   QT_TRANSLATE_NOOP("adm","OpenGL (best)"),NULL}
+            ,{RENDER_QTOPENGL, QT_TRANSLATE_NOOP("adm","OpenGL"),NULL}
 #endif
 #ifdef USE_LIBVA
-                             ,{RENDER_LIBVA,   QT_TRANSLATE_NOOP("adm","LIBVA (best)"),NULL}
+            ,{RENDER_LIBVA, QT_TRANSLATE_NOOP("adm","LibVA"),NULL}
 #endif
-
-
 #ifdef USE_SDL
-							 ,{RENDER_SDL,      QT_TRANSLATE_NOOP("adm","SDL (good)"),NULL}
+            ,{RENDER_SDL, QT_TRANSLATE_NOOP("adm","SDL"),NULL}
 #endif
         };
-        diaElemMenu menuVideoMode(&render,QT_TRANSLATE_NOOP("adm","Video _display:"), sizeof(videoMode)/sizeof(diaMenuEntry),videoMode,"");
+        diaElemMenu menuVideoMode(&render,QT_TRANSLATE_NOOP("adm","Video _display:"),NB_ITEMS(videoMode),videoMode);
 #ifdef USE_SDL
         const std::vector<sdlDriverInfo> &listOfSdl=getListOfSdlDrivers();
         int nbSDL=listOfSdl.size();
@@ -405,14 +438,14 @@ std::string currentSdlDriver=getSdlDriverName();
                              ,{1,      QT_TRANSLATE_NOOP("adm","Display only error alerts"),NULL}
                              ,{2,      QT_TRANSLATE_NOOP("adm","Display all alerts"),NULL}
         };
-        diaElemMenu menuMessage(&msglevel,QT_TRANSLATE_NOOP("adm","_Message level:"), sizeof(msgEntries)/sizeof(diaMenuEntry),msgEntries,"");
+        diaElemMenu menuMessage(&msglevel,QT_TRANSLATE_NOOP("adm","_Message level:"),NB_ITEMS(msgEntries),msgEntries);
 
 
 #if defined(ALSA_SUPPORT) || defined (OSS_SUPPORT)
         diaMenuEntry volumeEntries[]={
                              {0,       QT_TRANSLATE_NOOP("adm","PCM"),NULL}
                              ,{1,      QT_TRANSLATE_NOOP("adm","Master"),NULL}};
-        diaElemMenu menuVolume(&useMaster,QT_TRANSLATE_NOOP("adm","_Volume control:"), sizeof(volumeEntries)/sizeof(diaMenuEntry),volumeEntries,"");
+        diaElemMenu menuVolume(&useMaster,QT_TRANSLATE_NOOP("adm","_Volume control:"),NB_ITEMS(volumeEntries),volumeEntries);
 #endif
 
 
@@ -422,7 +455,7 @@ std::string currentSdlDriver=getSdlDriverName();
                              ,{2,      QT_TRANSLATE_NOOP("adm","Pro Logic"),NULL}
                              ,{3,      QT_TRANSLATE_NOOP("adm","Pro Logic II"),NULL}
          };
-        diaElemMenu menuMixer(&downmix,QT_TRANSLATE_NOOP("adm","_Local playback downmixing:"), sizeof(mixerEntries)/sizeof(diaMenuEntry),mixerEntries,"");
+        diaElemMenu menuMixer(&downmix,QT_TRANSLATE_NOOP("adm","_Local playback downmixing:"),NB_ITEMS(mixerEntries),mixerEntries);
 //*********** AV_
 
 //***AV
@@ -483,19 +516,20 @@ std::string currentSdlDriver=getSdlDriverName();
         diaElemMenuDynamic menuLanguage(&languageIndex,QT_TRANSLATE_NOOP("adm","_Language"), nbLanguages,
                     languagesMenuItems,NULL);
 //--
-
-
-
+#define NB_ELEM(x) sizeof(x)/sizeof(diaElem *)
         /* User Interface */
         diaElem *diaUser[]={&menuMessage, &menuLanguage, &resetEncoder, &enableAltShortcuts, &swapUpDownKeys, &swapMarkers, &checkForUpdate};
-        diaElemTabs tabUser(QT_TRANSLATE_NOOP("adm","User Interface"),7,diaUser);
+        diaElemTabs tabUser(QT_TRANSLATE_NOOP("adm","User Interface"),NB_ELEM(diaUser),diaUser);
 
          /* Automation */
 
+        /* Import */
+        diaElem *diaImport[]={&frameMultiLoad, &framePics, &frameAvisynth};
+        diaElemTabs tabImport(QT_TRANSLATE_NOOP("adm","Import"),NB_ELEM(diaImport),diaImport);
 
         /* Output */
-        diaElem *diaOutput[]={&allowAnyMpeg, &useLastReadAsTarget, &firstPassLogFilesAutoDelete, &frameMultiLoad, &frameCache};
-        diaElemTabs tabOutput(QT_TRANSLATE_NOOP("adm","Output"),5,(diaElem **)diaOutput);
+        diaElem *diaOutput[]={&allowAnyMpeg, &useLastReadAsTarget, &firstPassLogFilesAutoDelete, &frameCache};
+        diaElemTabs tabOutput(QT_TRANSLATE_NOOP("adm","Output"),NB_ELEM(diaOutput),diaOutput);
 
         /* Audio */
 
@@ -509,7 +543,7 @@ std::string currentSdlDriver=getSdlDriverName();
 
 #if 1
         diaElem *diaAudio[]={&menuMixer,&menuAudio};
-        diaElemTabs tabAudio(QT_TRANSLATE_NOOP("adm","Audio"),2,(diaElem **)diaAudio);
+        diaElemTabs tabAudio(QT_TRANSLATE_NOOP("adm","Audio"),NB_ELEM(diaAudio),diaAudio);
 #endif
 
 
@@ -532,41 +566,35 @@ std::string currentSdlDriver=getSdlDriverName();
 #else
         diaElem *diaVideo[]={&menuVideoMode,&framePP,&frameRC};
 #endif
-        diaElemTabs tabVideo(QT_TRANSLATE_NOOP("adm","Display"),sizeof(diaVideo)/sizeof(diaElem *),(diaElem **)diaVideo);
+        diaElemTabs tabVideo(QT_TRANSLATE_NOOP("adm","Display"),NB_ELEM(diaVideo),diaVideo);
         /* HW accel */
 #ifdef USE_DXVA2
         diaElem *diaHwDecoding[]={&useDxva2,&dxva2OverrideVersion,&dxva2OverrideProfile,&hwAccelMultiThreadText,&hwAccelText};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),5,(diaElem **)diaHwDecoding);
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),NB_ELEM(diaHwDecoding),diaHwDecoding);
 #elif defined(USE_VIDEOTOOLBOX)
         diaElem *diaHwDecoding[]={&useVideoToolbox,&hwAccelMultiThreadText};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),2,(diaElem **)diaHwDecoding);
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),NB_ELEM(diaHwDecoding),diaHwDecoding);
 #elif defined(HW_ACCELERATED_DECODING)
         diaElem *diaHwDecoding[]={&useVdpau,&useLibVA,&hwAccelMultiThreadText,&hwAccelText};
-        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),4,(diaElem **)diaHwDecoding);
+        diaElemTabs tabHwDecoding(QT_TRANSLATE_NOOP("adm","HW Accel"),NB_ELEM(diaHwDecoding),diaHwDecoding);
 #endif
 
         /* CPU tab */
         diaElem *diaCpu[]={&frameSimd};
-        diaElemTabs tabCpu(QT_TRANSLATE_NOOP("adm","CPU"),1,(diaElem **)diaCpu);
+        diaElemTabs tabCpu(QT_TRANSLATE_NOOP("adm","CPU"),NB_ELEM(diaCpu),diaCpu);
 
         /* Threading tab */
         diaElem *diaThreading[]={&frameThread, &framePriority};
-        diaElemTabs tabThreading(QT_TRANSLATE_NOOP("adm","Threading"),2,(diaElem **)diaThreading);
+        diaElemTabs tabThreading(QT_TRANSLATE_NOOP("adm","Threading"),NB_ELEM(diaThreading),diaThreading);
 
-        /* Avisynth tab */
-        diaElemToggle togAskAvisynthPort(&askPortAvisynth,QT_TRANSLATE_NOOP("adm","_Always ask which port to use"));
-        diaElemUInteger uintDefaultPortAvisynth(&defaultPortAvisynth,QT_TRANSLATE_NOOP("adm","Default port to use"),1024,65535);
-        diaElem *diaAvisynth[]={&togAskAvisynthPort, &uintDefaultPortAvisynth};
-        diaElemTabs tabAvisynth("Avisynth",2,(diaElem **)diaAvisynth);
-
-        /* Global Glyph tab */
 #ifdef HW_ACCELERATED_DECODING
-        diaElemTabs *tabs[]={&tabUser, &tabOutput, &tabAudio, &tabVideo, &tabHwDecoding, &tabCpu, &tabThreading, &tabAvisynth};
-        void *factoryCookiez=diaFactoryRunTabsPrepare(QT_TRANSLATE_NOOP("adm","Preferences"),8,tabs);
+        diaElemTabs *tabs[]={&tabUser, &tabImport, &tabOutput, &tabAudio, &tabVideo, &tabHwDecoding, &tabCpu, &tabThreading};
 #else
-        diaElemTabs *tabs[]={&tabUser, &tabOutput, &tabAudio, &tabVideo, &tabCpu, &tabThreading, &tabAvisynth};
-        void *factoryCookiez=diaFactoryRunTabsPrepare(QT_TRANSLATE_NOOP("adm","Preferences"),7,tabs);
+        diaElemTabs *tabs[]={&tabUser, &tabImport, &tabOutput, &tabAudio, &tabVideo, &tabCpu, &tabThreading};
 #endif
+#undef NB_ELEM
+#define NB_ELEM(x) sizeof(x)/sizeof(diaElemTabs *)
+        void *factoryCookiez=diaFactoryRunTabsPrepare(QT_TRANSLATE_NOOP("adm","Preferences"),NB_ELEM(tabs),tabs);
 // Now we can disable stuff if needed
 #if defined(HW_ACCELERATED_DECODING) && !defined(USE_VIDEOTOOLBOX) && !defined(USE_DXVA2)
     #ifndef USE_VDPAU
@@ -659,6 +687,8 @@ std::string currentSdlDriver=getSdlDriverName();
             // Auto-append
             prefs->set(DEFAULT_MULTILOAD_USE_CUSTOM_SIZE, useCustomFragmentSize);
             prefs->set(DEFAULT_MULTILOAD_CUSTOM_SIZE_M, customFragmentSize);
+            // Auto-load pictures in reverse order
+            prefs->set(LOAD_PICTURES_REVERSE_ORDER, loadPicsInReverseOrder);
             // Video cache
             prefs->set(FEATURES_CACHE_SIZE, editor_cache_size);
             prefs->set(FEATURES_SHARED_CACHE, editor_use_shared_cache);

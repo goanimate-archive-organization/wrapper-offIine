@@ -18,6 +18,8 @@
 
 #include <string.h>
 
+#include "config.h"
+
 #include "libavutil/avassert.h"
 #include "libavutil/log.h"
 #include "libavutil/mem.h"
@@ -199,6 +201,8 @@ int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt)
     int ret;
 
     if (!pkt || IS_EMPTY(pkt)) {
+        if (pkt)
+            av_packet_unref(pkt);
         bsfi->eof = 1;
         return 0;
     }
@@ -394,7 +398,7 @@ static const AVClass bsf_list_class = {
         .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVBitStreamFilter ff_list_bsf = {
+static const AVBitStreamFilter list_bsf = {
         .name           = "bsf_list",
         .priv_data_size = sizeof(BSFListContext),
         .priv_class     = &bsf_list_class,
@@ -490,7 +494,7 @@ int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf)
         goto end;
     }
 
-    ret = av_bsf_alloc(&ff_list_bsf, bsf);
+    ret = av_bsf_alloc(&list_bsf, bsf);
     if (ret < 0)
         return ret;
 
@@ -544,5 +548,10 @@ end:
 
 int av_bsf_get_null_filter(AVBSFContext **bsf)
 {
-    return av_bsf_alloc(&ff_list_bsf, bsf);
+#if CONFIG_NULL_BSF
+    extern const AVBitStreamFilter ff_null_bsf;
+    return av_bsf_alloc(&ff_null_bsf, bsf);
+#else
+    return av_bsf_alloc(&list_bsf, bsf);
+#endif
 }
