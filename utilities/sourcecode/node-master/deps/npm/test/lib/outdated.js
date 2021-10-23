@@ -83,6 +83,10 @@ const globalDir = t.testdir({
   },
 })
 
+const flatOptions = {
+  workspacesEnabled: true,
+}
+
 const outdated = (dir, opts) => {
   logs = ''
   const Outdated = t.mock('../../lib/outdated.js', {
@@ -94,6 +98,7 @@ const outdated = (dir, opts) => {
     ...opts,
     localPrefix: dir,
     prefix: dir,
+    flatOptions,
     globalDir: `${globalDir}/node_modules`,
     output,
   })
@@ -101,6 +106,10 @@ const outdated = (dir, opts) => {
 }
 
 t.beforeEach(() => logs = '')
+
+const { exitCode } = process
+
+t.afterEach(() => process.exitCode = exitCode)
 
 const redactCwd = (path) => {
   const normalizePath = p => p
@@ -175,6 +184,7 @@ t.test('should display outdated deps', t => {
     outdated(null, {
       config: { global: true },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -187,6 +197,7 @@ t.test('should display outdated deps', t => {
       },
       color: true,
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -200,6 +211,7 @@ t.test('should display outdated deps', t => {
       },
       color: true,
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -213,6 +225,7 @@ t.test('should display outdated deps', t => {
       },
       color: true,
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -226,6 +239,7 @@ t.test('should display outdated deps', t => {
       },
       color: true,
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -238,6 +252,7 @@ t.test('should display outdated deps', t => {
         long: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -250,6 +265,7 @@ t.test('should display outdated deps', t => {
         json: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -263,6 +279,7 @@ t.test('should display outdated deps', t => {
         long: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -275,6 +292,7 @@ t.test('should display outdated deps', t => {
         parseable: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -288,6 +306,7 @@ t.test('should display outdated deps', t => {
         long: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -299,6 +318,7 @@ t.test('should display outdated deps', t => {
         all: true,
       },
     }).exec([], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -310,6 +330,7 @@ t.test('should display outdated deps', t => {
         global: false,
       },
     }).exec(['cat'], () => {
+      t.equal(process.exitCode, 1)
       t.matchSnapshot(logs)
       t.end()
     })
@@ -540,6 +561,22 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display ws outdated deps human output')
+      t.equal(process.exitCode, 1)
+      res()
+    })
+  })
+
+  await new Promise((res, rej) => {
+    flatOptions.workspacesEnabled = false
+    outdated(testDir, {}).exec([], err => {
+      if (err)
+        rej(err)
+
+      // TODO: This should display dog, but doesn't because arborist filters
+      // workspace deps even if they're also root deps
+      // This will be fixed in a future arborist version
+      t.matchSnapshot(logs, 'should display only root outdated when ws disabled')
+      flatOptions.workspacesEnabled = true
       res()
     })
   })
@@ -554,6 +591,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display ws outdated deps json output')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -568,6 +606,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display ws outdated deps parseable output')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -582,6 +621,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display all dependencies')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -594,6 +634,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should highlight ws in dependend by section')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -604,6 +645,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display results filtered by ws')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -618,6 +660,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display json results filtered by ws')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -632,6 +675,7 @@ t.test('workspaces', async t => {
         rej(err)
 
       t.matchSnapshot(logs, 'should display parseable results filtered by ws')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -647,6 +691,7 @@ t.test('workspaces', async t => {
 
       t.matchSnapshot(logs,
         'should display nested deps when filtering by ws and using --all')
+      t.equal(process.exitCode, 1)
       res()
     })
   })
@@ -669,6 +714,7 @@ t.test('workspaces', async t => {
 
       t.matchSnapshot(logs,
         'should display missing deps when filtering by ws')
+      t.equal(process.exitCode, 1)
       res()
     })
   })

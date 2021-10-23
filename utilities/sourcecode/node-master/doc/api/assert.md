@@ -10,6 +10,7 @@ The `assert` module provides a set of assertion functions for verifying
 invariants.
 
 ## Strict assertion mode
+
 <!-- YAML
 added: v9.9.0
 changes:
@@ -138,6 +139,7 @@ Indicates the failure of an assertion. All errors thrown by the `assert` module
 will be instances of the `AssertionError` class.
 
 ### `new assert.AssertionError(options)`
+
 <!-- YAML
 added: v0.1.21
 -->
@@ -216,6 +218,7 @@ try {
 ```
 
 ## Class: `assert.CallTracker`
+
 <!-- YAML
 added:
   - v14.2.0
@@ -227,6 +230,7 @@ added:
 This feature is currently experimental and behavior might still change.
 
 ### `new assert.CallTracker()`
+
 <!-- YAML
 added:
   - v14.2.0
@@ -278,6 +282,7 @@ process.on('exit', () => {
 ```
 
 ### `tracker.calls([fn][, exact])`
+
 <!-- YAML
 added:
   - v14.2.0
@@ -320,6 +325,7 @@ const callsfunc = tracker.calls(func);
 ```
 
 ### `tracker.report()`
+
 <!-- YAML
 added:
   - v14.2.0
@@ -396,6 +402,7 @@ tracker.report();
 ```
 
 ### `tracker.verify()`
+
 <!-- YAML
 added:
   - v14.2.0
@@ -443,6 +450,7 @@ tracker.verify();
 ```
 
 ## `assert(value[, message])`
+
 <!-- YAML
 added: v0.5.9
 -->
@@ -453,6 +461,7 @@ added: v0.5.9
 An alias of [`assert.ok()`][].
 
 ## `assert.deepEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -629,6 +638,7 @@ parameter is an instance of an [`Error`][] then it will be thrown instead of the
 [`AssertionError`][].
 
 ## `assert.deepStrictEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v1.2.0
 changes:
@@ -692,7 +702,7 @@ are recursively evaluated also by the following rules.
 import assert from 'assert/strict';
 
 // This fails because 1 !== '1'.
-deepStrictEqual({ a: 1 }, { a: '1' });
+assert.deepStrictEqual({ a: 1 }, { a: '1' });
 // AssertionError: Expected inputs to be strictly deep-equal:
 // + actual - expected
 //
@@ -879,6 +889,7 @@ parameter is an instance of an [`Error`][] then it will be thrown instead of the
 `AssertionError`.
 
 ## `assert.doesNotMatch(string, regexp[, message])`
+
 <!-- YAML
 added:
   - v13.6.0
@@ -929,6 +940,7 @@ instance of an [`Error`][] then it will be thrown instead of the
 [`AssertionError`][].
 
 ## `assert.doesNotReject(asyncFn[, error][, message])`
+
 <!-- YAML
 added: v10.0.0
 -->
@@ -958,7 +970,6 @@ function. See [`assert.throws()`][] for more details.
 Besides the async nature to await the completion behaves identically to
 [`assert.doesNotThrow()`][].
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -983,7 +994,6 @@ const assert = require('assert/strict');
 })();
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -993,7 +1003,6 @@ assert.doesNotReject(Promise.reject(new TypeError('Wrong value')))
   });
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```cjs
 const assert = require('assert/strict');
 
@@ -1004,6 +1013,7 @@ assert.doesNotReject(Promise.reject(new TypeError('Wrong value')))
 ```
 
 ## `assert.doesNotThrow(fn[, error][, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1042,7 +1052,6 @@ function. See [`assert.throws()`][] for more details.
 The following, for instance, will throw the [`TypeError`][] because there is no
 matching error type in the assertion:
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -1054,7 +1063,6 @@ assert.doesNotThrow(
 );
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```cjs
 const assert = require('assert/strict');
 
@@ -1069,7 +1077,6 @@ assert.doesNotThrow(
 However, the following will result in an [`AssertionError`][] with the message
 'Got unwanted exception...':
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -1081,7 +1088,6 @@ assert.doesNotThrow(
 );
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```cjs
 const assert = require('assert/strict');
 
@@ -1097,7 +1103,6 @@ If an [`AssertionError`][] is thrown and a value is provided for the `message`
 parameter, the value of `message` will be appended to the [`AssertionError`][]
 message:
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -1111,7 +1116,6 @@ assert.doesNotThrow(
 // Throws: AssertionError: Got unwanted exception: Whoops
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```cjs
 const assert = require('assert/strict');
 
@@ -1126,6 +1130,7 @@ assert.doesNotThrow(
 ```
 
 ## `assert.equal(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1196,6 +1201,7 @@ parameter is an instance of an [`Error`][] then it will be thrown instead of the
 `AssertionError`.
 
 ## `assert.fail([message])`
+
 <!-- YAML
 added: v0.1.21
 -->
@@ -1236,6 +1242,7 @@ Using `assert.fail()` with more than two arguments is possible but deprecated.
 See below for further details.
 
 ## `assert.fail(actual, expected[, message[, operator[, stackStartFn]]])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1333,6 +1340,7 @@ suppressFrame();
 ```
 
 ## `assert.ifError(value)`
+
 <!-- YAML
 added: v0.1.97
 changes:
@@ -1406,6 +1414,7 @@ let err;
 ```
 
 ## `assert.match(string, regexp[, message])`
+
 <!-- YAML
 added:
   - v13.6.0
@@ -1456,6 +1465,7 @@ instance of an [`Error`][] then it will be thrown instead of the
 [`AssertionError`][].
 
 ## `assert.notDeepEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1579,6 +1589,7 @@ If the values are deeply equal, an [`AssertionError`][] is thrown with a
 instead of the `AssertionError`.
 
 ## `assert.notDeepStrictEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v1.2.0
 changes:
@@ -1638,6 +1649,7 @@ the `message` parameter is an instance of an [`Error`][] then it will be thrown
 instead of the [`AssertionError`][].
 
 ## `assert.notEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1702,6 +1714,7 @@ parameter is an instance of an [`Error`][] then it will be thrown instead of the
 `AssertionError`.
 
 ## `assert.notStrictEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1754,6 +1767,7 @@ If the values are strictly equal, an [`AssertionError`][] is thrown with a
 instead of the `AssertionError`.
 
 ## `assert.ok(value[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -1871,6 +1885,7 @@ assert(0);
 ```
 
 ## `assert.rejects(asyncFn[, error][, message])`
+
 <!-- YAML
 added: v10.0.0
 -->
@@ -1991,6 +2006,7 @@ example in [`assert.throws()`][] carefully if using a string as the second
 argument gets considered.
 
 ## `assert.strictEqual(actual, expected[, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -2069,6 +2085,7 @@ If the values are not strictly equal, an [`AssertionError`][] is thrown with a
 instead of the [`AssertionError`][].
 
 ## `assert.throws(fn[, error][, message])`
+
 <!-- YAML
 added: v0.1.21
 changes:
@@ -2346,7 +2363,6 @@ message as the thrown error message is going to result in an
 `ERR_AMBIGUOUS_ARGUMENT` error. Please read the example below carefully if using
 a string as the second argument gets considered:
 
-<!-- eslint-disable no-restricted-syntax -->
 ```mjs
 import assert from 'assert/strict';
 
@@ -2383,7 +2399,6 @@ assert.throws(throwingFirst, /Second$/);
 // AssertionError [ERR_ASSERTION]
 ```
 
-<!-- eslint-disable no-restricted-syntax -->
 ```cjs
 const assert = require('assert/strict');
 

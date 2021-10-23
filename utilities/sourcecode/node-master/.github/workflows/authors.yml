@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_USER_TOKEN }}
         with:
           author: Node.js GitHub Bot <github-bot@iojs.org>
-          body: "If this PR exists, there's presumably new additions to the AUTHORS file. This is an automatically generated PR by the `authors.yml` GitHub Action, which runs `tools/update-authors.js` and submits a new PR or updates an existing PR.\n\nPlease note that there might be duplicate entries. If there are, please remove them and add the duplicate emails to .mailmap directly to this PR."
+          body: "Here are some new additions to the AUTHORS file. This is an automatically generated PR by the `authors.yml` GitHub Action, which runs `tools/update-authors.js`."
           branch: "actions/authors-update"  # Custom branch *just* for this Action.
           commit-message: "meta: update AUTHORS"
           labels: meta

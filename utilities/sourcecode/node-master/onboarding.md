@@ -56,10 +56,10 @@ onboarding session.
   * Watching the main repository will flood your inbox (several hundred
     notifications on typical weekdays), so be prepared
 
-The project has two venues for real-time discussion:
+The project has a venue for real-time discussion:
 
 * [`#nodejs-dev`](https://openjs-foundation.slack.com/archives/C019Y2T6STH) on
-  the [OpenJS Foundation](https://slack-invite.openjsf.org/)
+  the [OpenJS Foundation Slack](https://slack-invite.openjsf.org/)
 
 ## Project goals and values
 
@@ -256,7 +256,7 @@ needs to be pointed out separately during the onboarding.
 [`core-validate-commit`]: https://github.com/nodejs/core-validate-commit
 [`git-node`]: https://github.com/nodejs/node-core-utils/blob/HEAD/docs/git-node.md
 [`node-core-utils`]: https://github.com/nodejs/node-core-utils
-[set up the credentials]: https://github.com/nodejs/node-core-utils#setting-up-credentials
+[set up the credentials]: https://github.com/nodejs/node-core-utils#setting-up-github-credentials
 [two-factor authentication]: https://help.github.com/articles/securing-your-account-with-two-factor-authentication-2fa/
 [using a TOTP mobile app]: https://help.github.com/articles/configuring-two-factor-authentication-via-a-totp-mobile-app/
 [who-to-cc]: doc/guides/collaborator-guide.md#who-to-cc-in-the-issue-tracker

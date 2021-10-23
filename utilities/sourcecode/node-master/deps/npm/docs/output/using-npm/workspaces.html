@@ -219,7 +219,7 @@ workspace:</p>
 respect the provided <code>workspace</code> configuration.</p>
 <h3 id="using-workspaces">Using workspaces</h3>
 <p>Given the <a href="https://nodejs.org/dist/latest-v14.x/docs/api/modules.html#modules_all_together">specifities of how Node.js handles module resolution</a> it’s possible to consume any defined workspace
-by it’s declared <code>package.json</code> <code>name</code>. Continuing from the example defined
+by its declared <code>package.json</code> <code>name</code>. Continuing from the example defined
 above, let’s also create a Node.js script that will require the <code>workspace-a</code>
 example module, e.g:</p>
 <pre><code>// ./workspace-a/index.js
@@ -264,6 +264,16 @@ configured workspaces. e.g:</p>
 <pre><code>npm run test --workspaces
 </code></pre>
 <p>Will run the <code>test</code> script in both <code>./packages/a</code> and <code>./packages/b</code>.</p>
+<p>Commands will be run in each workspace in the order they appear in your <code>package.json</code></p>
+<pre><code>{
+  "workspaces": [ "packages/a", "packages/b" ]
+}
+</code></pre>
+<p>Order of run is different with:</p>
+<pre><code>{
+  "workspaces": [ "packages/b", "packages/a" ]
+}
+</code></pre>
 <h3 id="ignoring-missing-scripts">Ignoring missing scripts</h3>
 <p>It is not required for all of the workspaces to implement scripts run with the <code>npm run</code> command.</p>
 <p>By running the command with the <code>--if-present</code> flag, npm will ignore workspaces missing target script.</p>

@@ -28,7 +28,7 @@
     'clang%': 0,
     'error_on_warn%': 'false',
 
-    'openssl_fips%': '',
+    'openssl_product': '<(STATIC_LIB_PREFIX)openssl<(STATIC_LIB_SUFFIX)',
     'openssl_no_asm%': 0,
 
     # Don't use ICU data file (icudtl.dat) from V8, we use our own.
@@ -36,7 +36,7 @@
 
     # Reset this number to 0 on major V8 upgrades.
     # Increment by one for each non-official patch applied to deps/v8.
-    'v8_embedder_string': '-node.12',
+    'v8_embedder_string': '-node.13',
 
     ##### V8 defaults for Node.js #####
 
@@ -66,10 +66,6 @@
     'v8_enable_pointer_compression%': 0,
     'v8_enable_31bit_smis_on_64bit_arch%': 0,
 
-    # Disable V8 untrusted code mitigations.
-    # See https://github.com/v8/v8/wiki/Untrusted-code-mitigations
-    'v8_untrusted_code_mitigations': 0,
-
     # This is more of a V8 dev setting
     # https://github.com/nodejs/node/pull/22920/files#r222779926
     'v8_enable_fast_mksnapshot': 0,
@@ -98,15 +94,15 @@
         'obj_dir%': '<(PRODUCT_DIR)/obj.target',
         'v8_base': '<(PRODUCT_DIR)/obj.target/tools/v8_gypfiles/libv8_snapshot.a',
       }],
-      ['openssl_fips != ""', {
-        'openssl_product': '<(STATIC_LIB_PREFIX)openssl<(STATIC_LIB_SUFFIX)',
-      }, {
-        'openssl_product': '<(STATIC_LIB_PREFIX)openssl<(STATIC_LIB_SUFFIX)',
-      }],
       ['OS=="mac"', {
         'clang%': 1,
         'obj_dir%': '<(PRODUCT_DIR)/obj.target',
         'v8_base': '<(PRODUCT_DIR)/libv8_snapshot.a',
+      }],
+      # V8 pointer compression only supports 64bit architectures.
+      ['target_arch in "arm ia32 mips mipsel ppc x32"', {
+        'v8_enable_pointer_compression': 0,
+        'v8_enable_31bit_smis_on_64bit_arch': 0,
       }],
       ['target_arch in "ppc64 s390x"', {
         'v8_enable_backtrace': 1,
@@ -268,7 +264,10 @@
     ],
     'msvs_settings': {
       'VCCLCompilerTool': {
-        'AdditionalOptions': ['/Zc:__cplusplus'],
+        'AdditionalOptions': [
+          '/Zc:__cplusplus',
+          '-std:c++17'
+        ],
         'BufferSecurityCheck': 'true',
         'DebugInformationFormat': 1,          # /Z7 embed info in .obj files
         'ExceptionHandling': 0,               # /EHsc
@@ -386,7 +385,7 @@
       }],
       [ 'OS in "linux freebsd openbsd solaris android aix cloudabi"', {
         'cflags': [ '-Wall', '-Wextra', '-Wno-unused-parameter', ],
-        'cflags_cc': [ '-fno-rtti', '-fno-exceptions', '-std=gnu++14' ],
+        'cflags_cc': [ '-fno-rtti', '-fno-exceptions', '-std=gnu++17' ],
         'defines': [ '__STDC_FORMAT_MACROS' ],
         'ldflags': [ '-rdynamic' ],
         'target_conditions': [
@@ -530,7 +529,7 @@
           ['clang==1', {
             'xcode_settings': {
               'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0',
-              'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++14',  # -std=gnu++14
+              'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++17',  # -std=gnu++17
               'CLANG_CXX_LIBRARY': 'libc++',
             },
           }],

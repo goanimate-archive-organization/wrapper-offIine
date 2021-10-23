@@ -22,6 +22,7 @@ const _problems = Symbol('problems')
 const _required = Symbol('required')
 const _type = Symbol('type')
 const ArboristWorkspaceCmd = require('./workspaces/arborist-cmd.js')
+const localeCompare = require('@isaacs/string-locale-compare')('en')
 
 class LS extends ArboristWorkspaceCmd {
   /* istanbul ignore next - see test/lib/load-all-commands.js */
@@ -81,6 +82,7 @@ class LS extends ArboristWorkspaceCmd {
     const production = this.npm.config.get('production')
     const unicode = this.npm.config.get('unicode')
     const packageLockOnly = this.npm.config.get('package-lock-only')
+    const workspacesEnabled = this.npm.flatOptions.workspacesEnabled
 
     const path = global ? resolve(this.npm.globalDir, '..') : this.npm.prefix
 
@@ -99,12 +101,18 @@ class LS extends ArboristWorkspaceCmd {
     if (this.workspaceNames && this.workspaceNames.length)
       wsNodes = arb.workspaceNodes(tree, this.workspaceNames)
     const filterBySelectedWorkspaces = edge => {
+      if (!workspacesEnabled
+        && edge.from.isProjectRoot
+        && edge.to.isWorkspace
+      )
+        return false
+
       if (!wsNodes || !wsNodes.length)
         return true
 
       if (edge.from.isProjectRoot) {
         return edge.to &&
-          edge.to.isWorkspace &
+          edge.to.isWorkspace &&
           wsNodes.includes(edge.to.target)
       }
 
@@ -503,8 +511,7 @@ const augmentNodesWithMetadata = ({
   return node
 }
 
-const sortAlphabetically = (a, b) =>
-  a.pkgid.localeCompare(b.pkgid, 'en')
+const sortAlphabetically = ({ pkgid: a }, { pkgid: b }) => localeCompare(a, b)
 
 const humanOutput = ({ color, result, seenItems, unicode }) => {
   // we need to traverse the entire tree in order to determine which items

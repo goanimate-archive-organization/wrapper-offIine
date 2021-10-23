@@ -11,7 +11,7 @@ on:
       - v[0-9]+.x
 
 env:
-  PYTHON_VERSION: 3.9
+  PYTHON_VERSION: '3.10'
   NODE_VERSION: lts/*
 
 jobs:
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: mszostok/codeowners-validator@v0.4.0
+      - uses: mszostok/codeowners-validator@v0.6.0
         with:
           checks: "files,duppatterns"
   lint-pr-url:

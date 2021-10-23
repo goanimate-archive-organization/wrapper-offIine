@@ -292,6 +292,44 @@ t.test('npm.load', t => {
     await new Promise((res) => setTimeout(res))
   })
 
+  t.test('--no-workspaces with --workspace', async t => {
+    const dir = t.testdir({
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+            scripts: { test: 'echo test a' },
+          }),
+        },
+      },
+      'package.json': JSON.stringify({
+        name: 'root',
+        version: '1.0.0',
+        workspaces: ['./packages/*'],
+      }),
+    })
+    process.argv = [
+      process.execPath,
+      process.argv[1],
+      '--userconfig', resolve(dir, '.npmrc'),
+      '--color', 'false',
+      '--workspaces', 'false',
+      '--workspace', 'a',
+    ]
+    const { npm } = mockNpm(t)
+    await npm.load()
+    npm.localPrefix = dir
+    await new Promise((res, rej) => {
+      npm.commands.run([], er => {
+        if (!er)
+          return rej(new Error('Expected an error'))
+        t.match(er.message, 'Can not use --no-workspaces and --workspace at the same time')
+        res()
+      })
+    })
+  })
+
   t.test('workspace-aware configs and commands', async t => {
     const dir = t.testdir({
       packages: {
@@ -412,22 +450,6 @@ t.test('npm.load', t => {
   t.end()
 })
 
-t.test('loading as main will load the cli', t => {
-  const { spawn } = require('child_process')
-  const npm = require.resolve('../../lib/npm.js')
-  const LS = require('../../lib/ls.js')
-  const ls = new LS({})
-  const p = spawn(process.execPath, [npm, 'ls', '-h'])
-  const out = []
-  p.stdout.on('data', c => out.push(c))
-  p.on('close', (code, signal) => {
-    t.equal(code, 0)
-    t.equal(signal, null)
-    t.match(Buffer.concat(out).toString(), ls.usage)
-    t.end()
-  })
-})
-
 t.test('set process.title', t => {
   t.test('basic title setting', async t => {
     process.argv = [
@@ -499,5 +521,28 @@ t.test('timings', t => {
   t.notOk(npm.timers.has('foo'), 'foo timer is gone')
   t.notOk(npm.timers.has('bar'), 'bar timer is gone')
   t.match(npm.timings, { foo: Number, bar: Number })
+  t.end()
+})
+
+t.test('output clears progress and console.logs the message', t => {
+  const npm = require('../../lib/npm.js')
+  const logs = []
+  const { log } = console
+  const { log: { clearProgress, showProgress } } = npm
+  let showingProgress = true
+  npm.log.clearProgress = () => showingProgress = false
+  npm.log.showProgress = () => showingProgress = true
+  console.log = (...args) => {
+    t.equal(showingProgress, false, 'should not be showing progress right now')
+    logs.push(args)
+  }
+  t.teardown(() => {
+    console.log = log
+    npm.log.showProgress = showProgress
+    npm.log.clearProgress = clearProgress
+  })
+
+  npm.output('hello')
+  t.strictSame(logs, [['hello']])
   t.end()
 })

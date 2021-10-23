@@ -38,6 +38,7 @@ using v8::NewStringType;
 using v8::Nothing;
 using v8::Object;
 using v8::String;
+using v8::TryCatch;
 using v8::Uint32;
 using v8::Uint8Array;
 using v8::Value;
@@ -124,6 +125,17 @@ bool ProcessFipsOptions() {
   return true;
 }
 
+bool InitCryptoOnce(Isolate* isolate) {
+  static uv_once_t init_once = UV_ONCE_INIT;
+  TryCatch try_catch{isolate};
+  uv_once(&init_once, InitCryptoOnce);
+  if (try_catch.HasCaught() && !try_catch.HasTerminated()) {
+    try_catch.ReThrow();
+    return false;
+  }
+  return true;
+}
+
 void InitCryptoOnce() {
 #ifndef OPENSSL_IS_BORINGSSL
   OPENSSL_INIT_SETTINGS* settings = OPENSSL_INIT_new();
@@ -133,6 +145,16 @@ void InitCryptoOnce() {
   if (!per_process::cli_options->openssl_config.empty()) {
     const char* conf = per_process::cli_options->openssl_config.c_str();
     OPENSSL_INIT_set_config_filename(settings, conf);
+  }
+#endif
+
+#if OPENSSL_VERSION_MAJOR >= 3
+  // --openssl-legacy-provider
+  if (per_process::cli_options->openssl_legacy_provider) {
+    OSSL_PROVIDER* legacy_provider = OSSL_PROVIDER_load(nullptr, "legacy");
+    if (legacy_provider == nullptr) {
+      fprintf(stderr, "Unable to load legacy provider.\n");
+    }
   }
 #endif
 
@@ -711,6 +733,18 @@ void Initialize(Environment* env, Local<Object> target) {
   env->SetMethod(target, "secureBuffer", SecureBuffer);
   env->SetMethod(target, "secureHeapUsed", SecureHeapUsed);
 }
+void RegisterExternalReferences(ExternalReferenceRegistry* registry) {
+#ifndef OPENSSL_NO_ENGINE
+  registry->Register(SetEngine);
+#endif  // !OPENSSL_NO_ENGINE
+
+  registry->Register(GetFipsCrypto);
+  registry->Register(SetFipsCrypto);
+  registry->Register(TestFipsCrypto);
+  registry->Register(SecureBuffer);
+  registry->Register(SecureHeapUsed);
+}
+
 }  // namespace Util
 
 }  // namespace crypto

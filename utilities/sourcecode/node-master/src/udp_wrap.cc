@@ -20,7 +20,6 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "udp_wrap.h"
-#include "allocated_buffer-inl.h"
 #include "env-inl.h"
 #include "node_buffer.h"
 #include "node_sockaddr-inl.h"
@@ -371,13 +370,17 @@ void UDPWrap::Disconnect(const FunctionCallbackInfo<Value>& args) {
 #define X(name, fn)                                                            \
   void UDPWrap::name(const FunctionCallbackInfo<Value>& args) {                \
     UDPWrap* wrap = Unwrap<UDPWrap>(args.Holder());                            \
+    if (wrap == nullptr) {                                                     \
+      args.GetReturnValue().Set(UV_EBADF);                                     \
+      return;                                                                  \
+    }                                                                          \
     Environment* env = wrap->env();                                            \
     CHECK_EQ(args.Length(), 1);                                                \
     int flag;                                                                  \
     if (!args[0]->Int32Value(env->context()).To(&flag)) {                      \
       return;                                                                  \
     }                                                                          \
-    int err = wrap == nullptr ? UV_EBADF : fn(&wrap->handle_, flag);           \
+    int err = fn(&wrap->handle_, flag);                                        \
     args.GetReturnValue().Set(err);                                            \
   }
 
@@ -721,6 +724,7 @@ void UDPWrap::OnRecv(ssize_t nread,
   } else if (nread == 0) {
     bs = ArrayBuffer::NewBackingStore(isolate, 0);
   } else {
+    CHECK_LE(static_cast<size_t>(nread), bs->ByteLength());
     bs = BackingStore::Reallocate(isolate, std::move(bs), nread);
   }
 

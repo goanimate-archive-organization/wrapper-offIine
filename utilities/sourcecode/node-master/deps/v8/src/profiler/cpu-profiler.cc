@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "include/v8-locker.h"
 #include "src/base/lazy-instance.h"
 #include "src/base/template-utils.h"
 #include "src/debug/debug.h"
@@ -74,7 +75,7 @@ ProfilingScope::ProfilingScope(Isolate* isolate, ProfilerListener* listener)
   size_t profiler_count = isolate_->num_cpu_profilers();
   profiler_count++;
   isolate_->set_num_cpu_profilers(profiler_count);
-  isolate_->set_is_profiling(true);
+  isolate_->SetIsProfiling(true);
 #if V8_ENABLE_WEBASSEMBLY
   wasm::GetWasmEngine()->EnableCodeLogging(isolate_);
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -99,7 +100,7 @@ ProfilingScope::~ProfilingScope() {
   DCHECK_GT(profiler_count, 0);
   profiler_count--;
   isolate_->set_num_cpu_profilers(profiler_count);
-  if (profiler_count == 0) isolate_->set_is_profiling(false);
+  if (profiler_count == 0) isolate_->SetIsProfiling(false);
 }
 
 ProfilerEventsProcessor::ProfilerEventsProcessor(
@@ -359,6 +360,16 @@ void ProfilerCodeObserver::CodeEventHandler(
     return;
   }
   CodeEventHandlerInternal(evt_rec);
+}
+
+size_t ProfilerCodeObserver::GetEstimatedMemoryUsage() const {
+  // To avoid race condition in codemap,
+  // for now limit computation in kEagerLogging mode
+  if (!processor_) {
+    return sizeof(*this) + code_map_.GetEstimatedMemoryUsage() +
+           code_entries_.strings().GetStringSize();
+  }
+  return 0;
 }
 
 void ProfilerCodeObserver::CodeEventHandlerInternal(
