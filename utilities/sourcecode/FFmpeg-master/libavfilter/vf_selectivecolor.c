@@ -223,7 +223,7 @@ static int parse_psfile(AVFilterContext *ctx, const char *fname)
         int k;
         for (k = 0; k < FF_ARRAY_ELEMS(s->cmyk_adjust[0]); k++) {
             READ16(val);
-            s->cmyk_adjust[i][k] = val / 100.;
+            s->cmyk_adjust[i][k] = val / 100.f;
         }
         ret = register_range(s, i);
         if (ret < 0)
@@ -285,29 +285,25 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
-        AV_PIX_FMT_RGBA,   AV_PIX_FMT_BGRA,
-        AV_PIX_FMT_ARGB,   AV_PIX_FMT_ABGR,
-        AV_PIX_FMT_0RGB,   AV_PIX_FMT_0BGR,
-        AV_PIX_FMT_RGB0,   AV_PIX_FMT_BGR0,
-        AV_PIX_FMT_RGB48,  AV_PIX_FMT_BGR48,
-        AV_PIX_FMT_RGBA64, AV_PIX_FMT_BGRA64,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
+    AV_PIX_FMT_RGBA,   AV_PIX_FMT_BGRA,
+    AV_PIX_FMT_ARGB,   AV_PIX_FMT_ABGR,
+    AV_PIX_FMT_0RGB,   AV_PIX_FMT_0BGR,
+    AV_PIX_FMT_RGB0,   AV_PIX_FMT_BGR0,
+    AV_PIX_FMT_RGB48,  AV_PIX_FMT_BGR48,
+    AV_PIX_FMT_RGBA64, AV_PIX_FMT_BGRA64,
+    AV_PIX_FMT_NONE
+};
 
 static inline int comp_adjust(int scale, float value, float adjust, float k, int correction_method)
 {
     const float min = -value;
-    const float max = 1. - value;
-    float res = (-1. - adjust) * k - adjust;
+    const float max = 1.f - value;
+    float res = (-1.f - adjust) * k - adjust;
     if (correction_method == CORRECTION_METHOD_RELATIVE)
         res *= max;
-    return lrint(av_clipf(res, min, max) * scale);
+    return lrintf(av_clipf(res, min, max) * scale);
 }
 
 #define DECLARE_SELECTIVE_COLOR_FUNC(nbits)                                                             \
@@ -489,9 +485,9 @@ const AVFilter ff_vf_selectivecolor = {
     .name          = "selectivecolor",
     .description   = NULL_IF_CONFIG_SMALL("Apply CMYK adjustments to specific color ranges."),
     .priv_size     = sizeof(SelectiveColorContext),
-    .query_formats = query_formats,
     FILTER_INPUTS(selectivecolor_inputs),
     FILTER_OUTPUTS(selectivecolor_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &selectivecolor_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

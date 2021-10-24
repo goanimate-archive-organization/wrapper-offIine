@@ -164,6 +164,7 @@ static const AVOption v360_options[] = {
     {    "iv_fov", "input vertical field of view",  OFFSET(iv_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f,TFLAGS, "iv_fov"},
     {    "id_fov", "input diagonal field of view",  OFFSET(id_fov), AV_OPT_TYPE_FLOAT,  {.dbl=0.f},           0.f,               360.f,TFLAGS, "id_fov"},
     {"alpha_mask", "build mask in alpha plane",      OFFSET(alpha), AV_OPT_TYPE_BOOL,   {.i64=0},               0,                   1, FLAGS, "alpha"},
+    { "reset_rot", "reset rotation",             OFFSET(reset_rot), AV_OPT_TYPE_BOOL,   {.i64=0},              -1,                   1,TFLAGS, "reset_rot"},
     { NULL }
 };
 
@@ -1375,10 +1376,10 @@ static void process_cube_coordinates(const V360Context *s,
 
 static av_always_inline float scale(float x, float s)
 {
-    return (0.5f * x + 0.5f) * s - 0.5f;
+    return (0.5f * x + 0.5f) * (s - 1.f);
 }
 
-static av_always_inline float rescale(int x, int s)
+static av_always_inline float rescale(int x, float s)
 {
     return (2.f * x + 1.f) / s - 1.f;
 }
@@ -3393,6 +3394,23 @@ static int xyz_to_tetrahedron(const V360Context *s,
 }
 
 /**
+ * Prepare data for processing double fisheye input format.
+ *
+ * @param ctx filter context
+ *
+ * @return error code
+ */
+static int prepare_dfisheye_in(AVFilterContext *ctx)
+{
+    V360Context *s = ctx->priv;
+
+    s->iflat_range[0] = s->ih_fov / 360.f;
+    s->iflat_range[1] = s->iv_fov / 360.f;
+
+    return 0;
+}
+
+/**
  * Calculate 3D coordinates on sphere for corresponding frame position in dual fisheye format.
  *
  * @param s filter private context
@@ -3406,7 +3424,7 @@ static int dfisheye_to_xyz(const V360Context *s,
                            int i, int j, int width, int height,
                            float *vec)
 {
-    const float ew = width / 2.f;
+    const float ew = width * 0.5f;
     const float eh = height;
 
     const int ei = i >= ew ? i - ew : i;
@@ -3447,7 +3465,7 @@ static int xyz_to_dfisheye(const V360Context *s,
                            const float *vec, int width, int height,
                            int16_t us[4][4], int16_t vs[4][4], float *du, float *dv)
 {
-    const float ew = width / 2.f;
+    const float ew = (width - 1) * 0.5f;
     const float eh = height;
 
     const float h     = hypotf(vec[0], vec[1]);
@@ -4514,7 +4532,7 @@ static int config_output(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     case DUAL_FISHEYE:
         s->in_transform = xyz_to_dfisheye;
-        err = prepare_fisheye_in(ctx);
+        err = prepare_dfisheye_in(ctx);
         wf = w;
         hf = h;
         break;
@@ -4931,6 +4949,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
+static void reset_rot(V360Context *s)
+{
+    s->rot_quaternion[0][0] = 1.f;
+    s->rot_quaternion[0][1] = s->rot_quaternion[0][2] = s->rot_quaternion[0][3] = 0.f;
+}
+
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
                            char *res, int res_len, int flags)
 {
@@ -4938,10 +4962,15 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     int ret;
 
     s->yaw = s->pitch = s->roll = 0.f;
+    if (s->reset_rot < 0)
+        s->reset_rot = 0;
 
     ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
     if (ret < 0)
         return ret;
+
+    if (s->reset_rot)
+        reset_rot(s);
 
     return config_output(ctx->outputs[0]);
 }
@@ -4950,8 +4979,7 @@ static av_cold int init(AVFilterContext *ctx)
 {
     V360Context *s = ctx->priv;
 
-    s->rot_quaternion[0][0] = 1.f;
-    s->rot_quaternion[0][1] = s->rot_quaternion[0][2] = s->rot_quaternion[0][3] = 0.f;
+    reset_rot(s);
 
     return 0;
 }
@@ -4997,9 +5025,9 @@ const AVFilter ff_vf_v360 = {
     .priv_size     = sizeof(V360Context),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &v360_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

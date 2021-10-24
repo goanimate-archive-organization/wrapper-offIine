@@ -803,26 +803,39 @@ int ff_get_chomp_line(AVIOContext *s, char *buf, int maxlen)
     return len;
 }
 
-static int64_t read_line_to_bprint(AVIOContext *s, AVBPrint *bp)
+typedef enum FFBPrintReadStringMode {
+    FFBPrintReadString = 0,
+    FFBPrintReadLine   = 1,
+} FFBPrintReadStringMode;
+
+static int64_t read_string_to_bprint(AVIOContext *s, AVBPrint *bp,
+                                     FFBPrintReadStringMode mode,
+                                     int64_t max_len)
 {
     int len, end;
     int64_t read = 0;
     char tmp[1024];
     char c;
 
+    if (!max_len)
+        return 0;
+
     do {
         len = 0;
         do {
             c = avio_r8(s);
-            end = (c == '\r' || c == '\n' || c == '\0');
+            end = ((mode == FFBPrintReadLine && (c == '\r' || c == '\n')) ||
+                   c == '\0');
             if (!end)
                 tmp[len++] = c;
-        } while (!end && len < sizeof(tmp));
+        } while (!end && len < sizeof(tmp) &&
+                 ((max_len < 0) || (read + len < max_len)));
         av_bprint_append_data(bp, tmp, len);
         read += len;
-    } while (!end);
+    } while (!end && ((max_len < 0) || (read < max_len)));
 
-    if (c == '\r' && avio_r8(s) != '\n' && !avio_feof(s))
+    if (mode == FFBPrintReadLine &&
+        c == '\r' && avio_r8(s) != '\n' && !avio_feof(s))
         avio_skip(s, -1);
 
     if (!c && s->error)
@@ -834,12 +847,14 @@ static int64_t read_line_to_bprint(AVIOContext *s, AVBPrint *bp)
     return read;
 }
 
-int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp)
+static int64_t read_string_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp,
+                                               FFBPrintReadStringMode mode,
+                                               int64_t max_len)
 {
     int64_t ret;
 
     av_bprint_clear(bp);
-    ret = read_line_to_bprint(s, bp);
+    ret = read_string_to_bprint(s, bp, mode, max_len);
     if (ret < 0)
         return ret;
 
@@ -847,6 +862,17 @@ int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp)
         return AVERROR(ENOMEM);
 
     return bp->len;
+}
+
+int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp)
+{
+    return read_string_to_bprint_overwrite(s, bp, FFBPrintReadLine, -1);
+}
+
+int64_t ff_read_string_to_bprint_overwrite(AVIOContext *s, AVBPrint *bp,
+                                           int64_t max_len)
+{
+    return read_string_to_bprint_overwrite(s, bp, FFBPrintReadString, max_len);
 }
 
 int avio_get_str(AVIOContext *s, int maxlen, char *buf, int buflen)

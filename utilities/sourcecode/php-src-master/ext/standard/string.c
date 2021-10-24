@@ -1190,7 +1190,7 @@ PHPAPI void php_implode(const zend_string *glue, HashTable *pieces, zval *return
 		}
 	} ZEND_HASH_FOREACH_END();
 
-	/* numelems can not be 0, we checked above */
+	/* numelems cannot be 0, we checked above */
 	str = zend_string_safe_alloc(numelems - 1, ZSTR_LEN(glue), len, 0);
 	cptr = ZSTR_VAL(str) + ZSTR_LEN(str);
 	*cptr = 0;
@@ -1362,6 +1362,9 @@ PHPAPI zend_string *php_string_toupper(zend_string *s)
 	unsigned char *c;
 	const unsigned char *e;
 
+	if (EXPECTED(!BG(ctype_string))) {
+		return zend_string_toupper(s);
+	}
 	c = (unsigned char *)ZSTR_VAL(s);
 	e = c + ZSTR_LEN(s);
 

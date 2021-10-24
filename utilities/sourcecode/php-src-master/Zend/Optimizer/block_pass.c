@@ -1119,13 +1119,6 @@ static void assemble_code_blocks(zend_cfg *cfg, zend_op_array *op_array, zend_op
 		free_alloca(map, use_heap);
 	}
 
-	/* adjust early binding list */
-	if (op_array->fn_flags & ZEND_ACC_EARLY_BINDING) {
-		ZEND_ASSERT(op_array == &ctx->script->main_op_array);
-		ctx->script->first_early_binding_opline =
-			zend_build_delayed_early_binding_list(op_array);
-	}
-
 	/* rebuild map (just for printing) */
 	memset(cfg->map, -1, sizeof(int) * op_array->last);
 	for (int n = 0; n < cfg->blocks_count; n++) {
@@ -1888,6 +1881,15 @@ void zend_optimize_cfg(zend_op_array *op_array, zend_optimizer_ctx *ctx)
 
 		/* Eliminate NOPs */
 		for (b = blocks; b < end; b++) {
+			if (b->flags & ZEND_BB_UNREACHABLE_FREE) {
+				/* In unreachable_free blocks only preserve loop var frees. */
+				for (uint32_t i = b->start; i < b->start + b->len; i++) {
+					zend_op *opline = &op_array->opcodes[i];
+					if (!zend_optimizer_is_loop_var_free(opline)) {
+						MAKE_NOP(opline);
+					}
+				}
+			}
 			if (b->flags & (ZEND_BB_REACHABLE|ZEND_BB_UNREACHABLE_FREE)) {
 				strip_nops(op_array, b);
 			}

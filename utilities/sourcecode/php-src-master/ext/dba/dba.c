@@ -89,15 +89,6 @@ ZEND_TSRMLS_CACHE_DEFINE()
 ZEND_GET_MODULE(dba)
 #endif
 
-/* {{{ macromania */
-
-#define DBA_ID_PARS 											\
-	zval *id; 													\
-	dba_info *info = NULL; 										\
-	int ac = ZEND_NUM_ARGS()
-
-/* these are used to get the standard arguments */
-
 /* {{{ php_dba_myke_key */
 static size_t php_dba_make_key(zval *key, char **key_str, char **key_free)
 {
@@ -141,41 +132,6 @@ static size_t php_dba_make_key(zval *key, char **key_str, char **key_free)
 }
 /* }}} */
 
-#define DBA_GET2 												\
-	zval *key;													\
-	char *key_str, *key_free;									\
-	size_t key_len; 											\
-	if (zend_parse_parameters(ac, "zr", &key, &id) == FAILURE) { 	\
-		RETURN_THROWS();										\
-	} 															\
-	if ((key_len = php_dba_make_key(key, &key_str, &key_free)) == 0) {\
-		RETURN_FALSE;											\
-	}
-
-#define DBA_GET2_3												\
-	zval *key;													\
-	char *key_str, *key_free;									\
-	size_t key_len; 											\
-	zend_long skip = 0;  											\
-	switch(ac) {												\
-	case 2: 													\
-		if (zend_parse_parameters(ac, "zr", &key, &id) == FAILURE) { \
-			RETURN_THROWS();									\
-		} 														\
-		break;  												\
-	case 3: 													\
-		if (zend_parse_parameters(ac, "zlr", &key, &skip, &id) == FAILURE) { \
-			RETURN_THROWS();									\
-		} 														\
-		break;  												\
-	default:													\
-		WRONG_PARAM_COUNT; 										\
-	} 															\
-	if ((key_len = php_dba_make_key(key, &key_str, &key_free)) == 0) {\
-		RETURN_FALSE;											\
-	}
-
-
 #define DBA_FETCH_RESOURCE(info, id)	\
 	if ((info = (dba_info *)zend_fetch_resource2(Z_RES_P(id), "DBA identifier", le_db, le_pdb)) == NULL) { \
 		RETURN_THROWS(); \
@@ -186,9 +142,6 @@ static size_t php_dba_make_key(zval *key, char **key_str, char **key_free)
 		DBA_ID_DONE; \
 		RETURN_THROWS(); \
 	}
-
-#define DBA_ID_GET2   DBA_ID_PARS; DBA_GET2;   DBA_FETCH_RESOURCE_WITH_ID(info, id)
-#define DBA_ID_GET2_3 DBA_ID_PARS; DBA_GET2_3; DBA_FETCH_RESOURCE_WITH_ID(info, id)
 
 #define DBA_ID_DONE												\
 	if (key_free) efree(key_free)
@@ -470,13 +423,12 @@ static void php_dba_update(INTERNAL_FUNCTION_PARAMETERS, int mode)
 	size_t val_len;
 	zval *id;
 	dba_info *info = NULL;
-	int ac = ZEND_NUM_ARGS();
 	zval *key;
 	char *val;
 	char *key_str, *key_free;
 	size_t key_len;
 
-	if (zend_parse_parameters(ac, "zsr", &key, &val, &val_len, &id) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "zsr", &key, &val, &val_len, &id) == FAILURE) {
 		RETURN_THROWS();
 	}
 
@@ -941,7 +893,19 @@ PHP_FUNCTION(dba_close)
 /* {{{ Checks, if the specified key exists */
 PHP_FUNCTION(dba_exists)
 {
-	DBA_ID_GET2;
+	zval *id;
+	dba_info *info = NULL;
+	zval *key;
+	char *key_str, *key_free;
+	size_t key_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "zr", &key, &id) == FAILURE) {
+		RETURN_THROWS();
+	}
+	if ((key_len = php_dba_make_key(key, &key_str, &key_free)) == 0) {
+		RETURN_FALSE;
+	}
+	DBA_FETCH_RESOURCE_WITH_ID(info, id);
 
 	if(info->hnd->exists(info, key_str, key_len) == SUCCESS) {
 		DBA_ID_DONE;
@@ -957,9 +921,34 @@ PHP_FUNCTION(dba_fetch)
 {
 	char *val;
 	size_t len = 0;
-	DBA_ID_GET2_3;
+	zval *id;
+	dba_info *info = NULL;
+	zval *key;
+	char *key_str, *key_free;
+	size_t key_len;
+	zend_long skip = 0;
 
-	if (ac==3) {
+	switch(ZEND_NUM_ARGS()) {
+		case 2:
+			if (zend_parse_parameters(ZEND_NUM_ARGS(), "zr", &key, &id) == FAILURE) {
+				RETURN_THROWS();
+			}
+			break;
+		case 3:
+			if (zend_parse_parameters(ZEND_NUM_ARGS(), "zlr", &key, &skip, &id) == FAILURE) {
+				RETURN_THROWS();
+			}
+			break;
+		default:
+			WRONG_PARAM_COUNT;
+	}
+	if ((key_len = php_dba_make_key(key, &key_str, &key_free)) == 0) {
+		RETURN_FALSE;
+	}
+
+	DBA_FETCH_RESOURCE_WITH_ID(info, id);
+
+	if (ZEND_NUM_ARGS() == 3) {
 		if (!strcmp(info->hnd->name, "cdb")) {
 			if (skip < 0) {
 				php_error_docref(NULL, E_NOTICE, "Handler %s accepts only skip values greater than or equal to zero, using skip=0", info->hnd->name);
@@ -1079,7 +1068,19 @@ PHP_FUNCTION(dba_nextkey)
    If inifile: remove all other key lines */
 PHP_FUNCTION(dba_delete)
 {
-	DBA_ID_GET2;
+	zval *id;
+	dba_info *info = NULL;
+	zval *key;
+	char *key_str, *key_free;
+	size_t key_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "zr", &key, &id) == FAILURE) {
+		RETURN_THROWS();
+	}
+	if ((key_len = php_dba_make_key(key, &key_str, &key_free)) == 0) {
+		RETURN_FALSE;
+	}
+	DBA_FETCH_RESOURCE_WITH_ID(info, id);
 
 	DBA_WRITE_CHECK_WITH_ID;
 

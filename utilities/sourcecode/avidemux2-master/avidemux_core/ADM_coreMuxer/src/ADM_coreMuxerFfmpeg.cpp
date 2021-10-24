@@ -20,6 +20,7 @@
 #include "ADM_default.h"
 #include "ADM_vidMisc.h"
 #include "fourcc.h"
+#include "ADM_rgb.h"
 #include "ADM_coreMuxerFfmpeg.h"
 #include "ADM_muxerUtils.h"
 #include "ADM_coreCodecMapping.h"
@@ -192,10 +193,10 @@ bool muxerFFmpeg::initVideo(ADM_videoStream *stream)
         uint32_t r,p,t,m;
         if(stream->getColorInfo(&r,&p,&t,&m))
         {
-            par->color_range = (AVColorRange)r;
-            par->color_primaries = (AVColorPrimaries)p;
-            par->color_trc = (AVColorTransferCharacteristic)t;
-            par->color_space = (AVColorSpace)m;
+            par->color_range = (AVColorRange) validateColorRange(r);
+            par->color_primaries = (AVColorPrimaries) validateColorPrimaries(p);
+            par->color_trc = (AVColorTransferCharacteristic) validateColorTrC(t);
+            par->color_space = (AVColorSpace) validateColorSpace(m);
         }
         }
 
@@ -418,6 +419,7 @@ bool muxerFFmpeg::initAudio(uint32_t nbAudioTrack,ADM_audioStream **audio)
                                   par->codec_id = AV_CODEC_ID_AAC;
                                   par->frame_size=audio[i]->getSamplesPerPacket();
                                   break;
+                  case WAV_TRUEHD: par->codec_id = AV_CODEC_ID_TRUEHD; par->frame_size = 40; break;
                   default:
                                  printf("[FF]: Unsupported audio\n");
                                  return false;

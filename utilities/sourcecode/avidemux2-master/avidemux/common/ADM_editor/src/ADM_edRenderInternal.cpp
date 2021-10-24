@@ -348,6 +348,10 @@ bool ADM_Composer::decompressImage(ADMImage *out,ADMCompressedImage *in,uint32_t
 {
     ADMImage *tmpImage=NULL;
     _VIDEOS  *v=_segments.getRefVideo(ref);
+    ADM_assert(v);
+    vidHeader *demuxer = v->_aviheader;
+    ADM_assert(demuxer);
+
     bool refOnly=v->decoder->dontcopy(); // can we skip one memcpy ?
     // This is only an empty Shell
     if(refOnly)
@@ -370,7 +374,21 @@ bool ADM_Composer::decompressImage(ADMImage *out,ADMCompressedImage *in,uint32_t
         tmpImage=_imageBuffer;
     }
 
-    tmpImage->_colorspace=ADM_COLOR_YV12;
+    tmpImage->_pixfrmt=ADM_PIXFRMT_YV12;
+
+    aviColorInfo info;
+    demuxer->getColorInfo(&info);
+    if(info.colflags & ADM_COL_FLAG_RANGE_SET)
+        tmpImage->_range = validateColorRange(info.range);
+    if(info.colflags & ADM_COL_FLAG_PRIMARIES_SET)
+        tmpImage->_colorPrim = validateColorPrimaries(info.prim);
+    if(info.colflags & ADM_COL_FLAG_TRANSFER_SET)
+        tmpImage->_colorTrc = validateColorTrC(info.coltc);
+    if(info.colflags & ADM_COL_FLAG_MATRIX_COEFF_SET)
+        tmpImage->_colorSpace = validateColorSpace(info.mcoeff);
+
+    demuxer->getHDRInfo(&tmpImage->_hdrInfo);
+
     // Decode it
     if (!v->decoder->uncompress (in, tmpImage))
     {
@@ -388,7 +406,7 @@ bool ADM_Composer::decompressImage(ADMImage *out,ADMCompressedImage *in,uint32_t
     aprintf("[::Decompress] in:%" PRIu64" out:%" PRIu64" flags:%x\n",in->demuxerPts,out->Pts,out->flags);
     // If not quant and it is already YV12, we can stop here
     // Also, if the image is decoded through hw, dont do post proc
-    if(tmpImage->refType!=ADM_HW_NONE || ((!tmpImage->quant || !tmpImage->_qStride) && tmpImage->_colorspace==ADM_COLOR_YV12))
+    if(tmpImage->refType!=ADM_HW_NONE || ((!tmpImage->quant || !tmpImage->_qStride) && tmpImage->_pixfrmt==ADM_PIXFRMT_YV12))
     {
         out->duplicate(tmpImage);
         aprintf("[decompressImage] : No quant avail\n");
@@ -418,7 +436,7 @@ bool ADM_Composer::decompressImage(ADMImage *out,ADMCompressedImage *in,uint32_t
 
     // Do postprocessing if any
     // Pp deactivated ?
-    if(!_pp->postProcType || !_pp->postProcStrength || tmpImage->_colorspace!=ADM_COLOR_YV12)
+    if(!_pp->postProcType || !_pp->postProcStrength || tmpImage->_pixfrmt!=ADM_PIXFRMT_YV12)
     {
         dupe(tmpImage,out,v);
         aprintf("EdCache: Postproc disabled\n");

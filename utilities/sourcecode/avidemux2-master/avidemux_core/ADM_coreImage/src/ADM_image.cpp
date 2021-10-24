@@ -10,7 +10,7 @@
  *                                                                         *
  ***************************************************************************/
 
-
+#include <cmath>	// for NAN
 #include "ADM_default.h"
 #include "ADM_image.h"
 extern "C"
@@ -33,6 +33,30 @@ void ADMImage_stat( void )
 	printf("Cur image used               : %" PRIu32"\n",imgCurNb);
 
 }
+
+/**
+    \fn ADM_HDR_Info
+    \brief Intialize all fields to NaNs
+*/
+ADM_HDR_Info::ADM_HDR_Info(void)
+{
+    int j,k;
+    for (j=0; j<3; j++)
+    {
+        for (k=0; k<2; k++)
+            primaries[j][k] = NAN;
+        maxSCL[j] = NAN;
+    }
+    for (j=0; j<2; j++)
+    {
+        whitePoint[j] = NAN;
+        kneePoint[j] = NAN;
+    }
+    for (j=0; j<15; j++)
+        bezierCurveAnchors[j] = NAN;
+    maxLuminance = minLuminance = maxCLL = maxFALL = avgMaxRGB = colorSaturationWeight = targetMaxLuminance = NAN;
+}
+
 /**
     \fn ADMImage
     \brief ctor
@@ -51,8 +75,11 @@ ADMImage::ADMImage(uint32_t width, uint32_t height,ADM_IMAGE_TYPE type)
         if(imgCurNb>imgMaxNb)
             imgMaxNb=imgCurNb;
         _noPicture=0;
-        _colorspace=ADM_COLOR_YV12;
+        _pixfrmt=ADM_PIXFRMT_YV12;
         _range=ADM_COL_RANGE_MPEG;
+        _colorPrim=ADM_COL_PRI_BT709;
+        _colorTrc=ADM_COL_TRC_BT709;
+        _colorSpace=ADM_COL_SPC_BT709;
         Pts=0;
         _imageType=type;
         quant=NULL;

@@ -24,7 +24,7 @@ set(FFMPEG_DECODERS     aac  ac3  adpcm_ima_amv  amv  cinepak  cscd  cyuv
                         flac  flv  fraps  h263  h264  hevc  huffyuv  lagarith
                         mjpeg  mjpegb  mp2  mp3  mpeg2video  mpeg4  msmpeg4v2  msmpeg4v3
                         msvideo1  nellymoser  png  prores  qdm2  rawvideo  snow  svq3  theora
-                        tscc  utvideo  vc1  vorbis  vp3  vp6  vp6a  vp6f  vp8
+                        tscc  truehd  utvideo  vc1  vorbis  vp3  vp6  vp6a  vp6f  vp8
                         vp9  wmapro  wmalossless  wmav2  wmv1  wmv2  wmv3)
 
 set(FFMPEG_ENCODERS     aac  ac3  dvvideo  ffv1  ffvhuff  flac  flv  h263  huffyuv
@@ -211,6 +211,8 @@ MACRO(ADM_FF_INSTALL_LIBS_AND_HEADERS)
             "${FFMPEG_SOURCE_DIR}/libavutil/hwcontext_vaapi.h"
             "${FFMPEG_SOURCE_DIR}/libavutil/hwcontext_vdpau.h"
             "${FFMPEG_SOURCE_DIR}/libavutil/hwcontext_dxva2.h"
+            "${FFMPEG_SOURCE_DIR}/libavutil/mastering_display_metadata.h"
+            "${FFMPEG_SOURCE_DIR}/libavutil/hdr_dynamic_metadata.h"
 
             "${FFMPEG_SOURCE_DIR}/libavutil/rational.h" DESTINATION "${AVIDEMUX_INCLUDE_DIR}/avidemux/${AVIDEMUX_MAJOR_MINOR}/libavutil" COMPONENT dev)
 

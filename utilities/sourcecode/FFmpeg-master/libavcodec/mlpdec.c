@@ -73,6 +73,7 @@ typedef struct SubStream {
     uint64_t    mask;
     /// The matrix encoding mode for this substream
     enum AVMatrixEncoding matrix_encoding;
+    enum AVMatrixEncoding prev_matrix_encoding;
 
     /// Channel coding parameters for channels in the substream
     ChannelParams channel_params[MAX_CHANNELS];
@@ -1123,8 +1124,12 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
                                                     is32);
 
     /* Update matrix encoding side data */
-    if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
-        return ret;
+    if (s->matrix_encoding != s->prev_matrix_encoding) {
+        if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
+            return ret;
+
+        s->prev_matrix_encoding = s->matrix_encoding;
+    }
 
     *got_frame_ptr = 1;
 
@@ -1244,6 +1249,12 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
 
     for (substr = 0; substr <= m->max_decoded_substream; substr++) {
         SubStream *s = &m->substream[substr];
+
+        if (substr != m->max_decoded_substream &&
+            m->substream[m->max_decoded_substream].min_channel == 0 &&
+            m->substream[m->max_decoded_substream].max_channel == avctx->channels - 1)
+            goto skip_substr;
+
         init_get_bits(&gb, buf, substream_data_len[substr] * 8);
 
         m->matrix_changed = 0;
@@ -1317,6 +1328,7 @@ next_substr:
             av_log(m->avctx, AV_LOG_ERROR,
                    "No restart header present in substream %d.\n", substr);
 
+skip_substr:
         buf += substream_data_len[substr];
     }
 
@@ -1353,6 +1365,7 @@ static void mlp_decode_flush(AVCodecContext *avctx)
         SubStream *s = &m->substream[substr];
 
         s->lossless_check_data = 0xffffffff;
+        s->prev_matrix_encoding = 0;
     }
 }
 

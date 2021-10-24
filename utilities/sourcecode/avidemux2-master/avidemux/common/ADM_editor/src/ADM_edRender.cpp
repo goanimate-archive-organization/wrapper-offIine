@@ -30,6 +30,7 @@
 #endif
 
 #include "ADM_pp.h"
+#include "ADM_toneMapper.h"
 
 /**
     \fn recalibrateSigned
@@ -531,12 +532,12 @@ uint32_t segNo;
 */
 uint8_t ADM_Composer::dupe(ADMImage *src,ADMImage *dst,_VIDEOS *vid)
 {
-    if(src->_colorspace==ADM_COLOR_YV12)
+    if(src->_pixfrmt==ADM_PIXFRMT_YV12)
         return dst->duplicate(src);
     // We need to do some colorspace conversion
     // Is there already one ?
     if(!vid->color)
-        vid->color=new ADMColorScalerSimple(src->_width,src->_height,src->_colorspace,ADM_COLOR_YV12);
+        vid->color=new ADMColorScalerSimple(src->_width,src->_height,src->_pixfrmt,ADM_PIXFRMT_YV12);
     // Since it is not YV12 it MUST be a ref
     ADM_assert(src->isRef());
     dst->copyInfo(src);
@@ -567,6 +568,27 @@ uint8_t ADM_Composer::getPostProc( uint32_t *type, uint32_t *strength, bool *swa
 	*strength=_pp->postProcStrength;
 	*swapuv=_pp->swapuv;
 	return 1;
+}
+/**
+    \fn setHDRConfig
+*/
+uint8_t ADM_Composer::setHDRConfig( uint32_t toneMappingMethod, float saturationAdjust, float boostAdjust)
+{
+    if(!_segments.getNbRefVideos()) return 0;
+    if(!_hdrConfig) return 0;
+    _hdrConfig->setConfig(toneMappingMethod, saturationAdjust, boostAdjust);
+    return 1;
+}
+/**
+    \fn getHDRConfig
+*/
+
+uint8_t ADM_Composer::getHDRConfig( uint32_t * toneMappingMethod, float * saturationAdjust, float * boostAdjust)
+{
+    if(!_segments.getNbRefVideos()) return 0;
+    if(!_hdrConfig) return 0;
+    _hdrConfig->getConfig(toneMappingMethod, saturationAdjust, boostAdjust);
+    return 1;
 }
 /**
     \fn switchToNextSegment
