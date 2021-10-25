@@ -81,7 +81,7 @@ if not exist "utilities\checks" md utilities\checks
 :: Welcome, Director Ford!
 echo Wrapper: Offline
 echo A project from VisualPlugin adapted by GoTest334 and the Wrapper: Offline team
-echo Version !WRAPPER_VER!, build !WRAPPER_BLD!
+echo Version !WRAPPER_VER!
 echo:
 
 :: Confirm measurements to proceed.
@@ -241,7 +241,7 @@ if !NEEDTHEDEPENDERS!==y (
 		set "line=%%b"
 		>>!tmpcfg! echo(!line:~1!
 		set /a count+=1
-		if !count! GEQ 14 goto linereached
+		if !count! GEQ 9 goto linereached
 	)
 	:linereached
 	:: Overwrite the original setting
@@ -647,29 +647,16 @@ title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Loading...]
 :: Close existing node apps
 :: Hopefully fixes EADDRINUSE errors??
 if !VERBOSEWRAPPER!==y (
-	if !CEPSTRAL!==n (
-		echo Closing any existing node and/or PHP apps and batch processes...
-		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
-			if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-		)
-		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-		if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
-		echo:
-	) else (
-		echo Closing any existing node apps and batch processes...
-		for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET) do (
-			if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-		)
-		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-		echo:
+	echo Closing any existing node and/or PHP apps and batch processes...
+	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
+		if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
 	)
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
+	if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+	echo:
 ) else (
-	if !CEPSTRAL!==n (
-		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-		if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
-	) else (
-		if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-	)
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
+	if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
 )
 
 :: Start Node.js, http-server and PHP webserver for VFProxy
@@ -682,18 +669,11 @@ pushd utilities
 if !VERBOSEWRAPPER!==y (
 	if !DRYRUN!==n ( start /MIN open_http-server.bat )
 	if !DRYRUN!==n ( start /MIN open_nodejs.bat )
-	if !DRYRUN!==n ( 
-		if !CEPSTRAL!==n ( 
-			start /MIN open_vfproxy_php.bat
-		)
-	)
+	if !DRYRUN!==n ( start /MIN open_vfproxy_php.bat )
 ) else (
 	if !DRYRUN!==n ( start SilentCMD open_http-server.bat )
 	if !DRYRUN!==n ( start SilentCMD open_nodejs.bat )
-	if !DRYRUN!==n ( 
-		if !CEPSTRAL!==n (
-			start SilentCMD open_vfproxy_php.bat
-		)
+	if !DRYRUN!==n ( start SilentCMD open_vfproxy_php.bat )
 	)
 )
 popd
@@ -703,9 +683,22 @@ popd
 PING -n 6 127.0.0.1>nul
 
 echo Opening Wrapper: Offline...
-		pushd utilities\ungoogled-chromium
-		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
-
+pushd utilities\ungoogled-chromium
+if !APPCHROMIUM!==y ( 
+	if !FULLSCREEN!==y (
+		set ARGS=--app=http://localhost:!port! --allow-outdated-plugins --start-fullscreen
+	) else (
+		set ARGS=--app=http://localhost:!port! --allow-outdated-plugins
+	)
+)
+if !APPCHROMIUM!==n ( 
+	if !FULLSCREEN!==y (
+		set ARGS=http://localhost:!port! --allow-outdated-plugins --start-fullscreen
+	) else (
+		set ARGS=http://localhost:!port! --allow-outdated-plugins
+	)
+)
+if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile !args! )
 echo Wrapper: Offline has been started^^! The video list should now be open.
 
 ::::::::::::::::
@@ -740,6 +733,7 @@ echo Enter 4 to open the server page
 echo Enter 5 to export a video
 echo Enter 6 to Update W:O using git
 echo Enter 7 to open the backup/restore tool
+echo Enter 8 to view software information
 echo Enter ? to open the FAQ
 echo Enter clr to clean up the screen
 echo Enter 0 to close Wrapper: Offline
@@ -773,6 +767,7 @@ if "!choice!"=="4" goto open_server
 if "!choice!"=="5" goto start_exporter
 if "!choice!"=="6" goto updategit
 if "!choice!"=="7" goto backupandrestore
+if "!choice!"=="8" goto verinfo
 if "!choice!"=="?" goto open_faq
 if /i "!choice!"=="clr" goto wrapperstartedcls
 if /i "!choice!"=="cls" goto wrapperstartedcls
@@ -795,13 +790,13 @@ echo Time to choose. && goto wrapperidle
 :reopen_webpage	
 		echo Opening Wrapper: Offline...
 		pushd utilities\ungoogled-chromium
-		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=http://localhost:!port! --allow-outdated-plugins )
+		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile !args! )
 goto wrapperidle
 
 :open_server
 	echo Opening the server page...
 	pushd utilities\ungoogled-chromium
-	if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile --app=https://localhost:4664 --allow-outdated-plugins )
+	if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile https://localhost:4664 --allow-outdated-plugins )
 goto wrapperidle
 
 :open_files
@@ -813,7 +808,7 @@ goto wrapperidle
 
 :start_importer
 echo Opening the importer...
-start "" "utilities\AssetImporter.exe"
+start "" "utilities\import.bat"
 goto wrapperidle
 
 :start_exporter
@@ -859,6 +854,30 @@ goto wrapperidle
 call utilities\config.bat
 call utilities\metadata.bat
 goto wrapperstartedcls
+
+:verinfo
+cls
+echo Wrapper: Offline
+echo Version !WRAPPER_VER! Beta
+echo:
+echo This copy of Wrapper: Offline belongs to:
+if not %FIRST_NAME%==n (
+	if not %LAST_NAME%==n (
+		echo %FULL_NAME% ^(User: %USERNAME%^)
+	)
+) else (
+	echo User: %USERNAME%
+)
+if not %EMAIL%==n ( echo E-Mail: %EMAIL% )
+if not %DISCORD%==n ( echo Discord Tag: %DISCORD% )
+echo Machine ID: %COMPUTERNAME%
+echo:
+echo ^(DEV TIP: Interested in registering your copy of W:O under
+echo your name? Open "utilities\metadata.bat" in a text editor and
+echo edit any of the necessary values to your liking. This process
+echo will be automated in the near future.^)
+echo:
+pause & goto wrapperstartedcls
 
 :wipe_save
 call utilities\reset_install.bat
@@ -1068,8 +1087,7 @@ echo setlocal>> utilities\metadata.bat
 echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\metadata.bat
 echo endlocal>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
-echo :: Version number and build number>> utilities\metadata.bat
-echo set WRAPPER_VER=1.3.3>> utilities\metadata.bat
+echo set WRAPPER_VER=1.3.0>> utilities\metadata.bat
 echo:>> utilities\metadata.bat
 set NOMETA=n
 goto returnfrommetacopy
