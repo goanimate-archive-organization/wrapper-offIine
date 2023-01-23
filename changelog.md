@@ -4,6 +4,17 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and #
 
 ## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
 ### Added
+  - new lil peepz and comedy world assets
+### Changed
+  - teyeq pull me down is now on stay with me by Swole sauce and spirit link
+  - 1.3.0
+### Fixed
+  - nothing
+### Deleted
+  - utilities files, server files and wrapper files unusuals
+
+## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
+### Added
   - FFDEC version 14.4.0
   - Themelist is at Premade folder
   - Avidemux installer
