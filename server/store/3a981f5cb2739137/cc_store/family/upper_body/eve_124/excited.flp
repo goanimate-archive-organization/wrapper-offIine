@@ -1,0 +1,6 @@
+﻿<flash_project name="excited" version="1">
+	<project_file path="./excited.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./excited_fla/MainTimeline.as" filetype="as"/>
+	<project_file path="./excited_fla/mask_3.as" filetype="as"/>
+	<project_file path="./excited_fla/theUpper_1.as" filetype="as"/>
+</flash_project>

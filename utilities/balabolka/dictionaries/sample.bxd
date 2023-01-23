@@ -1,5 +1,0 @@
-﻿Version=1
-Delimiter=
-Sample BXD DictionaryIlya MorozovThe BXD format allows to use regular expressions or the simple syntax of rules for text replacement.
-T7XMWWEW6XVGVBGJ6LZMT1I2F7L7YX8D111000XmasChristmas
-BDZW4U39GP6SNB7KT88FX647VJLJLDQR210100((http|ftp|https)://)?(www\.)?([-a-zA-Z0-9@:%._\+~#\=]{2,256}\.[a-z]{2,6}\b)([-a-zA-Z0-9@:%_\+.~#?&//\=]*)$4Replace a web address by its domain name ("example.com")

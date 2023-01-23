@@ -8,12 +8,6 @@ title Wrapper: Offline Settings Script
 :: Initialize (stop command spam, clean screen, make variables work, set to UTF-8)
 @echo off && cls
 SETLOCAL ENABLEDELAYEDEXPANSION
-if exist "!onedrive!\Documents" (
-	set PATHTOEXPORTEDCONFIG=!onedrive!\Documents
-) else (
-	set PATHTOEXPORTEDCONFIG=!userprofile!\Documents
-)
-set CONFIGNAME=%username%_config
 
 :: Move to base folder, and make sure it worked (otherwise things would go horribly wrong)
 pushd "%~dp0"
@@ -24,12 +18,6 @@ goto noerror_location
 :error_location
 echo Doesn't seem like this script is in the Wrapper: Offline folder.
 goto end
-:devmodeerror
-echo Ooh, sorry. You have to have developer mode on
-echo in order to access these features.
-echo:
-echo Please turn developer mode on, then try again.
-goto reaskoptionscreen
 :noerror_location
 
 :: Prevents CTRL+C cancelling and keeps window open when crashing
@@ -46,11 +34,8 @@ if exist "patch.jpg" echo MESSAGE GOES HERE && goto end
 :: Preload variable
 set CFG=utilities\config.bat
 set TMPCFG=utilities\tempconfig.bat
-set META=utilities\metadata.bat
-set ENV=wrapper\env.json
+set SHOWDEVOPTIONS=n
 set BACKTODEFAULTTOGGLE=n
-set CHROMIUMENABLE=n
-set CHROMIUMDISABLE=n
 set BACKTOCUSTOMTOGGLE=n
 set BACKTOCUSTOMTOGGLE2=n
 
@@ -58,11 +43,9 @@ set BACKTOCUSTOMTOGGLE2=n
 if "%SUBSCRIPT%"=="" ( 
 	set SUBSCRIPT=y
 	call !cfg!
-	call !meta!
 	set "SUBSCRIPT="
 ) else (
 	call !cfg!
-	call !meta!
 )
 
 ::::::::::
@@ -76,105 +59,69 @@ echo Enter 0 to leave settings
 echo Enter the number next to the option to change it.
 echo Enter a ? before the number for more info on the option.
 echo:
-
-if !DEVMODE!==y (
-	echo Standard options:
-	echo --------------------------------------
-)
-
 :: Verbose
 if !VERBOSEWRAPPER!==y (
 	echo ^(1^) Verbose mode is[92m ON [0m
 ) else ( 
 	echo ^(1^) Verbose mode is[91m OFF [0m
 )
+:: Browser options
+if !INCLUDEDCHROMIUM!==y (
+	echo ^(2^) Browser set to[92m included Chromium [0m
+	if !APPCHROMIUM!==y (
+		echo     ^(3^) Headless mode is[92m ON [0m
+	) else ( 
+		echo     ^(3^) Headless mode is[91m OFF [0m
+	)
+	goto postbrowsershow
+)
+if not !CUSTOMBROWSER!==n (
+	echo ^(2^) Browser set to[91m custom browser [0m
+	echo     ^(3^) Browser path: !CUSTOMBROWSER!
+)
+if !INCLUDEDCHROMIUM!==n (
+	if !CUSTOMBROWSER!==n (
+		echo ^(2^) Browser set to[91m default system browser [0m
+	)
+)
+:postbrowsershow
 :: Skip checking dependenceis
 if !SKIPCHECKDEPENDS!==n (
-	echo ^(2^) Checking dependencies is[92m ON [0m
+	echo ^(4^) Checking dependencies is[92m ON [0m
 ) else ( 
-	echo ^(2^) Checking dependencies is[91m OFF [0m
+	echo ^(4^) Checking dependencies is[91m OFF [0m
 )
 :: Waveforms
-if exist "wrapper\static\info-nowave*.json" (
-	echo ^(3^) Waveforms are[92m ON [0m
+if exist "wrapper\static\info-nowave.json" (
+	echo ^(5^) Waveforms are[92m ON [0m
 ) else ( 
-	echo ^(3^) Waveforms are[91m OFF [0m
+	echo ^(5^) Waveforms are[91m OFF [0m
 )
-:: Debug mode
-if exist "wrapper\static\page-nodebug.js" (
-	echo ^(4^) Debug videomaker is[92m ON [0m
+:: Skip updating
+if !AUTOUPDATE!==y (
+	echo ^(6^) Auto updating is[92m ON [0m
 ) else ( 
-	echo ^(4^) Debug videomaker is[91m OFF [0m
+	echo ^(6^) Auto updating is[91m OFF [0m
 )
-:: Dark mode
-if exist "wrapper\pages\css\global-light.css" (
-	echo ^(5^) Dark mode is[92m ON [0m
-)
-if exist "wrapper\pages\css\global-dark.css" ( 
-	echo ^(5^) Dark mode is[91m OFF [0m
-)
-:: Rich presence
-if exist "wrapper\main-norpc.js" (
-	echo ^(6^) Discord rich presence is[92m ON [0m
+:: Truncated Themelist
+if exist "wrapper\_THEMES\themelist-allthemes.xml" (
+	echo ^(7^) Truncated themelist is[92m ON [0m
 ) else ( 
-	echo ^(6^) Discord rich presence is[91m OFF [0m
+	echo ^(7^) Truncated themelist is[91m OFF [0m
 )
-:: Video Lists
-if exist "wrapper\pages\html\_LISTVIEW.txt" (
-	echo ^(7^) View on the video list is set to[91m List [0m
-)
-if exist "wrapper\pages\html\_GRIDVIEW.txt" (
-	echo ^(7^) View on the video list is set to[91m Grid [0m
-)
-if exist "wrapper\pages\html\_OLDLISTVIEW.txt" (
-	echo ^(7^) View on the video list is set to[91m Classic List [0m
-)
-:: Watermark
-if exist "wrapper\static\info-*nowatermark*.json" (
-	echo ^(8^) Wrapper: Offline watermark is[92m ON [0m
+:: Discord RPC
+if !RPC!==y (
+	echo ^(8^) Discord rich presence is[92m ON [0m
 ) else ( 
-	echo ^(8^) Wrapper: Offline watermark is[91m OFF [0m
-)
-:: Truncated themelist
-if exist "wrapper\_THEMES\_themelist-allthemes.xml" (
-	echo ^(9^) Truncated themelist is[92m ON [0m
-) else ( 
-	echo ^(9^) Truncated themelist is[91m OFF [0m
-)
-:: Developer mode
-if !DEVMODE!==y (
-	echo ^(10^) Developer mode is[92m ON [0m
-) else ( 
-	echo ^(10^) Developer mode is[91m OFF [0m
-)
-:: View software info
-echo ^(11^) View software information
-:: Headless mode
-if !APPCHROMIUM!==y (
-	echo ^(12^) Headless mode for Chromium is[92m ON [0m
-) else ( 
-	echo ^(12^) Headless mode for Chromium is[91m OFF [0m
-)
-:: Full Screen mode
-if !FULLSCREEN!==y (
-	echo ^(13^) Full screen mode for Chromium is[92m ON [0m
-) else ( 
-	echo ^(13^) Full screen mode for Chromium is[91m OFF [0m
+	echo ^(8^) Discord rich presence is[91m OFF [0m
 )
 :: Character solid archive
 if exist "server\characters\characters.zip" (
-    echo ^(14^) Original LVM character IDs are[91m OFF [0m
+	echo ^(9^) Original LVM Character IDs are[91m OFF [0m
 )
-
-if !DEVMODE!==y (
-	echo:
-	echo Developer options:
-	echo --------------------------------------
-)
-
 :: Dev options
 :: These are really specific options that no casual user would ever really need
-if !DEVMODE!==y (
+if !SHOWDEVOPTIONS!==y (
 	if !SKIPDEPENDINSTALL!==n (
 		echo ^(D1^) Installing dependencies is[92m ON [0m
 	) else ( 
@@ -185,10 +132,14 @@ if !DEVMODE!==y (
 	) else ( 
 		echo ^(D2^) Dry run mode is[91m OFF [0m
 	)
-	if !PORT!==4343 (
-		echo ^(D3^) Localhost port for Wrapper: Offline frontend is[92m 4343 [0m
-	) else ( 
-		echo ^(D3^) Localhost port for Wrapper: Offline frontend is[91m !PORT! [0m
+	if !BROWSER_TYPE!==chrome (
+		echo ^(D3^) Browser type set to[92m Chrome [0m
+	)
+	if !BROWSER_TYPE!==firefox (
+		echo ^(D3^) Browser type set to[91m Firefox [0m
+	)
+	if !BROWSER_TYPE!==n (
+		echo ^(D3^) Browser type[91m not set [0m
 	)
 )
 :reaskoptionscreen
@@ -203,249 +154,130 @@ if "!choice!"=="1" (
 	) else (
 		set TOGGLETO=n
 	)
-	set CFGLINE=6
+	set CFGLINE=11
 	goto toggleoption
 )
 if "!choice!"=="?1" (
-	echo When enabled, two extra windows with more info about what Offline is doing.
+	echo When enabled, an extra window opens with more info about what Offline is doing.
 	echo The launcher will also say more about what it's doing, and never clear itself.
 	echo Mostly meant for troubleshooting and development. Default setting is off.
 	goto reaskoptionscreen
 )
+:: Browser settings
+if "!choice!"=="2" goto browsertype
+if "!choice!"=="?2" (
+	echo When set to included Chromium, it opens a browser that comes with Offline.
+	echo This older browser will keep running Flash after new browsers block it completely.
+	echo If you don't want to use it, you can use your default browser, or a specific executable.
+	echo Default setting is included Chromium. Most should probably keep that default.
+	goto reaskoptionscreen
+)
+if "!choice!"=="3" (
+	if !INCLUDEDCHROMIUM!==y (
+		set TOTOGGLE=APPCHROMIUM
+		if !APPCHROMIUM!==n (
+			set TOGGLETO=y
+		) else (
+			set TOGGLETO=n
+		)
+		set CFGLINE=23
+		goto toggleoption
+	)
+	if !CUSTOMBROWSER!==y (
+		goto setcustombrowser
+	)
+)
+if "!choice!"=="?3" (
+	if !INCLUDEDCHROMIUM!==y (
+		echo This setting runs Chromium in headless mode, hiding everything except the title bar and webpage.
+		echo This gives more room to work with, and generally just looks nicer. Default is on.
+		goto reaskoptionscreen
+	)
+	if !CUSTOMBROWSER!==y (
+		echo This setting defines which browser Offline launches with when set to use a custom browser.
+		echo This needs to be a path to a browser executable. (exe file, such as chrome.exe)
+		goto reaskoptionscreen
+	)
+)
 :: Check depends
-if "!choice!"=="2" (
+if "!choice!"=="4" (
 	set TOTOGGLE=SKIPCHECKDEPENDS
 	if !SKIPCHECKDEPENDS!==n (
 		set TOGGLETO=y
 	) else (
 		set TOGGLETO=n
 	)
-	set CFGLINE=9
+	set CFGLINE=14
 	goto toggleoption
 )
-if "!choice!"=="?2" (
-	echo Turning this off skips checking for Flash, Node.js, http-server, and if the HTTPS cert is installed.
+if "!choice!"=="?4" (
+	echo Turning this off skips checking for Flash and Node.js.
 	echo This is automatically disabled when Offline launches and finds all dependencies.
 	echo If you're on a new computer, or having issues with security messages, you may wanna turn this back on.
 	goto reaskoptionscreen
 )
 :: Waveforms
-if "!choice!"=="3" goto waveformchange
-if "!choice!"=="?3" (
+if "!choice!"=="5" goto waveformchange
+if "!choice!"=="?5" (
 	echo By default, waveforms for audio are generated in the video editor.
-	echo:
 	echo While useful, the editor freezes while it generates, which could be too annoying or slow for some.
-	echo:
 	echo Turning this off will simply add a repeating pre-made pattern in place of true waveforms.
 	goto reaskoptionscreen
 )
-:: Debug Mode
-if "!choice!"=="4" goto debugmodechange
-if "!choice!"=="?4" (
-	echo By default, debug mode is enabled in the video editor.
-	echo:
-	echo While useful with showing asset IDs and paths, it freezes when you use character search in ANY theme, 
-        echo which can be very annoying to some.
-        echo:
-	echo Turning this off will stop the asset IDs and paths from showing, and in addition,
-        echo will also make character search work again.
-	goto reaskoptionscreen
-)
-:: Dark Mode
-if "!choice!"=="5" goto darkmodechange
-if "!choice!"=="?5" (
-	echo By default, dark mode is enabled on the video and theme lists.
-        echo:
-	echo Dark mode is used to help reduce eyestrain when viewing those lists, and
-        echo also improves the user experience quite a bit.
-        echo:
-	echo Turning this off will revert Offline back to the original light theme.
-	goto reaskoptionscreen
-)
-:: Rich presence
-if "!choice!"=="6" goto rpcchange
-if "!choice!"=="?6" (
-	echo By default, Discord rich presence is enabled.
-        echo:
-	echo It's used to show when you're using Wrapper: Offline
-        echo in your "Playing A Game" status on Discord, much like
-        echo how lots of modern computer games will show on your
-        echo Discord status when you're playing them.
-        echo:
-	echo Turning this off will make Offline stop saying
-        echo when you're using it on Discord.
-	goto reaskoptionscreen
-)
-:: List/grid/oldlist view
-if "!choice!"=="7" (
-	if exist "wrapper\pages\html\_LISTVIEW.txt" goto gridview
-	if exist "wrapper\pages\html\_GRIDVIEW.txt" goto oldlistview
-	if exist "wrapper\pages\html\_OLDLISTVIEW.txt" goto listview
-)
-if "!choice!"=="?7" (
-	echo By default, grid view is disabled.
-        echo:
-	echo Most people are used to the table view, but some
-	echo people wanted a grid view, so we added it incase
-	echo people wanted it.
-        echo:
-	echo Turning this on will make Offline show the
-        echo video list in a grid view rather than a
-		echo table view.
-	goto reaskoptionscreen
-)
-:: Watermark
-if "!choice!"=="8" (
-	if !DEVMODE!==y (
-		echo ^(This message is only for those with Developer Mode on.^)
-		echo:
-		echo NOTE: If you'd like to use a custom watermark, you
-		echo will need to replace the watermark file hidden somewhere
-		echo in go_full.swf with a different one using JPEXS FFDEC.
-		echo The watermark HAS to be a .swf or it won't work.
-		echo:
-		echo Unless you modify go_full.swf to change the watermark,
-		echo by default it will use the Wrapper: Offline watermark.
-		echo:
-		echo If you prefer to not have a watermark at all and just
-		echo add your watermark in post, that's fine too.
-		echo:
-		pause
+:: Auto Update
+if "!choice!"=="6" (
+	set TOTOGGLE=AUTOUPDATE
+	if !AUTOUPDATE!==y (
+		set TOGGLETO=n
+	) else (
+		set TOGGLETO=y
 	)
-	goto watermarktoggle
+	set CFGLINE=35
+	goto toggleoption
 )
-if "!choice!"=="?8" (
-    echo By default, Wrapper: Offline puts a watermark in the corner of the screen to show that it was
-    echo made using the software. If you do not want the watermark in the way and you need to use this
-    echo software for things like media production and all that, you are free to toggle the option to
-    echo disable the watermark if you'd like.
-    goto reaskoptionscreen
+if "!choice!"=="?6" (
+	echo By default, when you open start_wrapper.bat it 
+	echo will auto-update to the newest commit on Github.
+	echo This may be annoying to developers making modifications to the program, 
+	echo as when this is done it resets uncommitted work.
+	echo Turning this off will stop Wrapper from auto-updating.
+	goto reaskoptionscreen
 )
-:: Truncated themelist
-if "!choice!"=="9" goto allthemechange
-if "!choice!"=="?9" (
+:: Waveforms
+if "!choice!"=="7" goto allthemechange
+if "!choice!"=="?7" (
 	echo Cuts down the amount of themes that clog up the themelist in the videomaker.
 	echo Keeping this off is highly suggested.
 	echo However, if you want to see everything the program has to offer, turn this on.
 	goto reaskoptionscreen
 )
-:: Check depends
-if "!choice!"=="10" (
-	set TOTOGGLE=DEVMODE
-	if !DEVMODE!==n (
-		set TOGGLETO=y
-	) else (
-		set TOGGLETO=n
-	)
-	set CFGLINE=15
-	goto toggleoption
-)
-if "!choice!"=="?10" (
-	echo Wrapper: Offline is free and open-source, and a lot of folks in the community like to make mods for it.
-	echo:
-	echo Turning on developer mode will provide you with some useful features for development or making your own
-	echo mods for Wrapper: Offline, mostly the mods having to do with the batch script.
-	echo:
-	echo The developer settings will be visible both in these settings and in the Wrapper launcher.
-	goto reaskoptionscreen
-)
-if "!choice!"=="11" (
-	cls
-	echo Wrapper: Offline
-	echo Version !WRAPPER_VER! Beta
-	echo:
-	echo This copy of Wrapper: Offline belongs to:
-	if not %FIRST_NAME%==n (
-		if not %LAST_NAME%==n (
-			echo %FULL_NAME% ^(User: %USERNAME%^)
-		)
-	) else (
-		echo User: %USERNAME%
-	)
-	if not %EMAIL%==n ( echo E-Mail: %EMAIL% )
-	if not %DISCORD%==n ( echo Discord Tag: %DISCORD% )
-	echo Machine ID: %COMPUTERNAME%
-	echo:
-	echo ^(DEV TIP: Interested in registering your copy of W:O under
-	echo your name? Open "utilities\metadata.bat" in a text editor and
-	echo edit any of the necessary values to your liking. This process
-	echo will be automated in the near future.^)
-	echo:
-	pause
-	goto optionscreen
-)
-if "!choice!"=="?11" (
-	echo This option exists to view any software and existing license info
-	echo for this copy of Wrapper: Offline. It helps show the user if they're
-	echo running the beta build or the stable build.
-	goto reaskoptionscreen
-)
-:: Headless mode
-if "!choice!"=="12" (
-	set TOTOGGLE=APPCHROMIUM
-	if !APPCHROMIUM!==n (
-		set TOGGLETO=y
-	) else (
-		set TOGGLETO=n
-	)
-	set CFGLINE=24
-	goto toggleoption
-)
-if "!choice!"=="?12" (
-	echo Wrapper: Offline uses an included Chromium that still supports Flash. However, to hide the browser
-	echo aspects of Chromium, Wrapper: Offline usually activates a "headless mode" for Chromium so that things
-	echo like the URL box, the back/forward arrows, the home button and other icons are rendered invisible to the user.
-	echo:
-	echo Turning this off will allow all those icons to be visible to the user. This also makes things like access to
-	echo developer mode without keyboard shortcuts a breeze.
-	goto reaskoptionscreen
-)
-:: Full Screen Mode
-if "!choice!"=="13" (
-	set TOTOGGLE=FULLSCREEN
-	if !FULLSCREEN!==n (
-		set TOGGLETO=y
-	) else (
-		set TOGGLETO=n
-	)
-	set CFGLINE=27
-	goto toggleoption
-)
-if "!choice!"=="?13" (
-	echo Wrapper: Offline has a full-screen mode available which will help improve user experience.
-	echo:
-	echo Turning it on will have the included Chromium start in a full-screen mode, regardless of if
-	echo headless mode is enabled or not. By default it's disabled so as to not pester the user.
+:: Rich presence
+if "!choice!"=="8" goto rpcchange
+if "!choice!"=="?8" (
+	echo By default, Discord rich presence is enabled.
+    echo:
+	echo It's used to show when you're using Wrapper: Offline in your "Playing A Game" status on Discord,
+    echo much like how lots of modern computer games will show on your Discord status when you're playing
+    echo them. Turning this off will make Offline stop saying when you're using it on Discord.
 	goto reaskoptionscreen
 )
 :: Character solid archive
 if exist "server\characters\characters.zip" (
-    if "!choice!"=="14" goto extractchars
-    if "!choice!"=="?14" (
-        echo When first getting Wrapper: Offline, all non-stock characters are put into a single zip file.
-        echo This is because if they're all separate, extracting takes forever and is incredibly annoying.
-        echo If you wish to import characters made on the LVM when it was still up and hosted by Vyond,
-        echo you can extract them here. They will still be compressed, just in separate files to be usable.
-        goto reaskoptionscreen
-    )
+	if "!choice!"=="9" goto extractchars
+	if "!choice!"=="?9" (
+		echo When first getting Wrapper: Offline, all non-stock characters are put into a single zip file.
+		echo This is because if they're all separate, extracting takes forever and is incredibly annoying.
+		echo If you wish to import characters made on the LVM when it was still up and hosted by Vyond,
+		echo you can extract them here. They will still be compressed, just in separate files to be usable.
+		goto reaskoptionscreen
+	)
 )
-
-if !DEVMODE!==n (
-	if /i "!choice!"=="D1" ( goto devmodeerror )
-	if /i "!choice!"=="?D1" ( goto devmodeerror )
-	if /i "!choice!"=="D2" ( goto devmodeerror )
-	if /i "!choice!"=="?D2" ( goto devmodeerror )
-	if /i "!choice!"=="D3" ( goto devmodeerror )
-	if /i "!choice!"=="?D3" ( goto devmodeerror )
-	if /i "!choice!"=="D4" ( goto devmodeerror )
-	if /i "!choice!"=="?D4" ( goto devmodeerror )
-	if /i "!choice!"=="D5" ( goto devmodeerror )
-	if /i "!choice!"=="?D5" ( goto devmodeerror )
-	if /i "!choice!"=="D6" ( goto devmodeerror )
-	if /i "!choice!"=="?D6" ( goto devmodeerror )
+:: Dev options
+if /i "!choice!"=="masterkey" (
+	set SHOWDEVOPTIONS=y
+	goto optionscreen
 )
-
-if !DEVMODE!==y (
+if !SHOWDEVOPTIONS!==y (
 	if /i "!choice!"=="D1" (
 		set TOTOGGLE=SKIPDEPENDINSTALL
 		if !SKIPDEPENDINSTALL!==n (
@@ -453,7 +285,7 @@ if !DEVMODE!==y (
 		) else (
 			set TOGGLETO=n
 		)
-		set CFGLINE=12
+		set CFGLINE=17
 		goto toggleoption
 	)
 	if /i "!choice!"=="?D1" (
@@ -468,7 +300,7 @@ if !DEVMODE!==y (
 		) else (
 			set TOGGLETO=n
 		)
-		set CFGLINE=18
+		set CFGLINE=32
 		goto toggleoption
 	)
 	if /i "!choice!"=="?D2" (
@@ -476,18 +308,12 @@ if !DEVMODE!==y (
 		echo Useful for debugging the launcher without uninstalling things and all that.
 		goto reaskoptionscreen
 	)
-	if /i "!choice!"=="D3" goto changeportnumber
+	if /i "!choice!"=="D3" goto manualbrowsertype
 	if /i "!choice!"=="?D3" (
-		echo By default, the port number of the frontend is 4343.
-		echo:
-		echo However, some people seem to be having issues with Wrapper: Offline and
-		echo sometimes it
-		 has to do with what port the frontend is on.
-		echo:
-		echo Toggling this feature will allow you to change the port number that
-		echo the frontend is on.
+		echo Tells the launcher what kind of browser is in use. Should be autoset by CUSTOMBROWSER.
+		echo Mostly used by the Flash installer to tell what version to install.
 		goto reaskoptionscreen
-	)	
+	)
 )
 if "!choice!"=="clr" goto optionscreen
 if "!choice!"=="cls" goto optionscreen
@@ -526,93 +352,115 @@ if !BACKTOCUSTOMTOGGLE!==y goto backtocustom
 if !BACKTOCUSTOMTOGGLE2!==y goto backtocustom2
 goto optionscreen
 
-:: Change port number for frontend of Wrapper: Offline (dev option)
-:changeportnumber
-echo Which port number would you like to change the frontend to?
+::::::::::::::::::
+:: Browser type ::
+::::::::::::::::::
+:browsertype
 echo:
-echo Press 1 to change it to 80
-echo Press 2 to change it to a custom port number
-echo Press 3 if you're changing it back to 4343
 echo:
-:portnumberreask
-set /p PORTCHOICE= Option: 
+echo Press 1 to use Offline's included Chromium (recommended)
+echo Press 2 to use your default browser set in Windows
+echo Press 3 to use a specific browser of your choice
+echo Press 0 to cancel changing
 echo:
-if /i "!portchoice!"=="0" goto end
-if /i "!portchoice!"=="1" ( 
-	set PORTNUMBER=80
-	goto porttoggle
+:browserreask
+set /p BROWSERCHOICE= Response:
+echo:
+if /i "!browserchoice!"=="0" goto optionscreen
+if /i "!browserchoice!"=="1" (
+	set TOTOGGLE=INCLUDEDCHROMIUM
+	set TOGGLETO=y
+	set CFGLINE=20
+	goto toggleoption
 )
-if /i "!portchoice!"=="2" (
-	echo Which port would you like the frontend to be hosted on?
-	echo:`
-	set /p PORTNUMBER= Port: 
-	goto porttoggle
+if /i "!browserchoice!"=="2" (
+	set BACKTODEFAULTTOGGLE=y
+	set TOTOGGLE=INCLUDEDCHROMIUM
+	set TOGGLETO=n
+	set CFGLINE=20
+	goto toggleoption
+	:backtodefault
+	set BACKTODEFAULTTOGGLE=n
+	set TOTOGGLE=CUSTOMBROWSER
+	set TOGGLETO=n
+	set CFGLINE=26
+	goto toggleoption
 )
-if /i "!portchoice!"=="3" (
-	set PORTNUMBER=4343
-	goto porttoggle
-)
-echo You must answer with a valid option. && goto portnumberreask
+if /i "!browserchoice!"=="3" goto setcustombrowser
+echo You must answer what browser. && goto browserreask
 
-:porttoggle
-echo Toggling setting...
-if exist "!env!" del "!env!"
-echo {>> !env!
-echo 	"CHAR_BASE_URL": "https://localhost:4664/characters",>> !env!
-echo 	"THUMB_BASE_URL": "https://localhost:4664/thumbnails",>> !env!
-echo 	"XML_HEADER": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n",>> !env!
-echo 	"CROSSDOMAIN": "<cross-domain-policy><allow-access-from domain=\"*\"/></cross-domain-policy>",>> !env!
-echo 	"FILE_WIDTH": 1000,>> !env!
-echo 	"GATHER_THREADS": 100,>> !env!
-echo 	"GATHER_THRESH1": 250000000,>> !env!
-echo 	"GATHER_THRESH2": 328493000,>> !env!
-echo 	"GATHER_THRESH3": 400000000,>> !env!
-echo 	"FILE_NUM_WIDTH": 9,>> !env!
-echo 	"XML_NUM_WIDTH": 3,>> !env!
-echo 	"SERVER_PORT": !PORTNUMBER!,>> !env!
-echo 	"SAVED_FOLDER": "./_SAVED",>> !env!
-echo 	"CACHÉ_FOLDER": "./_CACHÉ",>> !env!
-echo 	"THEME_FOLDER": "./_THEMES",>> !env!
-echo 	"PREMADE_FOLDER": "./_PREMADE",>> !env!
-echo 	"EXAMPLE_FOLDER": "./_EXAMPLES",>> !env!
-echo 	"WRAPPER_VER": "!WRAPPER_VER!",>> !env!
-echo 	"WRAPPER_BLD": "!WRAPPER_BLD!",>> !env!
-echo 	"NODE_TLS_REJECT_UNAUTHORIZED": "0">> !env!
-echo }>> !env!
-set TOTOGGLE=PORT
-set TOGGLETO=!PORTNUMBER!
-set CFGLINE=21
+:::::::::::::::::::::::::
+:: Custom Browser Path ::
+:::::::::::::::::::::::::
+:setcustombrowser
+echo:
+echo Drag a browser executable (such as chrome.exe) into this window and press enter.
+echo Enter 0 to cancel changing the custom browser.
+:browserpathreask
+echo:
+set /p TOGGLETO= File:
+if /i "!TOGGLETO!"=="0" goto optionscreen
+if not exist "!toggleto!" echo That doesn't seem to exist. & goto browserpathreask
+
+:: Set custom browser
+set TOTOGGLE=CUSTOMBROWSER
+set CFGLINE=26
+set BACKTOCUSTOMTOGGLE=y
 goto toggleoption
-	
 
-:::::::::::::::::::::::::
-:: Truncated Themelist ::
-:::::::::::::::::::::::::
-:allthemechange
-echo Toggling setting...
-pushd wrapper\_THEMES
-if exist "_themelist-allthemes.xml" (
-	:: disable
-	ren _themelist.xml _themelist-lessthemes.xml
-	ren _themelist-allthemes.xml _themelist.xml
-) else ( 
-	:: enable
-	ren _themelist.xml _themelist-allthemes.xml
-	ren _themelist-lessthemes.xml _themelist.xml
+:: Attempt to set browser type
+:backtocustom
+set BACKTOCUSTOMTOGGLE=n
+set BACKTOCUSTOMTOGGLE2=y
+for %%a in (!TOGGLETO!) do (
+	set CBNAME=%%~na
+	set "TOGGLETO="
+	:: Chrome-based
+	if !cbname!==chrome set TOGGLETO=chrome
+	if !cbname!==chrome64 set TOGGLETO=chrome
+	if !cbname!==opera set TOGGLETO=chrome
+	if !cbname!==brave set TOGGLETO=chrome
+	if !cbname!==microsoftedge set TOGGLETO=chrome
+	:: Firefox-based
+	if !cbname!==firefox set TOGGLETO=firefox
+	if !cbname!==palemoon set TOGGLETO=firefox
+	:: Stupid
+	if !cbname!==iexplore echo internet explorer users have no soul & set TOGGLETO=n
+	:: Unknown
+	if !toggleto!=="" set TOGGLETO=n
 )
-popd
-pushd wrapper\pages\html
-if exist "create-allthemes.html" (
-	:: disable
-	ren create.html create-lessthemes.html
-	ren create-allthemes.html create.html
-) else ( 
-	:: enable
-	ren create.html create-allthemes.html
-	ren create-lessthemes.html create.html
-)
-popd
-goto optionscreen
+set TOTOGGLE=BROWSER_TYPE
+set CFGLINE=29
+goto toggleoption
+
+:: Turn off included Chromium
+:backtocustom2
+set BACKTOCUSTOMTOGGLE2=n
+set TOTOGGLE=INCLUDEDCHROMIUM
+set TOGGLETO=n
+set CFGLINE=20
+goto toggleoption
+
+:: Manually set browser type (dev option)
+:manualbrowsertype
+echo:
+echo:
+echo Press 1 for Chrome
+echo Press 2 for Firefox
+echo Press 3 for Unknown
+echo Press 0 to cancel changing
+echo:
+:browsertypereask
+set /p TYPECHOICE= Response:
+echo:
+if /i "!typechoice!"=="0" goto end
+if /i "!typechoice!"=="1" set TOGGLETO=chrome
+if /i "!typechoice!"=="2" set TOGGLETO=firefox
+if /i "!typechoice!"=="3" set TOGGLETO=n
+echo You must answer with a browser type. && goto browsertypereask
+set TOTOGGLE=BROWSER_TYPE
+set CFGLINE=29
+goto toggleoption
 
 :::::::::::::::
 :: Waveforms ::
@@ -624,191 +472,12 @@ if exist "info-nowave.json" (
 	:: disable
 	ren info.json info-wave.json
 	ren info-nowave.json info.json
-	if exist "info-watermark.json" (
-		ren info-watermark.json info-wave-watermark.json
-		ren info-nowave-watermark.json info-watermark.json
-	) else (
-		ren info-nowatermark.json info-wave-nowatermark.json
-		ren info-nowave-nowatermark.json info-nowatermark.json
-	)
-) else (
+) else ( 
 	:: enable
 	ren info.json info-nowave.json
 	ren info-wave.json info.json
-	if exist "info-watermark.json" (
-		ren info-watermark.json info-nowave-watermark.json
-		ren info-wave-watermark.json info-watermark.json
-	) else (
-		ren info-nowatermark.json info-nowave-nowatermark.json
-		ren info-wave-nowatermark.json info-nowatermark.json
-	)
 )
 popd
-goto optionscreen
-
-::::::::::::::::
-:: Debug Mode ::
-::::::::::::::::
-:debugmodechange
-echo Toggling setting...
-pushd wrapper\static
-if exist "page-nodebug.js" (
-	:: disable
-	ren page.js page-debug.js
-	ren page-nodebug.js page.js
-) else ( 
-	:: enable
-	ren page.js page-nodebug.js
-	ren page-debug.js page.js
-)
-popd
-goto optionscreen
-
-:::::::::::::::
-:: Dark Mode ::
-:::::::::::::::
-:darkmodechange
-echo Toggling dark mode...
-pushd wrapper\pages\css
-if exist "global-light.css" (
-	:: disable
-	ren global.css global-dark.css
-	ren global-light.css global.css
-	ren create.css create-dark.css
-	ren create-light.css create.css
-	ren list.css list-dark.css
-	ren list-light.css list.css
-	ren swf.css swf-dark.css
-	ren swf-light.css swf.css
-) else ( 
-	:: enable
-	ren global.css global-light.css
-	ren global-dark.css global.css
-	ren create.css create-light.css
-	ren create-dark.css create.css
-	ren list.css list-light.css
-	ren list-dark.css list.css
-	ren swf.css swf-light.css
-	ren swf-dark.css swf.css
-)
-popd
-pushd server\css
-if exist "global-light.css" (
-	:: disable
-	ren global.css global-dark.css
-	ren global-light.css global.css
-) else ( 
-	:: enable
-	ren global.css global-light.css
-	ren global-dark.css global.css
-)
-popd
-pushd server\animation\414827163ad4eb60
-if exist "cc-light.swf" (
-	:: disable
-	ren cc.swf cc-dark.swf
-	ren cc-light.swf cc.swf
-	ren cc_browser.swf cc_browser-dark.swf
-	ren cc_browser-light.swf cc_browser.swf
-) else ( 
-	:: enable
-	ren cc.swf cc-light.swf
-	ren cc-dark.swf cc.swf
-	ren cc_browser.swf cc_browser-light.swf
-	ren cc_browser-dark.swf cc_browser.swf
-)
-popd
-goto optionscreen
-
-::::::::::::::::::
-:: Discord RPC  ::
-::::::::::::::::::
-:rpcchange
-echo Toggling setting...
-pushd wrapper
-if exist "main-norpc.js" (
-	:: disable
-	ren main.js main-rpc.js
-	ren main-norpc.js main.js
-) else ( 
-	:: enable
-	ren main.js main-norpc.js
-	ren main-rpc.js main.js
-)
-popd
-goto optionscreen
-
-::::::::::::::::
-:: Video List ::
-::::::::::::::::
-:gridview
-echo Toggling setting...
-pushd wrapper\pages\html
-
-ren list.html table.html
-ren grid.html list.html
-ren _LISTVIEW.txt _GRIDVIEW.txt
- 
-popd
-goto optionscreen
-
-:oldlistview
-echo Toggling setting...
-pushd wrapper\pages\html
-
-ren list.html grid.html
-ren oldlist.html list.html
-ren _GRIDVIEW.txt _OLDLISTVIEW.txt
- 
-popd
-goto optionscreen
-
-:listview
-echo Toggling setting...
-pushd wrapper\pages\html
-
-ren list.html oldlist.html
-ren table.html list.html
-ren _OLDLISTVIEW.txt _LISTVIEW.txt
- 
-popd
-goto optionscreen
-
-:extractchars
-if exist "server\characters\characters.zip" (
-    echo Are you sure you wish to enable original LVM character IDs?
-    echo This will take a while, depending on your computer.
-    echo Characters will still be compressed, just put into separate usable files.
-    echo Press Y to do it, press N to not do it.
-    echo:
-    :replaceaskretry
-    set /p REPLACECHOICE= Response:
-    echo:
-    if not '!replacechoice!'=='' set replacechoice=%replacechoice:~0,1%
-    if /i "!replacechoice!"=="0" goto end
-    if /i "!replacechoice!"=="y" goto startextractchars
-    if /i "!replacechoice!"=="n" goto optionscreen
-    echo You must answer Yes or No. && goto replaceaskretry
-    
-    :startextractchars
-    echo Opening 7za.exe...
-    echo:
-    start utilities\7za.exe e "server\characters\characters.zip" -o"server\characters"
-    echo The extraction process should be starting now.
-	echo:
-	echo Please leave both this window and the other window open, otherwise
-	echo it could fail hard.
-    tasklist /FI "IMAGENAME eq 7za.exe" 2>NUL | find /I /N 7za.exe">NUL
-	if "!errorlevel!"=="0" (
-		echo:>nul
-	) else (
-		echo Extraction completed.
-		del server\characters\characters.zip
-	)
-    echo:
-	pause
-	goto optionscreen
-)
 goto optionscreen
 
 :::::::::::::::::::::::::
@@ -827,49 +496,49 @@ if exist "themelist-allthemes.xml" (
 	ren themelist-lessthemes.xml themelist.xml
 )
 popd
-pushd wrapper\pages\html
-if exist "create-allthemes.html" (
-	:: disable
-	ren create.html create-lessthemes.html
-	ren create-allthemes.html create.xml
-) else ( 
-	:: enable
-	ren create.html create-allthemes.html
-	ren create-lessthemes.html create.html
-)
-popd
 goto optionscreen
 
-::::::::::::::::
-:: Watermarks ::
-::::::::::::::::
-:watermarktoggle
-echo Toggling setting...
-pushd wrapper\static
-if exist "info-nowatermark.json" (
-	:: disable
-	ren info.json info-watermark.json
-	ren info-nowatermark.json info.json
-	if exist "info-wave.json" (
-		ren info-wave.json info-wave-watermark.json
-		ren info-wave-nowatermark.json info-wave.json
-	) else (
-		ren info-nowave.json info-nowave-watermark.json
-		ren info-nowave-nowatermark.json info-nowave.json
-	)
-) else ( 
-	:: enable
-	ren info.json info-nowatermark.json
-	ren info-watermark.json info.json
-	if exist "info-wave.json" (
-		ren info-wave.json info-wave-nowatermark.json
-		ren info-wave-watermark.json info-wave.json
-	) else (
-		ren info-nowave.json info-nowave-nowatermark.json
-		ren info-nowave-watermark.json info-nowave.json
-	)
+:::::::::::::::::
+:: Discord RPC ::
+:::::::::::::::::
+:rpcchange
+:: Set RPC
+set TOTOGGLE=RPC
+set CFGLINE=38
+if !RPC!==n (
+	set TOGGLETO=y
+) else (
+	set TOGGLETO=n
 )
-popd
+goto toggleoption
+
+::::::::::::::::::::::::
+:: Extract Characters ::
+::::::::::::::::::::::::
+:extractchars
+if exist "server\characters\characters.zip" (
+	echo Are you sure you wish to enable original LVM character IDs?
+	echo This will take a while, depending on your computer.
+	echo Characters will still be compressed, just put into separate usable files.
+	echo Press Y to do it, press N to not do it.
+	echo:
+	:replaceaskretry
+	set /p REPLACECHOICE= Response:
+	echo:
+	if not '!replacechoice!'=='' set replacechoice=%replacechoice:~0,1%
+	if /i "!replacechoice!"=="0" goto end
+	if /i "!replacechoice!"=="y" goto startextractchars
+	if /i "!replacechoice!"=="n" goto optionscreen
+	echo You must answer Yes or No. && goto replaceaskretry
+	
+	:startextractchars
+	echo Extracting characters...
+	echo Please do not close this window!
+	echo It's likely not frozen, it just takes a while.
+	echo:
+	utilities\7za.exe e server\characters\characters.zip -y -o server\characters
+	del /q server\characters\characters.zip
+)
 goto optionscreen
 
 :end

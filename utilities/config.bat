@@ -4,14 +4,14 @@
 
 :: Opens this file in Notepad when run
 setlocal
-if "%SUBSCRIPT%"=="" ( start notepad.exe "%CD%\%~nx0" & exit )
+if "%SUBSCRIPT%"=="" ( start notepad.exe config.bat & exit )
 endlocal
 
 :: Shows exactly Offline is doing, and never clears the screen. Useful for development and troubleshooting. Default: n
-set VERBOSEWRAPPER=y
+set VERBOSEWRAPPER=n
 
 :: Won't check for dependencies (flash, node, etc) and goes straight to launching. Useful for speedy launching post-install. Default: n
-set SKIPCHECKDEPENDS=y
+set SKIPCHECKDEPENDS=n
 
 :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n
 set SKIPDEPENDINSTALL=n
@@ -26,24 +26,14 @@ set APPCHROMIUM=y
 set CUSTOMBROWSER=n
 
 :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n
-set BROWSER_TYPE=n
+set BROWSER_TYPE=chrome
 
 :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n
 set DRYRUN=n
 
-:: Makes it so it uses the Cepstral website instead of VFProxy. Default: n
-set CEPSTRAL=n
+:: auto update (what do you think it does, obvious)
+set AUTOUPDATE=n
 
-:: Opens Offline in an included copy of Basilisk, sourced from BlueMaxima's Flashpoint.
-:: Allows continued use of Flash as modern browsers disable it. Default: n
-set INCLUDEDBASILISK=n
-
-:: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n
-set DEVMODE=y
-
-:: Tells settings.bat which port the frontend is hosted on. (If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json) Default: 4343
-set PORT=4343
-
-:: Automatically restarts the NPM whenever it crashes. Default: y
-set AUTONODE=n
+:: discord rpc
+set RPC=y
 

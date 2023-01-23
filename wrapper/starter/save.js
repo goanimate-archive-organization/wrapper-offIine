@@ -1,22 +1,34 @@
-const loadPost = require("../misc/post_body");
-const starter = require("./main");
-const http = require("http");
+/**
+ * route
+ * starter saving
+ */
+// stuff
+const Starter = require("./main");
 
 /**
- * @param {http.IncomingMessage} req
- * @param {http.ServerResponse} res
+ * @param {import("http").IncomingMessage} req
+ * @param {import("http").ServerResponse} res
  * @param {import("url").UrlWithParsedQuery} url
  * @returns {boolean}
  */
-module.exports = function (req, res, url) {
-	if (req.method != "POST" || (url.path != "/goapi/saveTemplate/")) return;
-	loadPost(req, res).then(([data, mId]) => {
-		const trigAutosave = data.is_triggered_by_autosave;
-		if (trigAutosave && (!data.starterId || data.noAutosave)) return res.end("0");
+module.exports = async function (req, res, url) {
+	if (req.method != "POST" || url.pathname != "/goapi/saveTemplate/") return;
+	else if (!req.body.body_zip || !req.body.thumbnail_large) {
+		res.statusCode = 400;
+		res.end();
+		return true;
+	}
+	const body = Buffer.from(req.body.body_zip, "base64");
+	const thumb = Buffer.from(req.body.thumbnail_large, "base64");
 
-		var body = Buffer.from(data.body_zip, "base64");
-		var thumb = data.thumbnail_large && Buffer.from(data.thumbnail_large, "base64");
-		starter.save(body, thumb, mId, data.presaveId).then((nId) => res.end("0" + nId));
-	});
+	try {
+		const mId = await Starter.save(body, thumb, req.body.movieId)
+		res.end("0" + mId);
+	} catch (err) {
+		if (process.env.NODE_ENV == "dev") throw err;
+		console.error("Error saving starter: " + err);
+		res.statusCode = 500;
+		res.end("1")
+	}
 	return true;
-};
+}

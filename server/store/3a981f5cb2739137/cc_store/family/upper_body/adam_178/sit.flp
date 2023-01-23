@@ -1,0 +1,5 @@
+﻿<flash_project name="sit" version="1">
+	<project_file path="./sit.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./sit_fla/MainTimeline.as" filetype="as"/>
+	<project_file path="./sit_fla/theUpper_1.as" filetype="as"/>
+</flash_project>

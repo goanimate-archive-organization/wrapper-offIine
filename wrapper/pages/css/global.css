@@ -2,20 +2,32 @@
 this css has the general header/footer layout stuff
 ***/
 
+@import url("./modern-normalize.css");
+
+:root {
+	--primary: #d85e27;
+	--transition: .15s ease;
+}
+
 /**
 general
 **/
 html, body {
-	background: #0c0c0c;
-	color: #fff;
+	background: #eee;
+	color: #474747;
 	font: 16px/1.5 'Sailec', Arial, sans-serif;
 	width: 100%;
 	height: 100%;
+}
+html.dark, html.dark>body {
+	background: #222;
+	color: #eee;
 }
 body {
 	display: flex; 
 	flex-direction: column; 
 }
+main { padding: 20px 40px; height: 100% }
 
 
 /**
@@ -23,20 +35,19 @@ header
 **/
 header {
 	/* style */
-	background: linear-gradient(#2b2b2b, #141414);
-	box-shadow: 0px 1px 6px 0px #0000005c;
+	background: #1a1a1a;
 	color: #fff;
 	text-align: center;
-	flex-shrink: 0;
 	/* layout */
 	padding-bottom: 13px;
 	padding: 0 15px;
+	z-index: 1;
 	display: flex;
 	justify-content: space-between;
-	z-index: 1; /* keeps the header in front */
+	flex-shrink: 0;
 }
 /* makes the header a set height when the window is 887px wide */
-@media (min-width: 487px) {
+@media (min-width: 887px) {
 	header {
 		padding-bottom: auto;
 		height: 44px;
@@ -53,7 +64,8 @@ header {
 	font-size: 14px;
 	text-decoration: none;
 	color: #fff;
-	border-radius: 6px;
+	border-radius: 4px;
+	transition: var(--transition);
 	/* layout */
 	display: inline-block;
 	padding: 5px 10px;
@@ -64,15 +76,14 @@ header {
 	cursor: pointer;
 }
 /* small buttons */
-.button_small       { background: linear-gradient(#4d4d4d, #303030) }
-.button_small:hover { background: linear-gradient(#404040, #292929); color: #d85e27 }
+.button_small       { background: #2a2a2a }
+.button_small:hover { background: #333; color: var(--primary) }
 /* big buttons */
 .button_big {
-	background: linear-gradient(#d85e27, #b13b07);
+	background: var(--primary);
 	width: 160px;
 }
 .button_big:hover {
-	background: linear-gradient(#be5423, #892d06);;
 	text-decoration: underline;
 }
 
@@ -92,8 +103,8 @@ header dropdowns
 /* the dropdown itself */
 .dropdown_menu {
 	/* style */
-	background-color: linear-gradient(#4d4d4d, #303030);
-	border-radius: 6px;
+	background-color: #333;
+	border-radius: 4px;
 	/* layout */
 	width: 100%;
 	padding: 10px 0;
@@ -109,13 +120,14 @@ header dropdowns
 	/* style */
 	color: #ddd;
 	text-decoration: none;
+	transition: var(--transition);
 	/* layout */
 	display: block;
 	padding: 2px 20px;
 }
 .dropdown_menu>a:hover {
-	background: #222;
-	color: #d85e27;
+	background: #2a2a2a;
+	color: var(--primary);
 	cursor: pointer;
 }
 /* dropdown header and separation */
@@ -125,34 +137,68 @@ header dropdowns
 	font-size: 15px;
 	/* layout */
 	margin:0;
-	padding: 2px 20px;
+	padding:2px 20px;
 }
 .dropdown_menu>hr {
 	border: 1px solid #222;
 	margin: 10px 0;
+}
+/* character upload */
+form[action="/upload_character"] { display: none }
+
+/**
+tabs
+**/
+.tabs_contain {
+    border-radius: 6px;
+    display: flex;
+    margin: auto auto;
+}
+.tab_buttons {
+	padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+}
+.tabs_contain h1 {
+    font-size: 20px;
+    margin: 0 0 10px;
+}
+.tab_buttons a {
+	/* style */
+	background: #353535;
+	color: #fff;
+	text-decoration: none;
+	border-radius: 5px;
+	transition: var(--transition);
+	/* layout */
+	padding: 8px 18px;
+	margin: 2px 0;
+}
+.tab_buttons a:hover    { background: #2a2a3a; color: var(--primary) }
+.tab_buttons a.selected { background: var(--primary); color: #fff }
+.tab { padding: 0 20px; display: none }
+#shortthemelist:hover,
+#darkmode:hover {
+	cursor: pointer;
 }
 
 /**
 footer
 **/
 footer {
-	/* style */
-	background: linear-gradient(#1d1d1d, #141414);
-	box-shadow: 0px -1px 6px 0px #00000082;
-	/* layout */
+	background: #1a1a1a;
 	margin-top: auto; /* footer at the foot */
 	display: flex;
 	justify-content: space-between;
 	flex-shrink: 0;
 }
-footer nav { margin: 5px 10px }
+footer nav { margin:5px 10px}
 /* links */
-footer a, footer span {
-	color: #fff;
-	text-decoration: none;
-	margin: 0 10px;
-}
 footer a {
+	color: #fff;
+	text-decoration:none;
+	margin: 0 10px;
 	font-weight: bold;
 }
 footer a:hover {

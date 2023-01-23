@@ -1,0 +1,6 @@
+﻿<flash_project name="taunt" version="1">
+	<project_file path="./taunt.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./taunt_fla/MainTimeline.as" filetype="as"/>
+	<project_file path="./taunt_fla/mask_2.as" filetype="as"/>
+	<project_file path="./taunt_fla/theUpper_1.as" filetype="as"/>
+</flash_project>

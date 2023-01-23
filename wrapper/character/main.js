@@ -1,182 +1,101 @@
-const cachéFolder = process.env.CACHÉ_FOLDER;
-const xNumWidth = process.env.XML_NUM_WIDTH;
-const baseUrl = process.env.CHAR_BASE_URL;
-const fUtil = require("../misc/file");
-const util = require("../misc/util");
-const get = require("../misc/get");
-const fw = process.env.FILE_WIDTH;
+/**
+ * character api
+ */
+// modules
 const fs = require("fs");
-const themes = {};
-
-function addTheme(id, buffer) {
-	const beg = buffer.indexOf(`theme_id="`) + 10;
-	const end = buffer.indexOf(`"`, beg);
-	const theme = buffer.subarray(beg, end).toString();
-	return (themes[id] = theme);
-}
-
-function save(id, data) {
-	const i = id.indexOf("-");
-	const prefix = id.substr(0, i);
-	const suffix = id.substr(i + 1);
-	switch (prefix) {
-		case "c":
-			fs.writeFileSync(fUtil.getFileIndex("char-", ".xml", suffix), data);
-			break;
-		case "C":
-	}
-	addTheme(id, data);
-	return id;
-}
-
-fUtil.getValidFileIndicies("char-", ".xml").map((n) => {
-	return addTheme(`c-${n}`, fs.readFileSync(fUtil.getFileIndex("char-", ".xml", n)));
-});
-
-/**
- * @param {string} id
- * @returns {string}
- */
-function getCharPath(id) {
-	var i = id.indexOf("-");
-	var prefix = id.substr(0, i);
-	var suffix = id.substr(i + 1);
-	switch (prefix) {
-		case "c":
-			return fUtil.getFileIndex("char-", ".xml", suffix);
-		case "C":
-		default:
-			return `${cachéFolder}/char.${id}.xml`;
-	}
-}
-/**
- * @param {string} id
- * @returns {string}
- */
-function getThumbPath(id) {
-	var i = id.indexOf("-");
-	var prefix = id.substr(0, i);
-	var suffix = id.substr(i + 1);
-	switch (prefix) {
-		case "c":
-			return fUtil.getFileIndex("char-", ".png", suffix);
-		case "C":
-		default:
-			return `${cachéFolder}/char.${id}.png`;
-	}
-}
+const path = require("path");
+// vars
+const baseUrl = process.env.CHAR_BASE_URL;
+const folder = path.join(__dirname, "../", process.env.ASSET_FOLDER);
+// stuff
+const database = require("../data/database"), DB = new database();
+const fUtil = require("../fileUtil");
+const get = require("../request/get");
 
 module.exports = {
 	/**
-	 * @param {string} id
-	 * @returns {Promise<string>}
+	 * Looks for a theme in a character XML.
+	 * @param {Buffer} buffer
+	 * @returns {string}
 	 */
-	getTheme(id) {
-		return new Promise((res, rej) => {
-			if (themes[id]) res(themes[id]);
-			this.load(id)
-				.then((b) => res(addTheme(id, b)))
-				.catch(rej);
-		});
+	getTheme(buffer) {
+		const beg = buffer.indexOf(`theme_id="`) + 10;
+		const end = buffer.indexOf(`"`, beg);
+		return buffer.slice(beg, end).toString();
 	},
+
 	/**
+	 * Tries to find a character in the _SAVED folder. If there's no match, it tries to find it in the character dump.
 	 * @param {string} id
 	 * @returns {Promise<Buffer>}
 	 */
-	load(id) {
-		return new Promise((res, rej) => {
-			var i = id.indexOf("-");
-			var prefix = id.substr(0, i);
-			var suffix = id.substr(i + 1);
+	async load(cId) {
+		try {
+			try { // custom characters
+				return fs.readFileSync(path.join(folder, `${cId}.xml`));
+			} catch (err) { // stock characters
+				const nId = (cId.slice(0, -3) + "000").padStart(9, 0);
+				const chars = fs.readFileSync(`${baseUrl}/${nId}.txt`);
 
-			switch (prefix) {
-				case "c":
-				case "C":
-					fs.readFile(getCharPath(id), (e, b) => {
-						if (e) {
-							var fXml = util.xmlFail();
-							rej(Buffer.from(fXml));
-						} else {
-							res(b);
-						}
-					});
-					break;
+				var line = chars
+					.toString("utf8")
+					.split("\n")
+					.find(v => v.substring(0, 3) == cId.slice(-3));
+				if (line) return Buffer.from(line.substring(3));
+				else throw new Error("Character not found.");
+			}	
+		} catch (err) {
+			throw new Error("Character not found.");
+		}
+	},
 
-				case "":
-				default: {
-					// Blank prefix is left here for backwards-compatibility purposes.
-					var nId = Number.parseInt(suffix);
-					var xmlSubId = nId % fw;
-					var fileId = nId - xmlSubId;
-					var lnNum = fUtil.padZero(xmlSubId, xNumWidth);
-					var url = `${baseUrl}/${fUtil.padZero(fileId)}.txt`;
+	/**
+	 * saves the character and its metadata
+	 * @param {Buffer} buf a buffer of a character xml
+	 * @param {Buffer} thumb a thumbnail of the character in PNG format
+	 * @param {object} meta character metadata, must contain type, subtype, title, and themeId
+	 * @param {boolean} isV2 specifies if the 'version="2.0"' should be added to the xml
+	 * @returns {string}
+	 */
+	save(buf, meta, isV2 = false) {
+		// save asset info
+		const cId = fUtil.generateId();
+		const db = DB.get();
+		meta.id = cId;
+		meta.tags = "";
+		db.assets.unshift(meta);
+		DB.save(db);
+		// fix handheld props for freeaction themes
+		if (this.isFA(meta.themeId) && !isV2) {
+			const end = buf.indexOf(">", buf.indexOf("<cc_char"));
+			const newChar = Buffer.concat([
+				buf.slice(0, end),
+				Buffer.from(" version=\"2.0\""),
+				buf.slice(end)
+			]);
+			buf = newChar;
+		}
+		// save the file
+		fs.writeFileSync(path.join(folder, `${cId}.xml`), buf);
+		return cId;
+	},
 
-					get(url)
-						.then((b) => {
-							var line = b
-								.toString("utf8")
-								.split("\n")
-								.find((v) => v.substr(0, xNumWidth) == lnNum);
-							if (line) {
-								res(Buffer.from(line.substr(xNumWidth)));
-							} else {
-								rej(Buffer.from(util.xmlFail()));
-							}
-						})
-						.catch((e) => rej(Buffer.from(util.xmlFail())));
-				}
-			}
-		});
-	},
 	/**
-	 * @param {Buffer} data
-	 * @param {string} id
-	 * @returns {Promise<string>}
+	 * saves a character thumbnail
+	 * @param {string} cId the character id
+	 * @param {Buffer} thumb a thumbnail of the character in PNG format
+	 * @returns {void}
 	 */
-	save(data, id) {
-		return new Promise((res, rej) => {
-			if (id) {
-				const i = id.indexOf("-");
-				const prefix = id.substr(0, i);
-				switch (prefix) {
-					case "c":
-					case "C":
-						fs.writeFile(getCharPath(id), data, (e) => (e ? rej() : res(id)));
-					default:
-						res(save(id, data));
-				}
-			} else {
-				saveId = `c-${fUtil.getNextFileId("char-", ".xml")}`;
-				res(save(saveId, data));
-			}
-		});
+	saveThumb(cId, thumb) {
+		fs.writeFileSync(path.join(folder, `${cId}.png`), thumb);
+		return;
 	},
-	/**
-	 * @param {Buffer} data
-	 * @param {string} id
-	 * @returns {Promise<string>}
-	 */
-	saveThumb(data, id) {
-		return new Promise((res, rej) => {
-			var thumb = Buffer.from(data, "base64");
-			fs.writeFileSync(getThumbPath(id), thumb);
-			res(id);
-		});
-	},
-	/**
-	 * @param {string} id
-	 * @returns {Promise<Buffer>}
-	 */
-	loadThumb(id) {
-		return new Promise((res, rej) => {
-			fs.readFile(getThumbPath(id), (e, b) => {
-				if (e) {
-					var fXml = util.xmlFail();
-					rej(Buffer.from(fXml));
-				} else {
-					res(b);
-				}
-			});
-		});
-	},
-};
+
+	isFA(themeId) {
+		switch (themeId) {
+			case "family":
+				return false;
+		}
+		return true;
+	}
+}

@@ -1,4 +1,0 @@
-Name   : fglrx_info
-URL    : Splitted-Desktop Systems
-License: GPLv2
-

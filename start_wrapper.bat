@@ -1,6 +1,9 @@
 :: Wrapper: Offline Launcher
 :: Author: benson#0411
+:: Project Runner: GoTest334#9880
 :: License: MIT
+set WRAPPER_VER=1.3.0
+title Wrapper: Offline v%WRAPPER_VER% [Initializing...]
 
 ::::::::::::::::::::
 :: Initialization ::
@@ -11,40 +14,6 @@
 
 :: Lets variables work or something idk im not a nerd
 SETLOCAL ENABLEDELAYEDEXPANSION
-
-:: Idk what this is
-if exist %tmp%\importserver.bat ( del %tmp%\importserver.bat )
-
-:: Load metadata
-if not exist utilities\metadata.bat ( set NOMETA=y & goto metamissing )
-set SUBSCRIPT=y
-call utilities\metadata.bat
-goto metaavailable
-
-:metamissing
-if %NOMETA%==y (
-	title Wrapper: Offline [Metadata Missing]
-	echo The metadata's missing for some reason?
-	echo Restoring...
-	goto metacopy
-)
-
-:returnfrommetacopy
-if not exist utilities\metadata.bat ( echo Something is horribly wrong. You may be in a read-only system/admin folder. & pause & exit )
-if %NOMETA%==n ( set SUBSCRIPT=y & call utilities\metadata.bat )
-
-:rebootasadmin
-if %ADMIN%==n (
-	:: echo Set UAC = CreateObject^("Shell.Application"^)>> %tmp%\requestAdmin.vbs
-	:: set params= %*
-	:: echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1>> %tmp%\requestAdmin.vbs
-	:: start "" %tmp%\requestAdmin.vbs
-	exit
-)
-:metaavailable
-
-:: Set title
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Initializing...]
 
 :: Make sure we're starting in the correct folder, and that it worked (otherwise things would go horribly wrong)
 pushd "%~dp0"
@@ -75,9 +44,6 @@ if not exist utilities ( goto error_location )
 if not exist wrapper ( goto error_location )
 if not exist server ( goto error_location )
 
-:: Create checks folder if nonexistent
-if not exist "utilities\checks" md utilities\checks
-
 :: Welcome, Director Ford!
 echo Wrapper: Offline
 echo A project from VisualPlugin adapted by GoTest334 and the Wrapper: Offline team
@@ -103,577 +69,54 @@ if not exist utilities\config.bat ( echo Something is horribly wrong. You may be
 call utilities\config.bat
 :configavailable
 
-::::::::::::::::::::::
-:: Dependency Check ::
-::::::::::::::::::::::
-
-if !SKIPCHECKDEPENDS!==y (
-	echo Checking dependencies has been skipped.
-	echo:
-	goto skip_dependency_install
-)
-
-if !VERBOSEWRAPPER!==n (
-	echo Checking for dependencies...
-	echo:
-)
-
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Checking dependencies...]
-
-:: Preload variables
-set NEEDTHEDEPENDERS=n
-set ADMINREQUIRED=n
-set FLASH_DETECTED=n
-set FLASH_CHROMIUM_DETECTED=n
-set NODEJS_DETECTED=n
-set HTTPSERVER_DETECTED=n
-set HTTPSCERT_DETECTED=n
-if !INCLUDEDCHROMIUM!==y set BROWSER_TYPE=chrome
-
-:: Flash Player
-if !VERBOSEWRAPPER!==y ( echo Checking for Flash installation... )
-if exist "!windir!\SysWOW64\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
-if exist "!windir!\System32\Macromed\Flash\*pepper.exe" set FLASH_CHROMIUM_DETECTED=y
-	if !FLASH_CHROMIUM_DETECTED!==n (
-		echo Flash for Chrome could not be found.
-		echo:
-		set NEEDTHEDEPENDERS=y
-		set ADMINREQUIRED=y
-		goto flash_checked
+:: check for updates
+pushd "%~dp0"
+if !AUTOUPDATE!==y ( 
+	pushd "%~dp0"
+	if exist .git (
+		echo Updating...
+		call utilities\PortableGit\bin\git.exe checkout main
+		call utilities\PortableGit\bin\git.exe fetch --all
+		call utilities\PortableGit\bin\git.exe reset --hard origin/main
+		PING -n 3 127.0.0.1>nul
+		cls
 	) else (
-		echo Flash is installed.
-		echo:
-		set FLASH_DETECTED=y
-		goto flash_checked
-	)
-:flash_checked
-
-:: Node.js
-if !VERBOSEWRAPPER!==y ( echo Checking for Node.js installation... )
-for /f "delims=" %%i in ('npm -v 2^>nul') do set output=%%i
-IF "!output!" EQU "" (
-	echo Node.js could not be found.
-	echo:
-	set NEEDTHEDEPENDERS=y
-	set ADMINREQUIRED=y
-	goto httpserver_checked
-) else (
-	echo Node.js is installed.
-	echo:
-	set NODEJS_DETECTED=y
-)
-:nodejs_checked
-
-:: http-server
-if !VERBOSEWRAPPER!==y ( echo Checking for http-server installation... )
-npm list -g | findstr "http-server" >nul
-if !errorlevel! == 0 (
-	echo http-server is installed.
-	echo:
-	set HTTPSERVER_DETECTED=y
-) else (
-	echo http-server could not be found.
-	echo:
-	set NEEDTHEDEPENDERS=y
-)
-:httpserver_checked
-
-:: HTTPS cert
-if !VERBOSEWRAPPER!==y ( echo Checking for HTTPS certificate... )
-call certutil -store -enterprise root | findstr "WOCRTV3" >nul
-if !errorlevel! == 0 (
-	echo HTTPS cert installed.
-	echo:
-	set HTTPSCERT_DETECTED=y
-) else (
-	:: backup check in case non-admin method used
-	if exist "utilities\checks\httpscert.txt" (
-		echo HTTPS cert probably installed.
-		echo:
-		set HTTPSCERT_DETECTED=y
-	) else (
-		echo HTTPS cert could not be found.
-		echo:
-		set NEEDTHEDEPENDERS=y
-	)
-)
-popd
-
-:: Assumes nothing is installed during a dry run
-if !DRYRUN!==y (
-	echo Let's just ignore anything we just saw above.
-	echo Nothing was found. Nothing exists. It's all fake.
-	set NEEDTHEDEPENDERS=y
-	set ADMINREQUIRED=y
-	set FLASH_DETECTED=n
-	set FLASH_CHROMIUM_DETECTED=n
-	set FLASH_FIREFOX_DETECTED=n
-	set NODEJS_DETECTED=n
-	set HTTPSERVER_DETECTED=n
-	set HTTPSCERT_DETECTED=n
-	set BROWSER_TYPE=n
-)
-
-::::::::::::::::::::::::
-:: Dependency Install ::
-::::::::::::::::::::::::
-
-if !NEEDTHEDEPENDERS!==y (
-	if !SKIPDEPENDINSTALL!==n (
-		echo:
-		echo Installing missing dependencies...
-		echo:
-	) else (
-	echo Skipping dependency install.
-	goto skip_dependency_install
+		echo Git not found. Skipping update.
+		PING -n 3 127.0.0.1>nul
+		cls
 	)
 ) else (
-	echo All dependencies are available.
-	echo Turning off checking dependencies...
-	echo:
-	:: Initialize vars
-	set CFG=utilities\config.bat
-	set TMPCFG=utilities\tempconfig.bat
-	:: Loop through every line until one to edit
-	if exist !tmpcfg! del !tmpcfg!
-	set /a count=1
-	for /f "tokens=1,* delims=0123456789" %%a in ('find /n /v "" ^< !cfg!') do (
-		set "line=%%b"
-		>>!tmpcfg! echo(!line:~1!
-		set /a count+=1
-		if !count! GEQ 9 goto linereached
-	)
-	:linereached
-	:: Overwrite the original setting
-	echo set SKIPCHECKDEPENDS=y>> !tmpcfg!
-	echo:>> !tmpcfg!
-	:: Print the last of the config to our temp file
-	more +15 !cfg!>> !tmpcfg!
-	:: Make our temp file the normal file
-	copy /y !tmpcfg! !cfg! >nul
-	del !tmpcfg!
-	:: Set in this script
-	set SKIPCHECKDEPENDS=y
-	goto skip_dependency_install
+	echo Auto-updating is off. Skipping update.
+	PING -n 3 127.0.0.1>nul
+	cls
 )
-
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Installing dependencies...]
-
-:: Preload variables
-set INSTALL_FLAGS=ALLUSERS=1 /norestart
-set SAFE_MODE=n
-if /i "!SAFEBOOT_OPTION!"=="MINIMAL" set SAFE_MODE=y
-if /i "!SAFEBOOT_OPTION!"=="NETWORK" set SAFE_MODE=y
-set CPU_ARCHITECTURE=what
-if /i "!processor_architecture!"=="x86" set CPU_ARCHITECTURE=32
-if /i "!processor_architecture!"=="AMD64" set CPU_ARCHITECTURE=64
-if /i "!PROCESSOR_ARCHITEW6432!"=="AMD64" set CPU_ARCHITECTURE=64
-
-:: Check for admin if installing Flash or Node.js
-:: Skipped in Safe Mode, just in case anyone is running Wrapper in safe mode... for some reason
-:: and also because that was just there in the code i used for this and i was like "eh screw it why remove it"
-if !ADMINREQUIRED!==y (
-	if !VERBOSEWRAPPER!==y ( echo Checking for Administrator rights... && echo:)
-	if /i not "!SAFE_MODE!"=="y" (
-		fsutil dirty query !systemdrive! >NUL 2>&1
-		if /i not !ERRORLEVEL!==0 (
-			color cf
-			if !VERBOSEWRAPPER!==n ( cls )
-			echo:
-			echo ERROR
-			echo:
-			if !FLASH_DETECTED!==n (
-				if !NODEJS_DETECTED!==n (
-					echo Wrapper: Offline needs to install Flash and Node.js.
-				) else (
-					echo Wrapper: Offline needs to install Flash.
-				)
-			) else (
-				echo Wrapper: Offline needs to install Node.js.
-			)
-			echo To do this, it must be started with Admin rights.
-			echo:
-			echo Close this window and re-open Wrapper: Offline as an Admin.
-			echo ^(right-click start_wrapper.bat and click "Run as Administrator"^)
-			echo:
-			if !DRYRUN!==y (
-				echo ...yep, dry run is going great so far, let's skip the exit
-				pause
-				goto postadmincheck
-			)
-			pause
-			set ADMIN=n
-			goto rebootasadmin
-		)
-	)
-	if !VERBOSEWRAPPER!==y ( echo Admin rights detected. && echo:)
-)
-:postadmincheck
-if exist "%tmp%\requestAdmin.vbs" ( del "%tmp%\requestAdmin.vbs">nul )
-
-:: Flash Player
-if !FLASH_DETECTED!==n (
-	:start_flash_install
-	echo Installing Flash Player...
-	set BROWSER_TYPE=chrome && if !VERBOSEWRAPPER!==y ( echo Chromium-based browser picked. && echo:) && goto escape_browser_ask
-
-	:escape_browser_ask
-	echo To install Flash Player, Wrapper: Offline must kill any currently running web browsers.
-	echo Please make sure any work in your browser is saved before proceeding.
-	echo Wrapper: Offline will not continue installation until you press a key.
-	echo:
-	pause
-	echo:
-
-	:: Summon the Browser Slayer
-	if !DRYRUN!==y (
-		echo The users brought down the batch script upon the Browser Slayer, and in his defeat entombed him in the unactivated code.
-		goto lurebrowserslayer
-	)
-	echo Rip and tear, until it is done.
-	for %%i in (firefox,palemoon,tor,iexplore,maxthon,microsoftedge,chrome,chrome64,chromium,opera,brave,torch,waterfox,basilisk,Basilisk-Portable) do (
-		if !VERBOSEWRAPPER!==y (
-			 taskkill /f /im %%i.exe /t >nul
-			 wmic process where name="%%i.exe" call terminate
-		) else (
-			 taskkill /f /im %%i.exe /t >nul
-			 wmic process where name="%%i.exe" call terminate >nul
-		)
-	)
-	:lurebrowserslayer
-	echo:
-		echo Starting the Flash Player installer...
-		echo:
-		if not exist "utilities\installers\flash_windows_chromium.msi" (
-			echo ...erm. Bit of an issue there actually. The installer doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with one.
-			echo You may be able to get the installer here:
-			echo:
-			echo Although Flash is needed, Offline will continue launching.
-			pause
-			goto after_flash_install
-		)
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\flash_windows_chromium.msi" !INSTALL_FLAGS! /quiet )
-	echo Flash has been installed.
-	echo:
-)
-:after_flash_install
-
-:: Node.js
-if !NODEJS_DETECTED!==n (
-	echo Installing Node.js...
-	echo:
-	:: Install Node.js
-	if !CPU_ARCHITECTURE!==64 (
-		if !VERBOSEWRAPPER!==y ( echo 64-bit system detected, installing 64-bit Node.js. )
-		if not exist "utilities\installers\node_windows_x64.msi" (
-			echo We have a problem. The 64-bit Node.js installer doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with one.
-			echo You should be able to find a copy on this website:
-			echo https://nodejs.org/en/download/
-			echo Although Node.js is needed, Offline will try to install anything else it can.
-			pause
-			goto after_nodejs_install
-		)
-		echo Proper Node.js installation doesn't seem possible to do automatically.
-		echo You can just keep clicking next until it finishes, and Wrapper: Offline will continue once it closes.
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\node_windows_x64.msi" !INSTALL_FLAGS! )
-		goto nodejs_installed
-	)
-	if !CPU_ARCHITECTURE!==32 (
-		if !VERBOSEWRAPPER!==y ( echo 32-bit system detected, installing 32-bit Node.js. )
-		if not exist "utilities\installers\node_windows_x32.msi" (
-			echo We have a problem. The 32-bit Node.js installer doesn't exist.
-			echo A normal copy of Wrapper: Offline should come with one.
-			echo You should be able to find a copy on this website:
-			echo https://nodejs.org/en/download/
-			echo Although Node.js is needed, Offline will try to install anything else it can.
-			pause
-			goto after_nodejs_install
-		)
-		echo Proper Node.js installation doesn't seem possible to do automatically.
-		echo You can just keep clicking next until it finishes, and Wrapper: Offline will continue once it closes.
-		if !DRYRUN!==n ( msiexec /i "utilities\installers\node_windows_x32.msi" !INSTALL_FLAGS! )
-		goto nodejs_installed
-	)
-	if !CPU_ARCHITECTURE!==what (
-		echo:
-		echo Well, this is a little embarassing.
-		echo:
-		echo Wrapper: Offline can't tell if you're on a 32-bit or 64-bit system.
-		echo Which means it doesn't know which version of Node.js to install...
-		echo:
-		echo If you have no idea what that means, press 1 to just try anyway.
-		echo:
-		echo If you know what kind of architecture you're running, but Offline
-		echo didn't detect it, press 2.
-		echo:
-		echo If you're in the future with newer architectures or something
-		echo and you know what you're doing, then press 3 to keep going.
-		echo:
-		:architecture_ask
-		set /p CPUCHOICE= Response:
-		echo:
-		if "!cpuchoice!"=="1" if !DRYRUN!==n ( msiexec /i "utilities\installers\node_windows_x32.msi" !INSTALL_FLAGS! ) && if !VERBOSEWRAPPER!==y ( echo Attempting 32-bit Node.js installation. ) && goto nodejs_installed
-		if "!cpuchoice!"=="2" (
-			echo:
-			echo Press 1 if you're running Wrapper: Offline on a 32-bit system.
-			echo Press 2 if you're running Wrapper: Offline on a 64-bit system.
-			echo:
-			:whatsystemreask
-			set /p WHATSYSTEM= Response:
-			echo:
-			if "!whatsystem!"=="1" set CPU_ARCHITECTURE=32
-			if "!whatsystem!"=="2" set CPU_ARCHITECTURE=64
-			if "!whatsystem!"=="32" echo Why couldn't you just type 1? & echo: & pause & set CPU_ARCHITECTURE=32
-			if "!whatsystem!"=="64" echo Why couldn't you just type 2? & echo: & pause & set CPU_ARCHITECTURE=64			
-			if "!whatsystem!"=="" echo That's an invalid option. Please try again. && goto whatsystemreask
-		)
-		if "!cpuchoice!"=="3" echo Node.js will not be installed. && goto after_nodejs_install
-		echo You must pick one or the other.&& goto architecture_ask
-	)
-	:nodejs_installed
-	echo Node.js has been installed.
-	set NODEJS_DETECTED=y
-	echo:
-	goto install_cert
-)
-:after_nodejs_install
-
-:: http-server
-if !HTTPSERVER_DETECTED!==n (
-	if !NODEJS_DETECTED!==y (
-		echo Installing http-server...
-		echo:
-
-		:: Skip in dry run, not much use to run it
-		if !DRYRUN!==y (
-			echo ...actually, nah, let's skip this part.
-			goto httpserverinstalled
-		) 
-
-		:: Attempt to install through NPM normally
-		call npm install http-server -g
-
-		:: Double check for installation
-		echo Checking for http-server installation again...
-		call npm list -g | find "http-server" > nul
-		if !errorlevel! == 0 (
-			goto httpserverinstalled
-		) else (
-			echo:
-			echo Online installation attempt failed. Trying again from local files...
-			echo:
-			if not exist "utilities\installers\http-server-master" (
-				echo Well, we'd try that if the files existed.
-				echo A normal copy of Wrapper: Offline should come with them.
-				echo You should be able to find a copy on this website:
-				echo https://www.npmjs.com/package/http-server
-				echo Although http-server is needed, Offline will try to install anything else it can.
-				pause
-				goto after_nodejs_install
-			)
-			call npm install utilities\installers\http-server-master -g
-			goto triplecheckhttpserver
-		)
-
-		:: Triple check for installation
-		echo Checking for http-server installation AGAIN...
-		:triplecheckhttpserver
-		npm list -g | find "http-server" > nul
-		if !errorlevel! == 0 (
-			goto httpserverinstalled
-		) else (
-			echo:
-			echo Local file installation failed. Something's not right.
-			echo Unless this was intentional, ask for support or install http-server manually.
-			echo Enter "npm install http-server -g" into a separate Command Prompt window.
-			echo:
-			pause
-			exit
-		)
-	) else (
-		color cf
-		echo:
-		echo http-server is missing, but somehow Node.js has not been installed yet.
-		echo Seems either the install failed, or Wrapper: Offline managed to skip it.
-		echo If installing directly from nodejs.org does not work, something is horribly wrong.
-		echo Please ask for help in the #support channel on Discord, or email me.
-		pause
-		exit
-	)
-	:httpserverinstalled
-	echo http-server has been installed.
-	echo:
-	goto install_cert
-)
-
-:: Install HTTPS certificate
-:install_cert
-if !HTTPSCERT_DETECTED!==n (
-	echo Installing HTTPS certificate...
-	echo:
-	if not exist "server\the.crt" (
-		echo ...except it doesn't exist for some reason.
-		echo Wrapper: Offline requires this to run.
-		echo You should get a "the.crt" file from someone else, or redownload Wrapper: Offline.
-		echo Offline has nothing left to do since it can't launch without the.crt, so it will close.
-		pause
-		exit
-	)
-	:: Check for admin
-	if /i not "!SAFE_MODE!"=="y" (
-		fsutil dirty query !systemdrive! >NUL 2>&1
-		if /i not !ERRORLEVEL!==0 (
-			if !VERBOSEWRAPPER!==n ( cls )
-			echo For Wrapper: Offline to work, it needs an HTTPS certificate to be installed.
-			echo If you have administrator privileges, you should reopen start_wrapper.bat as Admin.
-			echo ^(it will do this automatically if you say you have admin rights^)
-			echo:
-			echo If you can't do that, there's another method, but it's less reliable and is done per-browser.
-			echo: 
-			echo Press Y if you have admin access, and press N if you don't.
-			:certaskretry
-			set /p CERTCHOICE= Response:
-			echo:
-			if not '!certchoice!'=='' set certchoice=%certchoice:~0,1%
-			if /i "!certchoice!"=="y" echo This window will now close so you can restart it with admin. & set ADMIN=n & goto rebootasadmin
-			if /i "!certchoice!"=="n" goto certnonadmin
-			echo You must answer Yes or No. && goto certaskretry
-
-			:: Non-admin cert install
-			pushd utilities
-			start SilentCMD open_http-server.bat
-			popd
-			echo: 
-			echo A web browser window will open.
-			echo When you see a security notice, go past it.
-			echo This is completely harmless in a local setting like this.
-			echo If you see a message like this on the real internet, you should stay away.
-			:: Pause to allow startup
-			PING -n 8 127.0.0.1>nul
-			if !INCLUDEDCHROMIUM!==n (
-				if !CUSTOMBROWSER!==n (
-					start https://localhost:4664/certbypass.html
-				) else (
-					start !CUSTOMBROWSER! https://localhost:4664/certbypass.html >nul
-				)
-			) else (
-				pushd utilities\ungoogled-chromium
-				start chromium.exe --user-data-dir=the_profile https://localhost:4664/certbypass.html --allow-outdated-plugins >nul
-				popd
-			)
-			pause
-			echo:
-			echo If you intend on using another browser, you'll have to do this again by going to the server page and passing the security message.
-			echo You've used a non-admin method of installing the HTTPS certificate. To redo the process, delete this file. > utilities\checks\httpscert.txt
-			goto after_cert_install
-		)
-	)
-	pushd server
-	if !VERBOSEWRAPPER!==y (
-		if !DRYRUN!==n ( certutil -addstore -f -enterprise -user root the.crt )
-	) else (
-		if !DRYRUN!==n ( certutil -addstore -f -enterprise -user root the.crt >nul )
-	)
-	set ADMINREQUIRED=y
-	popd
-)
-:after_cert_install
-
-:: Alert user to restart Wrapper without running as Admin
-if !ADMINREQUIRED!==y (
-	color 20
-	if !VERBOSEWRAPPER!==n ( cls )
-	echo:
-	echo Dependencies needing Admin now installed^^!
-	echo:
-	echo Wrapper: Offline no longer needs Admin rights,
-	echo please restart normally by double-clicking.
-	echo:
-	echo If you saw this from running normally,
-	echo Wrapper: Offline should continue normally after a restart.
-	echo:
-	if !DRYRUN!==y (
-		echo ...you enjoying the dry run experience? Skipping closing.
-		pause
-		color 0f
-		goto skip_dependency_install
-	)
-	pause
-	exit
-)
-color 0f
-echo Restarting explorer.exe...
-echo:
-TASKKILL /F /IM explorer.exe >nul
-PING -n 2 127.0.0.1>nul
-start explorer.exe
-cls
-echo All dependencies now installed^^!
-echo:
-echo It is recommended that you restart the computer
-echo to make sure that everything is fully working.
-echo:
-echo Would you like to restart your system before
-echo using Wrapper: Offline? [Y/n]
-echo:
-set /p RESTARTPC= Response: 
-if not '!restartpc!'=='' set restartpc=%restartpc:~0,1%
-if /i "!restartpc!"=="y" (
-	echo Press any key to start the rebooting process.
-	echo:
-	pause
-	echo Your PC will reboot in 10 seconds.
-	PING -n 11 127.0.0.1>nul
-	echo Rebooting your PC...
-	call shutdown /r /t 00
-	exit
-)
-if /i "!restartpc!"=="n" goto continuing
-
-:continuing
-echo Continuing with Wrapper: Offline boot.
-echo:
-
-:skip_dependency_install
 
 ::::::::::::::::::::::
 :: Starting Wrapper ::
 ::::::::::::::::::::::
 
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Loading...]
+title Wrapper: Offline v!WRAPPER_VER! [Loading...]
 
 :: Close existing node apps
 :: Hopefully fixes EADDRINUSE errors??
 if !VERBOSEWRAPPER!==y (
-	echo Closing any existing node and/or PHP apps and batch processes...
-	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline) do (
-		if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-	)
-	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-	if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+	echo Closing any existing node apps...
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F )
 	echo:
 ) else (
-	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-	if !DRYRUN!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F 2>nul )
 )
 
-:: Start Node.js, http-server and PHP webserver for VFProxy
-if !CEPSTRAL!==n (
-	echo Loading Node.js, http-server and PHP webserver ^(for VFProxy only^)...
-) else (
-	echo Loading Node.js and http-server...
-)
+:: Start Node.js
+echo Loading Node.js...
 pushd utilities
 if !VERBOSEWRAPPER!==y (
-	if !DRYRUN!==n ( start /MIN open_http-server.bat )
-	if !DRYRUN!==n ( start /MIN open_nodejs.bat )
-	if !DRYRUN!==n ( start /MIN open_vfproxy_php.bat )
+	if !DRYRUN!==n (
+		start /MIN open_nodejs.bat
+	)
 ) else (
-	if !DRYRUN!==n ( start SilentCMD open_http-server.bat )
-	if !DRYRUN!==n ( start SilentCMD open_nodejs.bat )
-	if !DRYRUN!==n ( start SilentCMD open_vfproxy_php.bat )
+	if !DRYRUN!==n (
+		start SilentCMD open_nodejs.bat
 	)
 )
 popd
@@ -682,163 +125,115 @@ popd
 :: Prevents the video list opening too fast
 PING -n 6 127.0.0.1>nul
 
-echo Opening Wrapper: Offline...
-pushd utilities\ungoogled-chromium
-if !APPCHROMIUM!==y ( 
-	if !FULLSCREEN!==y (
-		set ARGS=--app=http://localhost:!port! --allow-outdated-plugins --start-fullscreen
+:: Open Wrapper in preferred browser
+if !INCLUDEDCHROMIUM!==n (
+	if !CUSTOMBROWSER!==n (
+		echo Opening Wrapper: Offline in your default browser...
+		if !DRYRUN!==n ( start http://localhost:4343 )
 	) else (
-		set ARGS=--app=http://localhost:!port! --allow-outdated-plugins
+		echo Opening Wrapper: Offline in your set browser...
+		echo If this does not work, you may have set the path wrong.
+		if !DRYRUN!==n ( start !CUSTOMBROWSER! http://localhost:4343 )
 	)
-)
-if !APPCHROMIUM!==n ( 
-	if !FULLSCREEN!==y (
-		set ARGS=http://localhost:!port! --allow-outdated-plugins --start-fullscreen
+) else (
+	echo Opening Wrapper: Offline using included Chromium...
+	pushd utilities\ungoogled-chromium
+	if !APPCHROMIUM!==y (
+		if !DRYRUN!==n ( start chrome.exe --allow-outdated-plugins --user-data-dir=the_profile --app=http://localhost:4343 )
 	) else (
-		set ARGS=http://localhost:!port! --allow-outdated-plugins
+		if !DRYRUN!==n ( start chrome.exe --allow-outdated-plugins --user-data-dir=the_profile http://localhost:4343 )
 	)
+	popd
 )
-if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile !args! )
+
 echo Wrapper: Offline has been started^^! The video list should now be open.
 
 ::::::::::::::::
 :: Post-Start ::
 ::::::::::::::::
 
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD!
+title Wrapper: Offline v!WRAPPER_VER!
 if !VERBOSEWRAPPER!==y ( goto wrapperstarted )
 :wrapperstartedcls
 cls
 :wrapperstarted
 
 echo:
-echo Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! running
+echo Wrapper: Offline v!WRAPPER_VER! running
 echo A project from VisualPlugin adapted by GoTest334 and the Wrapper: Offline team
 echo:
 if !VERBOSEWRAPPER!==n ( echo DON'T CLOSE THIS WINDOW^^! Use the quit option ^(0^) when you're done. )
-if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the extra CMD windows for extra output. )
+if !VERBOSEWRAPPER!==y ( echo Verbose mode is on, see the two extra CMD windows for extra output. )
 if !DRYRUN!==y ( echo Don't forget, nothing actually happened, this was a dry run. )
+if !JUSTIMPORTED!==y ( echo Note: You'll need to reload the editor for your file to appear. )
 :: Hello, code wanderer. Enjoy seeing all the secret options easily instead of finding them yourself.
-if !DEVMODE!==y (
-	echo:
-	echo Standard options:
-	echo --------------------------------------
-)
-:: Spacing when dev mode is off
-if !DEVMODE!==n ( echo: )
+echo:
 echo Enter 1 to reopen the video list
-echo Enter 2 to open the settings
-echo Enter 3 to import a file
-echo Enter 4 to open the server page
-echo Enter 5 to export a video
-echo Enter 6 to Update W:O using git
-echo Enter 7 to open the backup/restore tool
-echo Enter 8 to view software information
 echo Enter ? to open the FAQ
 echo Enter clr to clean up the screen
 echo Enter 0 to close Wrapper: Offline
 set /a _rand=(!RANDOM!*67/32768)+1
 if !_rand!==25 echo Enter things you think'll show a secret if you're feeling adventurous
-if !DEVMODE!==y (
-	echo:
-	echo Developer options:
-	echo --------------------------------------
-	echo Type "amnesia" to wipe your save.
-	echo Type "restart" to restart Wrapper: Offline.
-	echo Type "reload" to reload your settings and metadata.
-	echo Type "folder" to open the files.
-)
-echo:
 :wrapperidle
-popd
 echo:
-
-:::::::::::::
-:: Choices ::
-:::::::::::::
-
 set /p CHOICE=Choice:
 if "!choice!"=="0" goto exitwrapperconfirm
 set FUCKOFF=n
 if "!choice!"=="1" goto reopen_webpage
-if "!choice!"=="2" goto settings
-if "!choice!"=="3" goto start_importer
-if "!choice!"=="4" goto open_server
-if "!choice!"=="5" goto start_exporter
-if "!choice!"=="6" goto updategit
-if "!choice!"=="7" goto backupandrestore
-if "!choice!"=="8" goto verinfo
 if "!choice!"=="?" goto open_faq
 if /i "!choice!"=="clr" goto wrapperstartedcls
 if /i "!choice!"=="cls" goto wrapperstartedcls
 if /i "!choice!"=="clear" goto wrapperstartedcls
+:: funni options
+if "!choice!"=="43" echo OH MY GOD. FOURTY THREE CHARS. NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO & goto wrapperidle
+if /i "!choice!"=="benson" echo Child Groom & goto wrapperidle
+if /i "!choice!"=="ford" echo what up son & goto wrapperidle
+if /i "!choice!"=="no" echo stahp & goto wrapperidle
+if /i "!choice!"=="yes" echo Alright. & goto wrapperidle
+if /i "!choice!"=="fuck off" goto youfuckoff
+if /i "!choice!"=="fuck you" echo No, fuck you. & goto wrapperidle
+if /i "!choice!"=="sex" echo that's fake & goto wrapperidle
+if /i "!choice!"=="browser slayer" goto slayerstestaments
+if /i "!choice!"=="patch" goto patchtime
+if /i "!choice!"=="random" goto sayarandom
+if /i "!choice!"=="die" echo die please & goto wrapperidle
+if /i "!choice!"=="aaron doan" echo YOU^^!^^!^^! Noo Wrapper Is Patched Forever^^!^^!^^! Cries And Hits You So Many Times & goto wrapperidle
+if /i "!choice!"=="spark" echo WHY DID SOMEONE FUCK UP THE LAUNCHER? & goto wrapperidle
+if /i "!choice!"=="xom" echo I break wrapper and i dont fix it HAHAHAHAHHA & goto wrapperidle
+if /i "!choice!"=="gort" ehco Attention nightshift personnel. Please report to your assigned post. goto wrapperidle
 :: dev options
-if !DEVMODE!==y (
-	if /i "!choice!"=="amnesia" goto wipe_save
-	if /i "!choice!"=="restart" goto restart
-	if /i "!choice!"=="reload" goto reload_settings
-	if /i "!choice!"=="folder" goto open_files
-)
-if !DEVMODE!==n (
-	if /i "!choice!"=="amnesia" goto devmodeerror
-	if /i "!choice!"=="restart" goto devmodeerror
-	if /i "!choice!"=="reload" goto devmodeerror
-	if /i "!choice!"=="folder" goto devmodeerror
-)
+if /i "!choice!"=="amnesia" goto wipe_save
+if /i "!choice!"=="restart" goto restart
+if /i "!choice!"=="folder" goto open_files
 echo Time to choose. && goto wrapperidle
 
-:reopen_webpage	
-		echo Opening Wrapper: Offline...
-		pushd utilities\ungoogled-chromium
-		if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile !args! )
-goto wrapperidle
-
-:open_server
-	echo Opening the server page...
+:reopen_webpage
+if !INCLUDEDCHROMIUM!==n (
+	if !CUSTOMBROWSER!==n (
+		echo Opening Wrapper: Offline in your default browser...
+		start http://localhost:4343
+	) else (
+		echo Opening Wrapper: Offline in your set browser...
+		start !CUSTOMBROWSER! http://localhost:4343 >nul
+	)
+) else (
+	echo Opening Wrapper: Offline using included Chromium...
 	pushd utilities\ungoogled-chromium
-	if !DRYRUN!==n ( start chromium.exe --user-data-dir=the_profile https://localhost:4664 --allow-outdated-plugins )
+	if !APPCHROMIUM!==y (
+		start chrome.exe --allow-outdated-plugins --user-data-dir=the_profile --app=http://localhost:4343 >nul
+	) else (
+		start chrome.exe --allow-outdated-plugins --user-data-dir=the_profile http://localhost:4343 >nul
+	)
+	popd
+)
 goto wrapperidle
 
 :open_files
-pushd
+pushd ..
 echo Opening the wrapper-offline folder...
-start explorer.exe "%CD%"
+start explorer.exe wrapper-offline
 popd
 goto wrapperidle
-
-:start_importer
-echo Opening the importer...
-start "" "utilities\import.bat"
-goto wrapperidle
-
-:start_exporter
-echo Opening the exporter ^(in another window^)...
-pushd utilities
-start export.bat
-popd
-goto wrapperidle
-
-:updategit
-echo Updating W:O...
-cls
-call update_wrapper.bat
-cls
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD!
-goto wrapperstartedcls
-
-:backupandrestore
-echo Starting the backup and restore tool...
-pushd utilities
-start backup_and_restore.bat
-popd
-goto wrapperidle
-
-:settings
-echo Launching settings..
-call settings.bat
-cls
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD!
-goto wrapperstartedcls
 
 :youfuckoff
 echo You fuck off.
@@ -847,60 +242,110 @@ goto wrapperidle
 
 :open_faq
 echo Opening the FAQ...
-start notepad.exe FAQ.md
+start https://github.com/Wrapper-Offline/Wrapper-Offline/wiki
 goto wrapperidle
-
-:reload_settings
-call utilities\config.bat
-call utilities\metadata.bat
-goto wrapperstartedcls
-
-:verinfo
-cls
-echo Wrapper: Offline
-echo Version !WRAPPER_VER! Beta
-echo:
-echo This copy of Wrapper: Offline belongs to:
-if not %FIRST_NAME%==n (
-	if not %LAST_NAME%==n (
-		echo %FULL_NAME% ^(User: %USERNAME%^)
-	)
-) else (
-	echo User: %USERNAME%
-)
-if not %EMAIL%==n ( echo E-Mail: %EMAIL% )
-if not %DISCORD%==n ( echo Discord Tag: %DISCORD% )
-echo Machine ID: %COMPUTERNAME%
-echo:
-echo ^(DEV TIP: Interested in registering your copy of W:O under
-echo your name? Open "utilities\metadata.bat" in a text editor and
-echo edit any of the necessary values to your liking. This process
-echo will be automated in the near future.^)
-echo:
-pause & goto wrapperstartedcls
 
 :wipe_save
 call utilities\reset_install.bat
 if !errorlevel! equ 1 goto wrapperidle
-goto wrapperidle
 :: flows straight to restart below
 
 :restart
-TASKKILL /IM node.exe /F >nul 2>&1
-if !CEPSTRAL!==n ( TASKKILL /IM php.exe /F >nul 2>&1 )
-if !VERBOSEWRAPPER!==y (
-	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline,Server for imported voice clips TTS voice) do (
-		TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1
-	)
-)
+TASKKILL /IM node.exe /F
 start "" /wait /B "%~F0" point_insertion
 exit
 
-:devmodeerror
-echo You have to have developer mode on
-echo in order to access these features.
+:patchtime
 echo:
-echo Please turn developer mode on in the settings, then try again.
+echo would you like to patch whoper online
+echo press y or n
+:patchtimeretry
+set /p PATCHCHOICE= Response:
+echo:
+if not '!patchchoice!'=='' set patchchoice=%patchchoice:~0,1%
+if /i "!patchchoice!"=="y" echo too bad B^) & goto wrapperidle
+if /i "!patchchoice!"=="n" echo good & goto wrapperidle
+echo yes or no question here && goto patchtimeretry
+
+:sayarandom
+:: welcome to "inside jokes with no context" land
+set /a _rand=!RANDOM!*17/32767
+if !_rand!==0 echo stress level ^>0
+if !_rand!==1 echo Something random.
+if !_rand!==2 echo oisjdoiajfgmafvdsdg
+if !_rand!==3 echo my head is unscrewed & echo what do i need it for
+if !_rand!==4 echo when you're eating popcorn you're eating busted nuts
+if !_rand!==5 echo chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken chicken 
+if !_rand!==6 echo when u nut so hard that ur roblox crashes
+if !_rand!==7 echo seven seven seven seven seven seven seven seven seven seven seven seven seven seven seven seven
+if !_rand!==8 echo DONT ASK HOW I GOT IT OR YOU WILL BE BANNED FROM MY CHANNEL WITH NO SECOND CHANCES
+if !_rand!==9 echo everything you know is wrong & echo black is white up is down and short is long
+if !_rand!==10 echo It's a chekcpoint.
+if !_rand!==11 echo Another monday... & echo Another mind-numbing, run-of-the-mill monday... & echo ANOTHER MUNDANE, MORIBUND, HUMDRUM MONDAY!
+if !_rand!==12 echo try typing "with style" when exiting
+if !_rand!==13 echo elmo
+if !_rand!==14 echo gnorm gnat says: trans rights are human rights
+if !_rand!==15 echo wrapper inline
+if !_rand!==16 echo Ronald McDonald Orgy
+goto wrapperidle
+
+:slayerstestaments
+echo:
+echo In the first age,
+PING -n 3 127.0.0.1>nul
+echo In the first battle,
+PING -n 3 127.0.0.1>nul
+echo When the shadows first lengthened,
+PING -n 4 127.0.0.1>nul
+echo One stood.
+PING -n 3 127.0.0.1>nul
+echo Slowed by the waste of unoptimized websites,
+PING -n 4 127.0.0.1>nul
+echo His soul harvested by the trackers of Google
+PING -n 5 127.0.0.1>nul
+echo And exposed beyond anonymity, 
+PING -n 4 127.0.0.1>nul
+echo He chose the path of perpetual torment.
+PING -n 6 127.0.0.1>nul
+echo In his ravenous hatred,
+PING -n 3 127.0.0.1>nul
+echo He found no peace,
+PING -n 3 127.0.0.1>nul
+echo And with boiling blood,
+PING -n 3 127.0.0.1>nul
+echo He scoured the search results,
+PING -n 4 127.0.0.1>nul
+echo Seeking vengeance against the companies who had wronged him.
+PING -n 6 127.0.0.1>nul
+echo He wore the crown of the Taskkillers,
+PING -n 4 127.0.0.1>nul
+echo and those that tasted the bite of his sword
+PING -n 5 127.0.0.1>nul
+echo named him...
+PING -n 3 127.0.0.1>nul
+echo the Browser Slayer.
+PING -n 3 127.0.0.1>nul
+:: here comes something that looks awesome normaly but is disgusting when escaped for batch
+:: credit to http://www.gamers.org/~fpv/doomlogo.html
+echo ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=     ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=     ^=^=^=^=^=^=^=^=^=^=^=^=^=^=^=   ^=^=^=^=^=^=^=^=  ^=^=^=^=^=^=^=^=
+echo ^\^\ ^. ^. ^. ^. ^. ^. ^.^\^\   //^. ^. ^. ^. ^. ^. ^.^\^\   //^. ^. ^. ^. ^. ^. ^.^\^\  ^\^\^. ^. ^.^\^\// ^. ^. //
+echo ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^|^. ^. ^._____^. ^. ^.^|^| ^|^| ^. ^. ^.^\/ ^. ^. ^.^|^|
+echo ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. ^. ^|^| ^|^|^. ^. ^. ^. ^. ^. ^. ^|^|
+echo ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^| ^. ^.^|^| ^|^| ^. ^| ^. ^. ^. ^. ^.^|^|
+echo ^|^| ^. ^.^|^|   ^|^|^. _-^|^| ^|^|-_ ^.^|^|   ^|^|^. ^. ^|^| ^|^| ^. ^.^|^|   ^|^|^. _-^|^| ^|^|-_^.^|^\ ^. ^. ^. ^. ^|^|
+echo ^|^|^. ^. ^|^|   ^|^|-^'  ^|^| ^|^|  ^`-^|^|   ^|^| ^. ^.^|^| ^|^|^. ^. ^|^|   ^|^|-^'  ^|^| ^|^|  ^`^|^\_ ^. ^.^|^. ^.^|^|
+echo ^|^| ^. _^|^|   ^|^|    ^|^| ^|^|    ^|^|   ^|^|_ ^. ^|^| ^|^| ^. _^|^|   ^|^|    ^|^| ^|^|   ^|^\ ^`-_/^| ^. ^|^|
+echo ^|^|_-^' ^|^|  ^.^|/    ^|^| ^|^|    ^\^|^.  ^|^| ^`-_^|^| ^|^|_-^' ^|^|  ^.^|/    ^|^| ^|^|   ^| ^\  / ^|-_^.^|^|
+echo ^|^|    ^|^|_-^'      ^|^| ^|^|      ^`-_^|^|    ^|^| ^|^|    ^|^|_-^'      ^|^| ^|^|   ^| ^\  / ^|  ^`^|^|
+echo ^|^|    ^`^'         ^|^| ^|^|         ^`^'    ^|^| ^|^|    ^`^'         ^|^| ^|^|   ^| ^\  / ^|   ^|^|
+echo ^|^|            ^.^=^=^=^' ^`^=^=^=^.         ^.^=^=^=^'^.^`^=^=^=^.         ^.^=^=^=^' /^=^=^. ^|  ^\/  ^|   ^|^|
+echo ^|^|         ^.^=^=^'   ^\_^|-_ ^`^=^=^=^. ^.^=^=^=^'   _^|_   ^`^=^=^=^. ^.^=^=^=^' _-^|/   ^`^=^=  ^\/  ^|   ^|^|
+echo ^|^|      ^.^=^=^'    _-^'    ^`-_  ^`^=^'    _-^'   ^`-_    ^`^=^'  _-^'   ^`-_  /^|  ^\/  ^|   ^|^|
+echo ^|^|   ^.^=^=^'    _-^'          ^`-__^\^._-^'         ^`-_^./__-^'         ^`^' ^|^. /^|  ^|   ^|^|
+echo ^|^|^.^=^=^'    _-^'                                                     ^`^' ^|  /^=^=^.^|^|
+echo ^=^=^'    _-^'                                                            ^\/   ^`^=^=
+echo ^\   _-^'                                                                ^`-_   /
+echo  ^`^'^'                                                                      ^`^`^'
 goto wrapperidle
 
 ::::::::::::::
@@ -925,99 +370,37 @@ echo You must answer Yes or No. && goto exitwrapperretry
 
 :point_extraction
 
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Shutting down...]
+title Wrapper: Offline v!WRAPPER_VER! [Shutting down...]
 
-:: Shut down Node.js, PHP and http-server
-
-:: Copies config.bat first in case for whatever reason this messes it up (it's happened before trust me)
-pushd utilities
-copy config.bat tmpcfg.bat>nul
-popd
-
-:: Deletes a temporary batch file again just in case
-if exist %tmp%\importserver.bat ( del %tmp%\importserver.bat )
-
+:: Shut down Node.js
 if !VERBOSEWRAPPER!==y (
-	if !DRYRUN!==n (
-	TASKKILL /IM SilentCMD.exe /F >nul 2>&1 
-	TASKKILL /IM node.exe /F >nul 2>&1
-	for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline,Server for imported voice clips TTS voice) do (
-	TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-	)
-	if !DRYRUN!==n ( 
-		if !CEPSTRAL!==n ( 
-			TASKKILL /IM php.exe /F >nul 2>&1
-		)
-	)
-	if !DRYRUN!==n ( 
-		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe /F >nul 2>&1
-		)
-		if !INCLUDEDBASILISK!==y ( 
-			TASKKILL /IM "utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe" /F >nul 2>&1
-		)
-	)
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F )
 	echo:
 ) else (
-	if !DRYRUN!==n ( TASKKILL /IM node.exe /F >nul 2>&1 )
-	if !DRYRUN!==n ( 
-		TASKKILL /IM SilentCMD.exe /F >nul 2>&1 
-		if !CEPSTRAL!==n ( 
-			TASKKILL /IM php.exe /F >nul 2>&1
-		)
-	)
-	if !DRYRUN!==n ( 
-		if !INCLUDEDCHROMIUM!==y ( 
-			TASKKILL /IM chromium.exe /F >nul 2>&1 
-		)
-		if !INCLUDEDBASILISK!==y ( 
-			TASKKILL /IM utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F 2>nul
-		)
-	)
+	if !DRYRUN!==n ( TASKKILL /IM node.exe /F 2>nul )
 )
-
-:: Puts config.bat back to normal
-pushd utilities
-del config.bat
-ren tmpcfg.bat config.bat
-popd
 
 :: This is where I get off.
 echo Wrapper: Offline has been shut down.
 if !FUCKOFF!==y ( echo You're a good listener. )
 echo This window will now close.
+if !INCLUDEDCHROMIUM!==y (
+	echo You can close the web browser now.
+)
 echo Open start_wrapper.bat again to start W:O again.
 if !DRYRUN!==y ( echo Go wet your run next time. ) 
 pause & exit
 
 :exitwithstyle
-title Wrapper: Offline v!WRAPPER_VER!b!WRAPPER_BLD! [Shutting down... WITH STYLE]
+title Wrapper: Offline v!WRAPPER_VER! [Shutting down... WITH STYLE]
 echo SHUTTING DOWN THE WRAPPER OFFLINE
 PING -n 3 127.0.0.1>nul
 color 9b
 echo BEWEWEWEWWW PSSHHHH KSHHHHHHHHHHHHHH
 PING -n 3 127.0.0.1>nul
-for %%i in (npm start,npm,http-server,HTTP-SERVER HASN'T STARTED,NODE.JS HASN'T STARTED YET,VFProxy PHP Launcher for Wrapper: Offline,Server for imported voice clips TTS voice) do (
-	if !DRYRUN!==n ( TASKKILL /FI "WINDOWTITLE eq %%i" >nul 2>&1 )
-)
-TASKKILL /IM node.exe /F >nul 2>&1
-echo NODE DOT JS ANNIHILATED....I THINK
+TASKKILL /IM node.exe /F
+echo NODE DOT JS ANNIHILATED
 PING -n 3 127.0.0.1>nul
-if !CEPSTRAL!==n (
-	TASKKILL /IM php.exe /F >nul 2>&1
-	echo PHP DESTROYED....MAYBE...THE BATCH WINDOW WAS ALREADY DESTROYED
-	PING -n 3 127.0.0.1>nul
-)
-if !INCLUDEDCHROMIUM!==y (
-	TASKKILL /IM chromium.exe /F >nul 2>&1
-	echo UNGOOGLED CHROMIUM COMPLETELY OBLITERATED
-	PING -n 3 127.0.0.1>nul
-)
-if !INCLUDEDBASILISK!==y (
-	TASKKILL /IM %CD%\utilities\basilisk\Basilisk-Portable\Basilisk-Portable.exe /F >nul 2>&1
-	echo BASILISK COMPLETELY OBLITERATED
-	PING -n 3 127.0.0.1>nul
-)
 echo TIME TO ELIMINATE WRAPPER OFFLINE
 PING -n 3 127.0.0.1>nul
 echo BOBOOBOBMWBOMBOM SOUND EFFECTSSSSS
@@ -1039,7 +422,6 @@ echo whoever put patch.jpeg back, you are grounded grounded gorrudjnmed for 6000
 PING -n 3 127.0.0.1>nul
 :grr
 echo g r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r r 
-PING -n 0.55 127.0.0.1>nul
 goto grr
 
 :configcopy
@@ -1050,7 +432,7 @@ echo :: You should be using settings.bat, and not touching this. Offline relies 
 echo:>> utilities\config.bat
 echo :: Opens this file in Notepad when run>> utilities\config.bat
 echo setlocal>> utilities\config.bat
-echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\config.bat
+echo if "%%SUBSCRIPT%%"=="" ( pushd "%~dp0" ^& start notepad.exe config.bat ^& exit )>> utilities\config.bat
 echo endlocal>> utilities\config.bat
 echo:>> utilities\config.bat
 echo :: Shows exactly Offline is doing, and never clears the screen. Useful for development and troubleshooting. Default: n>> utilities\config.bat
@@ -1062,32 +444,25 @@ echo:>> utilities\config.bat
 echo :: Won't install dependencies, regardless of check results. Overridden by SKIPCHECKDEPENDS. Mostly useless, why did I add this again? Default: n>> utilities\config.bat
 echo set SKIPDEPENDINSTALL=n>> utilities\config.bat
 echo:>> utilities\config.bat
+echo :: Opens Offline in an included copy of ungoogled-chromium. Allows continued use of Flash as modern browsers disable it. Default: y>> utilities\config.bat
+echo set INCLUDEDCHROMIUM=y>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens INCLUDEDCHROMIUM in headless mode. Looks pretty nice. Overrides CUSTOMBROWSER and BROWSER_TYPE. Default: y>> utilities\config.bat
+echo set APPCHROMIUM=y>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Opens Offline in a browser of the user's choice. Needs to be a path to a browser executable in quotes. Default: n>> utilities\config.bat
+echo set CUSTOMBROWSER=n>> utilities\config.bat
+echo:>> utilities\config.bat
+echo :: Lets the launcher know what browser framework is being used. Mostly used by the Flash installer. Accepts "chrome", "firefox", and "n". Default: n>> utilities\config.bat
+echo set BROWSER_TYPE=chrome>> utilities\config.bat
+echo:>> utilities\config.bat
 echo :: Runs through all of the scripts code, while never launching or installing anything. Useful for development. Default: n>> utilities\config.bat
 echo set DRYRUN=n>> utilities\config.bat
 echo:>> utilities\config.bat
-echo :: Makes it so both the settings and the Wrapper launcher shows developer options. Default: n>> utilities\config.bat
-echo set DEVMODE=n>> utilities\config.bat
+echo :: auto update (what do you think it does, obvious)>> utilities\config.bat
+echo set AUTOUPDATE=y>> utilities\config.bat
 echo:>> utilities\config.bat
-echo :: Tells settings.bat which port the frontend is hosted on. ^(If changed manually, you MUST also change the value of "SERVER_PORT" to the same value in wrapper\env.json^) Default: 4343>> utilities\config.bat
-echo set PORT=4343>> utilities\config.bat
-echo:>> utilities\config.bat
-echo :: Automatically restarts the NPM whenever it crashes. Default: y>> utilities\config.bat
-echo set AUTONODE=y>> utilities\config.bat
+echo :: discord rpc>> utilities\config.bat
+echo set RPC=n>> utilities\config.bat
 echo:>> utilities\config.bat
 goto returnfromconfigcopy
-
-:metacopy
-if not exist utilities ( md utilities )
-echo :: Wrapper: Offline Metadata>> utilities\metadata.bat
-echo :: Important useful variables that are displayed by start_wrapper.bat>> utilities\metadata.bat
-echo :: You probably shouldn't touch this. This only exists to make things easier for the devs everytime we go up a build number or something like that.>> utilities\metadata.bat
-echo:>> utilities\metadata.bat
-echo :: Opens this file in Notepad when run>> utilities\metadata.bat
-echo setlocal>> utilities\metadata.bat
-echo if "%%SUBSCRIPT%%"=="" ( start notepad.exe "%%CD%%\%%~nx0" ^& exit )>> utilities\metadata.bat
-echo endlocal>> utilities\metadata.bat
-echo:>> utilities\metadata.bat
-echo set WRAPPER_VER=1.3.0>> utilities\metadata.bat
-echo:>> utilities\metadata.bat
-set NOMETA=n
-goto returnfrommetacopy

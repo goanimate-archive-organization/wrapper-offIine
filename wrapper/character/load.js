@@ -1,53 +1,44 @@
-const loadPost = require("../misc/post_body");
-const character = require("./main");
-const http = require("http");
+/**
+ * route
+ * character loading
+ */
+// vars
+const base = Buffer.alloc(1, "0");
+// stuff
+const Char = require("./main");
+const { xmlFail } = require("../request/extend");
 
 /**
- * @param {http.IncomingMessage} req
- * @param {http.ServerResponse} res
+ * @param {import("http").IncomingMessage} req
+ * @param {import("http").ServerResponse} res
  * @param {import("url").UrlWithParsedQuery} url
  * @returns {boolean}
  */
-module.exports = function (req, res) {
+module.exports = async function (req, res, url) {
+	let cId;
 	switch (req.method) {
 		case "GET": {
 			const match = req.url.match(/\/characters\/([^.]+)(?:\.xml)?$/);
 			if (!match) return;
+			cId = match[1];
 
-			var id = match[1];
-			res.setHeader("Content-Type", "text/xml");
-			character
-				.load(id)
-				.then((v) => {
-					(res.statusCode = 200), res.end(v);
-				})
-				.catch((e) => {
-					(res.statusCode = 404), res.end(e);
-				});
-			return true;
-		}
+			break;
+		} case "POST": {
+			if (url.pathname != "/goapi/getCcCharCompositionXml/") return;
+			cId = req.body.assetId || req.body.original_asset_id;
 
-		case "POST": {
-			if (req.url != "/goapi/getCcCharCompositionXml/") return;
-			loadPost(req, res).then(async ([data]) => {
-				res.setHeader("Content-Type", "text/html; charset=UTF-8");
-				character
-					.load(data.assetId || data.original_asset_id)
-					.then((v) => {
-						(res.statusCode = 200), res.end(0 + v);
-					})
-					//.catch(e => { res.statusCode = 404, res.end(1 + e) })
-
-					// Character not found?	Why not load my archnemesis instead?
-					.catch(() =>
-						character.load("a-306687427").then((v) => {
-							(res.statusCode = 200), res.end(0 + v);
-						})
-					);
-			});
-			return true;
-		}
-		default:
-			return;
+			break;
+		} default: return;
 	}
-};
+
+	console.log("Loading character: " + cId);
+	try {
+		const buf = await Char.load(cId);
+		res.setHeader("Content-Type", "text/html; charset=UTF-8");
+		res.end(Buffer.concat([base, buf]));
+	} catch (err) {
+		console.log("But nobody came.")
+		res.statusCode = 404;
+		res.end("1" + xmlFail("Character not found."));
+	}
+}

@@ -1,3 +1,0 @@
-ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(ADM_hwAccelEncoder)
-

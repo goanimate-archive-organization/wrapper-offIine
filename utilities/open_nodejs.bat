@@ -4,29 +4,33 @@
 @echo off
 pushd "%~dp0"
 title NODE.JS HASN'T STARTED YET
-pushd ..\wrapper
-:start
-call npm start
-echo:
-if %autonode%==y (
-cls
-goto start
+
+:: Load current settings
+if "%SUBSCRIPT%"=="" ( 
+	set SUBSCRIPT=y
+	call config.bat
+	set "SUBSCRIPT="
 ) else (
-echo Uh-oh!
-echo You Have Been Crashed!!!
-echo How to fix wrapper offline
-echo 1. Reinstall or Repair Wrapper Offline
-echo 2. go to settings.bat and switch on verbose mode
-echo And done! you will no longer crash forever! U CAN USE IT!
-echo issues? Contact on discord.
-echo zoccorus#9939
-echo NOTE: Either Node.js has crashed or you don't have it installed.
-echo If Node.js crashed, please send the error in the GitHub issues page.
-echo If you don't have Node.js, install it in the utilities/installers or https://nodejs.org/en/download/ or https://nodejs.org/en/download/current/.
-echo:
-echo If you saw an error that says "MODULE_NOT_FOUND",
-echo go in the utilities folder and run module_installer.bat.
-pause
-cls
-goto start
+	call config.bat
 )
+
+pushd ..\wrapper
+
+:::::::::::::::::::
+:: Node.js stuff ::
+:::::::::::::::::::
+
+:: set environment variables
+set DISCORD_RPC=%RPC%
+:: start wrapper
+npm start
+
+:: this only happens if node crashes
+echo:
+echo If you see an error saying "npm is not recognized",
+echo please install Node.js from nodejs.org.
+echo:
+echo If you see an error that says "MODULE_NOT_FOUND",
+echo please type "npm install" in this window, press enter,
+echo and then type "npm start" and press enter.
+pause & exit /B

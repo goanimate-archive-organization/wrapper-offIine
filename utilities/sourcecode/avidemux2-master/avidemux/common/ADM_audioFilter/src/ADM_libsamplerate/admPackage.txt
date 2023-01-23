@@ -1,4 +1,0 @@
-Name    : Secret Rabit Code
-URL     : http://www.mega-nerd.com/SRC
-License : GPL 
-

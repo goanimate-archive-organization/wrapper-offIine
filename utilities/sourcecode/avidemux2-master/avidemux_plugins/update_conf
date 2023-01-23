@@ -1,5 +1,0 @@
-#!/bin/sh
-for i in `find . -name "*.conf"`; do
-echo $i
-../cmake/admSerialization.py $i
-done

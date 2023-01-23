@@ -1,112 +1,178 @@
-const chars = require("../character/main");
-const fUtil = require("../misc/file");
-const caché = require("./caché");
+/**
+ * asset api
+ */
+// modules
 const fs = require("fs");
-const importFolder = process.env.IMPORT_FOLDER;
-
-function save(id, data, type, ext) {
-	const i = id.indexOf("-");
-	const prefix = id.substr(0, i);
-	const suffix = id.substr(i + 1);
-	fs.writeFileSync(fUtil.getFileIndex(type + "-", "." + ext, suffix, 1), data);
-	return id;
-}
+const path = require("path");
+// vars
+const folder = path.join(__dirname, "../", process.env.ASSET_FOLDER);
+// stuff
+const database = require("../data/database"), DB = new database();
+const fUtil = require("../fileUtil");
 
 module.exports = {
-	load(mId, aId) {
-		return caché.load(mId, aId);
+	/**
+	 * Deletes an asset.
+	 * @param {string} aId 
+	 */
+	delete(aId) {
+		// remove info from database
+		const db = DB.get();
+		const index = this.meta(aId, { getIndex: true });
+		db.assets.splice(index, 1);
+		DB.save(db);
+		// find file by id and delete it
+		const match = fs.readdirSync(folder)
+			.filter(file => file.includes(aId));
+		if (match) match.forEach(filename => 
+			fs.unlinkSync(path.join(folder, filename)));
 	},
-	save(buffer, mId, mode, ext) {
-		return new Promise((res, rej) => {
-			switch (mode) {
-				case "prop":
-					sMode = "p";
-					break;
-				case "bg":
-					sMode = "b";
-					break;
-			}
-			switch (ext) {
-				case "jpg":
-				case "jpeg":
-				case "jfif":
-				case "gif":
-					ext = "png";
-					break;
-			}
-			var saveId = `${sMode}-${fUtil.getNextFileIdImport(mode + "-", "." + ext)}`;
-			res(save(saveId, buffer, mode, ext));
-		})	
-	},
-	listAll() {
-		var ret = [];
-		fs.readdir(importFolder, (err, files) => {
-			files.forEach((aId) => {
-				var dot = aId.indexOf(".");
-				var dash = aId.lastIndexOf("-");
-				var name = aId.substr(dash + 1, dot);
-				var fMode = aId.substr(0, dash);
-				console.log(aId, name, fMode);
-				ret.push({ id: aId, name: name, mode: fMode });
-			});
-		});
-		return ret;
-	},
-	listAsset(mode) {
-		switch (mode) {
-			case "prop":
-				sMode = "p";
-				ext = "png";
-			break;
-			case "bg":
-				sMode = "b";
-				ext = "jpg";
-			break;
-			case "sound":
-				sMode = "s"
-				ext = "mp3";
-				subtype = "music"; 
-			break;
-		}
-		return new Promise(async (res, rej) => {
-			var table = [];
-			var ids = fUtil.getValidFileIndiciesImport(`${mode}-`, `.${ext}`);
-			for (const i in ids) {
-				var id = `${mode}-${fUtil.padZero(ids[i], 7)}`;
-				var sId = `${sMode}-${ids[i]}`;
-				var fileName = `${mode}-${fUtil.padZero(ids[i], 7)}.${ext}`;
-				if (mode == "sound") {
-					table.unshift({ subtype: subtype, id: id, duration: duration });
-				} else {
-					table.unshift({ id: id, sId: sId, fileName: fileName });
-				}
-			}
-			res(table);
-		});
-	},
-	chars(theme) {
-		return new Promise(async (res, rej) => {
-			switch (theme) {
-				case "custom":
-					theme = "family";
-					break;
-				case "action":
-				case "animal":
-				case "space":
-				case "vietnam":
-					theme = "cc2";
-					break;
-			}
 
-			var table = [];
-			var ids = fUtil.getValidFileIndicies("char-", ".xml");
-			for (const i in ids) {
-				var id = `c-${ids[i]}`;
-				if (!theme || theme == (await chars.getTheme(id))) {
-					table.unshift({ theme: theme, id: id });
-				}
+	/**
+	 * Gets a list of assets from the database, and filters it.
+	 * @param {object} filters
+	 * @returns {object[]}
+	 */
+	list(filters = {}) { // very simple thanks to the database
+		let filtered = DB.get().assets.filter(i => {
+			for (const [key, value] of Object.entries(filters)) {
+				if (i[key] && i[key] != value) return false;
 			}
-			res(table);
+			return true;
 		});
+		return filtered;
 	},
+
+	/**
+	 * Looks for a match in the _ASSETS folder and returns the file buffer.
+	 * If there's no match found, it returns null.
+	 * @param {string} aId 
+	 * @returns {Buffer | null}
+	 */
+	load(aId) { // look for match in folder
+		const match = this.exists(aId);
+		return match ? fs.readFileSync(path.join(folder, match)) : null;
+	},
+
+	/**
+	 * Looks for a match in the _ASSETS folder.
+	 * If there's no match found, it returns null.
+	 * @param {string} aId 
+	 * @returns {string | null}
+	 */
+	exists(aId) { // look for match in folder
+		const match = fs.readdirSync(folder)
+			.find(file => file.includes(aId));
+		return match || false;
+	},
+
+	/**
+	 * Returns asset metadata from the database.
+	 * @param {string} aId 
+	 * @returns {object}
+	 */
+	meta(aId, { getIndex } = {}) {
+		const callback = i => i.id == aId;
+		const meta = DB.get().assets[getIndex ? "findIndex" : "find"](callback);
+		if (typeof meta != "number" && !meta) throw new Error("Asset doesn't exist.");
+		return meta;
+	},
+
+	/**
+	 * Converts an object to a metadata XML.
+	 * @param {any[]} v 
+	 * @returns {string}
+	 */
+	meta2Xml(v) {
+		// sanitize stuff
+		v.title = (v.title || "").replace(/"/g, "&quot;");
+
+		let xml;
+		switch (v.type) {
+			case "char": {
+				xml = `<char id="${v.id}" enc_asset_id="${v.id}" name="Untitled" cc_theme_id="${v.themeId}" thumbnail_url="char_default.png" copyable="Y"><tags/></char>`;
+				break;
+			} case "bg": {
+				xml = `<background subtype="0" id="${v.id}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" asset_url="/assets/${v.id}"/>`
+				break;
+			} case "movie": {
+				xml = `<movie id="${v.id}" enc_asset_id="${v.id}" path="/_SAVED/${v.id}" numScene="${v.sceneCount}" title="${v.title}" thumbnail_url="/file/movie/thumb/${v.id}"><tags></tags></movie>`;
+				break;
+			} case "prop": {
+				if (v.subtype == "video") {
+					xml = `<prop subtype="video" id="${v.id}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" placeable="1" facing="left" width="${v.width}" height="${v.height}" asset_url="/assets/${v.id}" thumbnail_url="/assets/${v.id.slice(0, -3) + "png"}"/>`;
+				} else {
+					xml = `<prop subtype="0" id="${v.id}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" ${v.ptype}="1" facing="left" width="0" height="0" asset_url="/assets/${v.id}"/>`;
+				}
+				break;
+			} case "sound": {
+				xml = `<sound subtype="${v.subtype}" id="${v.id}" enc_asset_id="${v.id}" name="${v.title}" enable="Y" duration="${v.duration}" downloadtype="progressive"/>`;
+				break;
+			}
+		}
+		return xml;
+	},
+
+	/**
+	 * Saves the asset and its metadata.
+	 * @param {Buffer} buf 
+	 * @param {object} meta 
+	 * @returns {string}
+	 */
+	save(buf, meta) {
+		// save asset info
+		const aId = `${fUtil.generateId()}.${meta.ext}`;
+		const db = DB.get();
+		let newMeta = {
+			id: aId,
+			tags: ""
+		};
+		delete meta.ext;
+		Object.assign(newMeta, meta);
+		db.assets.unshift(newMeta);
+		DB.save(db);
+		// save the file
+		fs.writeFileSync(path.join(folder, aId), buf);
+		return aId;
+	},
+
+	/**
+	 * Saves the asset and its metadata.
+	 * @param {fs.ReadStream} readStream 
+	 * @param {object} meta 
+	 * @returns {string}
+	 */
+	saveStream(readStream, meta) {
+		// save asset info
+		const aId = `${fUtil.generateId()}.${meta.ext}`;
+		const db = DB.get();
+		let newMeta = {
+			id: aId,
+			tags: ""
+		};
+		delete meta.ext;
+		Object.assign(newMeta, meta);
+		db.assets.unshift(newMeta);
+		DB.save(db);
+		// save the file
+		let writeStream = fs.createWriteStream(path.join(folder, aId));
+		readStream.resume();
+		readStream.pipe(writeStream);
+		return aId;
+	},
+
+	/**
+	 * Updates an asset's metadata.
+	 * It cannot replace the asset itself.
+	 * @param {string} aId 
+	 * @param {object} newMet 
+	 * @returns {void}
+	 */
+	update(aId, newMet) {
+		// set new info and save
+		const db = DB.get();
+		const index = this.meta(aId, { getIndex: true });
+		Object.assign(db.assets[index], newMet);
+		DB.save(db);
+	}
 };
