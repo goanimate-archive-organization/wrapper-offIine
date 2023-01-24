@@ -10,7 +10,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and #
   - 1.3.0
 ### Fixed
   - nothing
-### Deleted
+### Removed (nothing)
   - utilities files, server files and wrapper files unusuals
 
 ## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
@@ -38,7 +38,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and #
   - Checks Folder because is not here in utilities folder
   - Import files are deleted after opening import.bat so im gonna add import_these folder
   - Discord rpc
-### Deleted
+### Removed
   - reset_install.bat
   - patch.jpg cuz no one unjk
 
