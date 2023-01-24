@@ -2,6 +2,17 @@
 # Wrapper: Offline Changelog
 This changelog is based off [Keep a Changelog](https://keepachangelog.com) and #################### adheres to [Semantic Versioning](https://semver.org/). If you have no idea what that means, basically this changelog is formatted in a specific consistent way, and version numbers are formatted as X.Y.Z, X being a major not-backwards-compatible update, Y being a feature update, and X being bug fixes.
 
+## Version 1.3.4 - 2023-1-24 - YOOO IM BACK!!!
+### Added
+  - new lil peepz and comedy world assets
+### Changed
+  - teyeq pull me down is now on stay with me by Swole sauce and spirit link
+  - 1.3.0
+### Fixed
+  - nothing
+### Removed (nothing)
+  - utilities files, server files and wrapper files unusuals
+
 ## Version 1.3.3 - 2022-1-15 - bigger files. IS WAT?
 ### Added
   - FFDEC version 14.4.0
@@ -27,7 +38,7 @@ This changelog is based off [Keep a Changelog](https://keepachangelog.com) and #
   - Checks Folder because is not here in utilities folder
   - Import files are deleted after opening import.bat so im gonna add import_these folder
   - Discord rpc
-### Deleted
+### Removed
   - reset_install.bat
   - patch.jpg cuz no one unjk
 
