@@ -59,7 +59,6 @@ Wrapper: Offline credits:
 | KrisAnimate      | Chromium parameter                                     |
 | narutofan420     | W:O installer and updater                              |
 | PoleyMagik       | Client Modifications                                   |
-| zoccorus         | 1.3.3                                                  |
 
 These are unaffiliated people that they haven't directly done anything for the project (and probably don't even know it exists) but still deserve credit for their things. Kinda like a shoutout but in a project's readme. ***Please do not contact them about Wrapper: Offline.***
 | Name               | Contribution                     |
