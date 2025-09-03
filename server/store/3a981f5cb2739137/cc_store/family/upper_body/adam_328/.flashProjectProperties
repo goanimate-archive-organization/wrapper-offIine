@@ -1,0 +1,22 @@
+﻿<projectDescription>
+	<id>1238637846607</id>
+	<name>chuckle</name>
+	<asVersion>0</asVersion>
+	<boundTemplate>file:///C|/Users/ahmed/AppData/Local/Adobe/Flash CS4/en/Configuration/Project/templates/boundClass_as3.as</boundTemplate>
+	<classTemplate>file:///C|/Users/ahmed/AppData/Local/Adobe/Flash CS4/en/Configuration/Project/templates/standardClass_as3.as</classTemplate>
+	<classPath>.</classPath>
+	<rootURI>C:\Users\ahmed\AppData\Local\Temp\8</rootURI>
+	<flexSDK/>
+	<sources editable="false"/>
+	<libraries editable="false"/>
+	<externalLibraries editable="false"/>
+	<compileList editable="false">
+		<uri label="chuckle.fla">file:///C|/Users/ahmed/AppData/Local/Temp/8/chuckle.fla</uri>
+	</compileList>
+	<defaultApp>file:///C|/Users/ahmed/AppData/Local/Temp/8/chuckle.fla</defaultApp>
+	<recentFiles editable="false">
+		<uri label="MainTimeline.as">file:///C|/Users/ahmed/AppData/Local/Temp/8/chuckle_fla/MainTimeline.as</uri>
+		<uri label="theUpper_1.as">file:///C|/Users/ahmed/AppData/Local/Temp/8/chuckle_fla/theUpper_1.as</uri>
+	</recentFiles>
+	<locations editable="false"/>
+</projectDescription>

@@ -184,23 +184,6 @@ if "!choice!"=="?" goto open_faq
 if /i "!choice!"=="clr" goto wrapperstartedcls
 if /i "!choice!"=="cls" goto wrapperstartedcls
 if /i "!choice!"=="clear" goto wrapperstartedcls
-:: funni options
-if "!choice!"=="43" echo OH MY GOD. FOURTY THREE CHARS. NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO & goto wrapperidle
-if /i "!choice!"=="benson" echo Child Groom & goto wrapperidle
-if /i "!choice!"=="ford" echo what up son & goto wrapperidle
-if /i "!choice!"=="no" echo stahp & goto wrapperidle
-if /i "!choice!"=="yes" echo Alright. & goto wrapperidle
-if /i "!choice!"=="fuck off" goto youfuckoff
-if /i "!choice!"=="fuck you" echo No, fuck you. & goto wrapperidle
-if /i "!choice!"=="sex" echo that's fake & goto wrapperidle
-if /i "!choice!"=="browser slayer" goto slayerstestaments
-if /i "!choice!"=="patch" goto patchtime
-if /i "!choice!"=="random" goto sayarandom
-if /i "!choice!"=="die" echo die please & goto wrapperidle
-if /i "!choice!"=="aaron doan" echo YOU^^!^^!^^! Noo Wrapper Is Patched Forever^^!^^!^^! Cries And Hits You So Many Times & goto wrapperidle
-if /i "!choice!"=="spark" echo WHY DID SOMEONE FUCK UP THE LAUNCHER? & goto wrapperidle
-if /i "!choice!"=="xom" echo I break wrapper and i dont fix it HAHAHAHAHHA & goto wrapperidle
-if /i "!choice!"=="gort" ehco Attention nightshift personnel. Please report to your assigned post. goto wrapperidle
 :: dev options
 if /i "!choice!"=="amnesia" goto wipe_save
 if /i "!choice!"=="restart" goto restart

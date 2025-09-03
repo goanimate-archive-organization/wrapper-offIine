@@ -1,0 +1,5 @@
+﻿<flash_project name="front_default" version="1">
+	<project_file path="./front_default.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./default_fla/MainTimeline.as" filetype="as"/>
+	<project_file path="./default_fla/theLower_1.as" filetype="as"/>
+</flash_project>

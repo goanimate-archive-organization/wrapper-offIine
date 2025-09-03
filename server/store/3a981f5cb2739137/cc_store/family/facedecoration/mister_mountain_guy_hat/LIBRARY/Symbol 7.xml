@@ -1,0 +1,95 @@
+<DOMSymbolItem xmlns="http://ns.adobe.com/xfl/2008/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Symbol 7" lastModified="1648564262" linkageClassName="thumbnail_fla.defaultHead_1" linkageExportForAS="true">
+  <timeline>
+    <DOMTimeline name="Symbol 7">
+      <layers>
+                    <DOMLayer name="Layer 1" color="#9fe08c">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMShape isFloating="true">
+                                             <fills/>
+                                             <strokes>
+  <StrokeStyle index="1">
+    <SolidStroke weight="1.0" scaleMode="normal">
+      <fill>
+        <SolidColor color="#000000"/>
+      </fill>
+    </SolidStroke>
+  </StrokeStyle>
+</strokes>
+  <edges>
+    <Edge strokeStyle="1" edges="! 10 -2023[ -97 -1999 -197 -1951| -221 -1941| -137 -1958[ -26 -1983 90 -1986[ 204 -1989 317 -1960[ 427 -1930 531 -1884[ 633 -1840 727 -1781[ 821 -1723 895 -1642[ 969 -1560 1016 -1462[ 1062 -1363 1082 -1260[ 1081 -1272 1087 -1289[ 1085 -1407 1035 -1516[ 989 -1618 912 -1704[ 838 -1785 748 -1846[ 655 -1907 553 -1953[ 448 -1997 334 -2019| 100 -2034| 10 -2023"/>
+    <Edge strokeStyle="1" edges="! 1082 -1260| 1082 -1258| 1082 -1257[ 1073 -1136 1052 -1065[ 1035 -1017 1013 -991[ 1009 -989 1004 -966| 973 -904[ 950 -863 938 -864[ 915 -808 899 -815| 792 -683[ 764 -659 762 -669[ 730 -643 689 -596[ 646 -552 603 -550[ 505 -537 497 -493[ 482 -548 437 -636| 437 -637| 400 -704| 399 -704| 399 -703| 398 -703| 397 -707[ 287 -896 25 -996[ -222 -1090 -416 -1032| -418 -1032[ -447 -1002 -475 -942[ -487 -927 -505 -993| -530 -1087[ -547 -1094 -554 -1174| -567 -1192[ -576 -1209 -574 -1326[ -586 -1329 -588 -1349[ -591 -1374 -578 -1421[ -559 -1521 -538 -1577[ -536 -1585 -537 -1599[ -544 -1617 -498 -1690[ -452 -1768 -359 -1843[ -267 -1928 -221 -1941"/>
+    <Edge strokeStyle="1" edges="! -574 -1326[ -495 -1443 -289 -1498[ -74 -1561 155 -1530[ 365 -1514 541 -1416[ 709 -1322 825 -1179| 853 -1144[ 936 -1019 938 -864"/>
+    <Edge strokeStyle="1" edges="! 1013 -991[ 1019 -1061 1008 -1132| 1003 -1151[ 957 -1344 795 -1482[ 633 -1619 424 -1695[ 216 -1777 -11 -1769[ -239 -1765 -428 -1658| -506 -1605| -538 -1577"/>
+    <Edge strokeStyle="1" edges="! 762 -669| 752 -723| 749 -737[ 706 -900 571 -1010[ 434 -1120 265 -1186[ 95 -1252 -92 -1249[ -277 -1245 -430 -1159[ -439 -1158 -441 -1153| -379 -1174[ -198 -1220 -7 -1158[ 164 -1104 309 -1001[ 443 -907 526 -772[ 590 -666 603 -550"/>
+    <Edge strokeStyle="1" edges="! -554 -1174[ -422 -1287 -243 -1338[ -66 -1396 127 -1383[ 323 -1370 527 -1281[ 719 -1197 811 -1063| 856 -988[ 898 -905 899 -815"/>
+    <Edge strokeStyle="1" edges="! 399 -703| 398 -705| 397 -707"/>
+    <Edge strokeStyle="1" edges="! 398 -705| 399 -704"/>
+    <Edge strokeStyle="1" edges="! -418 -1032[ -453 -1022 -455 -1000"/>
+    <Edge strokeStyle="1" edges="! -441 -1153| -478 -1129[ -507 -1112 -530 -1087"/>
+  </edges>
+</DOMShape>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+                    <DOMLayer name="Layer 2" color="#943ee8">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMSymbolInstance libraryItemName="Symbol 5" name="theColor_ccHairMinor" centerPoint3DX="12.45" centerPoint3DY="-63.2">
+  <matrix>
+    <Matrix tx="-29.45" ty="-101.75"/>
+  </matrix>
+  <transformationPoint>
+    <Point/>
+  </transformationPoint>
+</DOMSymbolInstance>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+                    <DOMLayer name="Layer 3" color="#7f42fb">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMSymbolInstance libraryItemName="Symbol 3" name="theColor_ccHairMajor" centerPoint3DX="5.5" centerPoint3DY="-39.5">
+  <matrix>
+    <Matrix tx="-15.55" ty="-65.65"/>
+  </matrix>
+  <transformationPoint>
+    <Point/>
+  </transformationPoint>
+</DOMSymbolInstance>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+                    <DOMLayer name="Layer 4" color="#1cafd9" current="true" isSelected="true">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMShape isFloating="true">
+                                             <fills/>
+                                             <strokes>
+  <StrokeStyle index="1">
+    <SolidStroke weight="1.0" scaleMode="normal">
+      <fill>
+        <SolidColor color="#000000"/>
+      </fill>
+    </SolidStroke>
+  </StrokeStyle>
+</strokes>
+  <edges>
+    <Edge strokeStyle="1" edges="! 262 -1172[ 214 -1063 206 -915[ 276 -807 321 -692[ 365 -579 365 -497[ 365 -440 348 -386[ 333 -339 312 -315[ 330 -299 434 -266[ 484 -511 532 -572| 532 -786[ 502 -1018 358 -1159[ 187 -1353 -96 -1302[ -227 -1271 -311 -1208[ -209 -1174 -97 -1170[ -33 -1165 27 -1171| 27 -1172| 262 -1172"/>
+  </edges>
+</DOMShape>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+               </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>

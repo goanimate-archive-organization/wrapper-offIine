@@ -1,0 +1,7 @@
+﻿<flash_project name="nothing" version="1">
+	<project_file path="./nothing.fla" filetype="fla" profile="" def_file="true"/>
+	<project_file path="./default_fla/eyeL_5.as" filetype="as"/>
+	<project_file path="./default_fla/eyeR_2.as" filetype="as"/>
+	<project_file path="./eyeLeft.as" filetype="as"/>
+	<project_file path="./eyeRight.as" filetype="as"/>
+</flash_project>

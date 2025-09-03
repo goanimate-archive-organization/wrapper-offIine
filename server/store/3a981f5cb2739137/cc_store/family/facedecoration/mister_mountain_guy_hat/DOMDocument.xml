@@ -1,0 +1,29 @@
+<DOMDocument xmlns="http://ns.adobe.com/xfl/2008/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" currentTimeline="1" xflVersion="2.1" creatorInfo="JPEXS Free Flash Decompiler" platform="Windows" versionInfo="Saved by JPEXS Free Flash Decompiler v.16.3.1" majorVersion="16.3.1" buildNumber="" nextSceneIdentifier="2" playOptionsPlayLoop="false" playOptionsPlayPages="false" playOptionsPlayFrameActions="false" autoSaveHasPrompted="true" backgroundColor="#ffffff" frameRate="24" width="60" height="60">
+  <symbols>
+    <Include href="Symbol 3.xml" loadImmediate="false" lastModified="1648564262"/>
+    <Include href="Symbol 5.xml" loadImmediate="false" lastModified="1648564262"/>
+    <Include href="Symbol 7.xml" loadImmediate="false" lastModified="1648564262"/>
+  </symbols>
+  <timelines>
+    <DOMTimeline name="Scene 1">
+      <layers>
+                    <DOMLayer name="Layer 1" color="#666ff0" current="true" isSelected="true">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMSymbolInstance libraryItemName="Symbol 7" name="defaultHead" centerPoint3DX="65.15" centerPoint3DY="109.55">
+  <matrix>
+    <Matrix tx="22.75" ty="64.85" a="0.6104736328125" d="0.6104736328125"/>
+  </matrix>
+  <transformationPoint>
+    <Point/>
+  </transformationPoint>
+</DOMSymbolInstance>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+               </layers>
+    </DOMTimeline>
+  </timelines>
+</DOMDocument>

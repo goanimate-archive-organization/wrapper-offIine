@@ -1,0 +1,27 @@
+<DOMSymbolItem xmlns="http://ns.adobe.com/xfl/2008/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Symbol 5" lastModified="1648564262">
+  <timeline>
+    <DOMTimeline name="Symbol 5">
+      <layers>
+                    <DOMLayer name="Layer 1" color="#9b42ce" current="true" isSelected="true">
+                         <frames>
+                              <DOMFrame index="0" keyMode="9728">
+  <elements>
+                                        <DOMShape isFloating="true">
+                                             <fills>
+  <FillStyle index="1">
+    <SolidColor color="#153c62"/>
+  </FillStyle>
+</fills>
+                                             <strokes/>
+  <edges>
+    <Edge fillStyle0="1" edges="! 689 1| 599 12[ 595 9 597 13[ 492 36 392 84| 368 94[ 322 107 230 192[ 137 267 91 345[ 45 418 52 436| 51 458[ 30 514 11 614[ -2 661 1 686[ 3 706 15 709[ 13 826 22 843| 35 861[ 42 941 59 948[ 60 965 84 1042[ 102 1108 114 1093[ 142 1033 171 1003| 173 1003[ 367 945 614 1039[ 876 1139 986 1328| 987 1330| 988 1331| 989 1331| 1026 1398| 1026 1399[ 1071 1487 1086 1542[ 1094 1498 1192 1485[ 1235 1483 1278 1439[ 1319 1392 1351 1366[ 1353 1376 1381 1352| 1488 1220[ 1504 1227 1527 1171[ 1539 1172 1562 1131| 1593 1069[ 1598 1046 1602 1044[ 1624 1018 1641 970[ 1662 899 1671 778| 1671 777| 1671 775[ 1670 763 1676 746[ 1674 628 1624 519[ 1578 417 1501 331[ 1427 250 1337 189[ 1244 128 1142 82[ 1037 38 923 16| 689 1"/>
+  </edges>
+</DOMShape>
+                                   </elements>
+</DOMFrame>
+                         </frames>
+                    </DOMLayer>
+               </layers>
+    </DOMTimeline>
+  </timeline>
+</DOMSymbolItem>
