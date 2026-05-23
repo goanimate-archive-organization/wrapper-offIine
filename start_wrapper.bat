@@ -27,9 +27,6 @@ echo Doesn't seem like this script is in a Wrapper: Offline folder.
 pause && exit
 :noerror_location
 
-:: patch detection
-if exist "patch.jpg" goto patched
-
 :: Prevents CTRL+C cancelling (please close with 0) and keeps window open when crashing
 if "%~1" equ "point_insertion" goto point_insertion
 start "" /wait /B "%~F0" point_insertion
